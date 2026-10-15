@@ -12,5 +12,6 @@
 | [0006](0006-nextjs-frontend-stack.md) | Next.js 16.4 프론트엔드와 API 계약 | 제안 |
 | [0007](0007-maplibre-map-engine.md) | 지도 엔진 MapLibre와 Protomaps | 제안 |
 | [0008](0008-hosting-and-observability.md) | 호스팅과 관측성: 컨테이너 1대와 OpenTelemetry | 제안 |
+| [0009](0009-login-identities.md) | 로그인 수단: 구글과 이메일, 제공자 확장 구조 | 제안 |
 
 상태는 `제안 → 채택 → 대체됨` 순으로 바뀐다. 결정을 바꿀 때는 기존 문서를 고치지 않고 새 번호로 쓰고, 옛 문서의 상태를 `대체됨(000N)`으로 바꾼다.

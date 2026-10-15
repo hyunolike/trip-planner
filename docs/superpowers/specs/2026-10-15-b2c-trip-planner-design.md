@@ -1,6 +1,6 @@
 # B2C 여행 일정표 서비스 설계
 
-작성일: 2026-10-15 · 개정: 2026-10-16(기술 리서치 반영) · 상태: 검토 대기 · 기반 코드: `8f855f8` (Osaka Kyoto trip planner site) · 디자인 시스템: `2026-10-15-design-system.md`
+작성일: 2026-10-15 · 개정: 2026-10-16(기술 리서치 반영, 결정 질문 답변 반영) · 상태: 검토 대기 · 기반 코드: `8f855f8` (Osaka Kyoto trip planner site) · 디자인 시스템: `2026-10-15-design-system.md`
 
 ## 0. 이해한 내용 (확인 요청)
 
@@ -15,8 +15,8 @@
 
 - 한국어 사용자, 해외여행 중심. 다국어는 범위 밖.
 - 무료 서비스. 결제·예약 중개 없음. 예약은 다른 서비스에서 하고 "일정과 메모"만 여기서 관리한다.
-- 로그인은 카카오·구글 소셜 로그인. 이메일 가입은 넣지 않는다.
-- 기존 오사카·교토 일정은 **공개 샘플 일정**으로 노출하고, 로그인한 사용자가 "내 여행으로 복제"할 수 있다.
+- 로그인은 구글 로그인과 이메일 가입. 카카오·네이버·애플은 같은 구조로 나중에 붙인다. (2026-10-16 결정)
+- 공개 샘플은 하나투어·모두투어의 상품 구성을 참고해 새로 조사한 **다낭·호이안 가족여행**이다. 기존 오사카·교토 일정은 원본 그대로 DB에 보관하고 링크 공개로 계속 보인다. 로그인한 사용자는 두 일정 모두 "내 여행으로 복제"할 수 있다. (2026-10-16 결정)
 - 호스팅은 이전 프로젝트(한적, 오구오구)와 같은 Vercel + 별도 API 서버 구성.
 
 ## 1. 서비스 기획 (기획 관점)
@@ -68,7 +68,10 @@ MVP는 첫 번째 페르소나를 기준으로 만든다. 기존 앱이 이 페�
 /t/{slug}/map          전체 지도 (모바일 전체화면)
 /s/{token}             공유 링크 진입 → 권한 부여 후 /t/{slug}로 이동
 /me                    내 정보 · 내 여행 · 로그아웃
-/login                 카카오 · 구글
+/login                 구글 · 이메일 로그인
+/signup                이메일 가입 (인증 메일 발송)
+/verify-email          인증 링크 진입
+/reset-password        비밀번호 재설정 요청·변경
 ```
 
 기존 앱의 5탭(일정·맛집·쇼핑·링크·준비)은 "여행 노트"의 섹션으로 그대로 남긴다. 사용자가 만드는 여행도 같은 5섹션을 가지며, 비어 있으면 빈 상태 안내를 보여준다.
@@ -156,7 +159,7 @@ MVP는 첫 번째 페르소나를 기준으로 만든다. 기존 앱이 이 페�
 
 ### 2.5 공유
 
-- 공유 버튼 → 시트: "보기 링크 복사", "편집 링크 복사(2단계)", 카카오톡 공유.
+- 공유 버튼 → 시트: "보기 링크 복사", "편집 링크 복사(2단계)", 카카오톡 공유(카카오 JavaScript SDK, 로그인과 무관하게 사용 가능).
 - 보기 링크는 로그인 없이 열린다. 완료 체크는 로그인 전까지 localStorage에만 남는다.
 - 공유 전 경고 1회: "예약번호·여권 정보가 메모에 있으면 지워 주세요." 기존 준비물 문구와 같은 톤.
 
@@ -211,7 +214,7 @@ MVP는 첫 번째 페르소나를 기준으로 만든다. 기존 앱이 이 페�
                      │
                      ▼
             Spring Boot 4.1 API (Kotlin 2.3, Java 25, Modulith 2.1)
-              ├ auth      카카오·구글 OAuth, Spring Session
+              ├ auth      구글 OAuth, 이메일·비밀번호, Spring Session
               ├ trip      여행·날짜·스톱·섹션 CRUD, 권한
               ├ share     공유 토큰, 복제
               ├ progress  완료 체크
@@ -225,7 +228,11 @@ MVP는 첫 번째 페르소나를 기준으로 만든다. 기존 앱이 이 페�
 기존 `data.js`의 구조를 그대로 테이블로 옮긴다. 샘플 일정이 들어가는지가 모델 검증 기준이다.
 
 ```
-users            id, provider, provider_id, email, nickname, avatar_url, created_at
+users            id, email(citext, unique), email_verified_at, nickname, avatar_url, status, created_at
+user_identities  id, user_id, provider(google|password|kakao|naver|apple), provider_subject, created_at
+                 unique(provider, provider_subject)
+password_credentials user_id, password_hash(argon2id), updated_at
+email_tokens     id, user_id, purpose(verify|reset), token_hash, expires_at, used_at
 trips            id, slug, owner_id, title, subtitle, start_date, end_date,
                  cover_image_url, visibility(private|link|public),
                  is_sample, source_trip_id, created_at, updated_at
@@ -262,7 +269,12 @@ share_links      id, trip_id, token, role(viewer|editor), expires_at, created_by
 ### 3.4 API
 
 ```
-POST  /auth/kakao/callback, /auth/google/callback      GET /me   POST /logout
+GET   /oauth2/authorization/google  →  /login/oauth2/code/google   (Spring Security OAuth2 Client)
+POST  /auth/signup {email, password, nickname}       인증 메일 발송, 계정은 미인증 상태
+POST  /auth/verify-email {token}                     POST /auth/verify-email/resend
+POST  /auth/login {email, password}                  미인증 계정은 로그인 거부
+POST  /auth/password-reset {email}                   POST /auth/password-reset/confirm {token, password}
+GET   /me   POST /logout   DELETE /me
 GET   /trips                      내 여행 (멤버인 것)
 POST  /trips                      만들기 → 날짜 수만큼 trip_days 생성
 GET   /trips/{slug}               전체 트리 (days, stops, places, guides, links, checklists)
@@ -299,15 +311,19 @@ GET   /weather?lat&lng&date       Redis 30분 캐시
 1. `scripts/export-sample-trip.mjs`가 `src/data.js`와 가이드 모듈을 import해 `sample/osaka-kyoto-family-2026.json`을 만든다. 기존 모듈은 그대로 두고 읽기만 한다.
 2. API의 `SampleTripSeeder`가 JSON을 읽어 트랜잭션 1개로 적재한다. 다시 실행해도 slug 기준으로 덮어쓴다(멱등).
 3. 검증은 기존 `DESIGN_SYSTEM.md`가 하던 방식과 같다. 스톱 50개, 링크 482건, 미디어 72건이 모두 응답에 남아 있는지 테스트로 고정한다.
-4. 샘플의 소유자는 운영 계정 1개. `is_sample=true`, `visibility=public`.
-
-**확인 필요**: 기존 데이터에는 "가족 3명 예약 확정", 호텔명, 항공편 시각처럼 실제 가족 정보가 들어 있다. 공개 샘플로 노출할지, 일부를 일반화할지 결정이 필요하다.
+4. 두 일정의 소유자는 운영 계정 1개다. 오사카·교토는 `provenance.kind=family-original`, `is_sample=false`, `visibility=link`로 적재해 기존 URL과 같은 경로(`/t/osaka-kyoto-family-2026`)로 계속 보인다. 원본 문구는 고치지 않는다.
+5. 다낭·호이안은 `sample/danang-hoian-family-2027.json`에 조사해 만든 예시다. `provenance.kind=researched-example`, `is_sample=true`, `visibility=public`으로 홈에 노출한다. 참고한 상품 페이지와 검증하지 못한 사실은 같은 이름의 `.sources.md`에 남긴다.
+6. 두 JSON은 `sample/schema/trip.schema.json`(JSON Schema 2020-12)으로 CI에서 검증한다. 시더는 검증을 통과한 파일만 적재한다.
+7. 복제는 두 일정 모두 허용한다. 복제본은 복제한 사용자 소유의 `private` 여행이 되고, `source_trip_id`로 원본을 가리킨다. 완료 체크, 멤버, 공유 링크는 복사하지 않는다.
 
 ### 3.7 보안·운영
 
-- 인증은 BFF 세션 방식이다. `__Host-` httpOnly 쿠키에는 불투명 세션 ID만 두고, 세션은 Spring Session이 Valkey에 저장한다. 로그아웃과 강제 만료가 즉시 반영된다. CSRF는 Security 7 `csrf.spa()`. 카카오 클라이언트는 `client_secret_post`.
-- 카카오 로그인은 닉네임, 프로필 이미지, 이메일(선택 동의)만 받는다. 이메일 필수 동의는 비즈 앱 심사가 필요해 보류한다.
-- 탈퇴는 세 단계로 처리한다. 계정과 여행 삭제, 카카오·구글 토큰 revoke, 업로드 이미지 삭제 큐. 2025-02 개인정보위 소셜 로그인 점검에서 지적된 항목이다.
+- 인증은 BFF 세션 방식이다. `__Host-` httpOnly 쿠키에는 불투명 세션 ID만 두고, 세션은 Spring Session이 Valkey에 저장한다. 로그아웃과 강제 만료가 즉시 반영된다. CSRF는 Security 7 `csrf.spa()`.
+- 로그인 수단은 `user_identities`의 행 하나다. 구글과 이메일 비밀번호로 시작하고, 카카오·네이버·애플은 OAuth 클라이언트 등록과 행 추가만으로 붙인다(ADR 0009).
+- 이메일 가입: 비밀번호는 Argon2id(Spring Security `Argon2PasswordEncoder`)로 해시한다. 최소 10자, 유출 비밀번호 목록 검사(k-익명성 범위 조회). 인증 메일 링크는 24시간, 재설정 링크는 30분 유효하고 1회용이며 DB에는 토큰 해시만 둔다. 메일 발송은 트랜잭션 이벤트로 커밋 후 보낸다.
+- 계정 연결: 구글 로그인 이메일이 인증된 이메일 계정과 같으면, 구글의 `email_verified=true`일 때만 같은 사용자에 identity를 붙인다. 미인증 이메일 계정과는 자동 연결하지 않는다(계정 탈취 방지).
+- 무차별 대입 방지: 로그인·가입·재설정 요청에 IP와 이메일 기준 레이트리밋(Valkey 버킷). 응답 문구는 계정 존재 여부를 드러내지 않는다("가입된 이메일이면 메일을 보냈어요").
+- 탈퇴는 세 단계로 처리한다. 계정과 여행 삭제, 구글 토큰 revoke, 업로드 이미지 삭제 큐. 2025-02 개인정보위 소셜 로그인 점검에서 지적된 항목이다.
 - 공유 토큰은 32바이트 랜덤, 기본 만료 없음, owner가 회수 가능.
 - 쓰기 API는 사용자당 분당 제한. 이미지 업로드(3단계)는 5MB·webp 변환.
 - 관측성은 OpenTelemetry로 Grafana Cloud에 보내고, 오류는 Sentry로 받는다. SLO는 세 개다. 일정표 조회 성공률 99.5%, 일정표 첫 화면 LCP p75 2.5초 이하, 스톱 저장 p95 500ms 이하. 에러 버짓을 다 쓰면 기능 작업을 멈추고 안정화한다.
@@ -339,11 +355,15 @@ GET   /weather?lat&lng&date       Redis 30분 캐시
 
 1~5가 MVP다. 각 순서는 별도 구현 계획(`docs/superpowers/plans/`)으로 쪼갠다.
 
-## 5. 결정이 필요한 질문
+## 5. 결정 기록 (2026-10-16)
 
-1. **스택**: B(Next.js + Spring Boot)로 진행한다고 가정하고 기술 기준선과 ADR을 썼다. A로 바꾸면 ADR 0001~0005를 다시 쓴다.
-2. **로그인**: 카카오 + 구글이면 충분한가? 애플 로그인은 iOS 앱이 없으니 뺀다.
-3. **샘플 공개 범위**: 기존 가족 정보(예약 확정, 호텔, 항공편)를 그대로 공개할지, 일반화할지.
-4. **복제 허용**: 샘플을 누구나 내 여행으로 복제하게 둘지.
-5. **호스팅**: Vercel + 기존에 쓰던 API 서버 환경(GCP VM 또는 EC2) 그대로인지.
-6. **서비스 이름과 도메인**: 디자인 시스템은 "여행노트" 브랜드로 만들었다. 바꾸려면 커버와 로고를 다시 만든다.
+| 질문 | 결정 |
+| --- | --- |
+| 스택 | B. Next.js + Kotlin/Spring Boot + PostgreSQL. 기술 기준선은 3.1.1, 근거는 ADR 0001~0008 |
+| 로그인 | 구글 로그인 + 이메일 가입. 다른 제공자는 나중에 같은 구조로 확장(ADR 0009) |
+| 샘플 공개 범위 | 하나투어·모두투어 구성을 참고해 새로 조사한 다낭·호이안 일정을 공개 샘플로 쓴다. 오사카·교토 원본은 그대로 보관하고 링크 공개로 보인다 |
+| 복제 허용 | 허용. 두 일정 모두 복제 가능 |
+| 호스팅 | Vercel Pro + 도쿄 컨테이너 1대 + Supabase 서울(ADR 0008) |
+| 브랜드 | "여행노트" 유지 |
+
+**가정**: 오사카·교토 원본을 홈 목록에 노출하지 않고 링크로만 보이게 했다. 가족의 실제 예약 정보가 들어 있어서다. 홈에도 노출하려면 `visibility`를 `public`으로 바꾸면 된다.
