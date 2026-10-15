@@ -3,6 +3,8 @@ package com.tripnote.auth
 import com.tripnote.IntegrationTest
 import com.tripnote.common.sha256Hex
 import com.tripnote.auth.internal.PasswordCredentialRepository
+import com.tripnote.auth.internal.SignupService
+import com.tripnote.common.ApiException
 import java.time.Duration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -12,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 class EmailSignupTest : IntegrationTest() {
     @Autowired lateinit var passwordEncoder: PasswordEncoder
     @Autowired lateinit var credentials: PasswordCredentialRepository
+    @Autowired lateinit var signupService: SignupService
 
     private fun count(sql: String, vararg params: Any) =
         jdbc.sql(sql).params(*params).query(Int::class.java).single()
@@ -161,5 +164,20 @@ class EmailSignupTest : IntegrationTest() {
         val hash = credentials.findAll().single().passwordHash
         assertThat(passwordEncoder.matches("victim-pass-bbb1", hash)).isTrue()
         assertThat(passwordEncoder.matches("attacker-pass-a1", hash)).isFalse()
+    }
+
+    @Test
+    fun `completing verification fails when the credential changed after the password was checked`() {
+        signup("mina@example.com")
+        val token = tokenIn(awaitMail("mina@example.com"))
+        val userId = jdbc.sql("SELECT id FROM users").query(java.util.UUID::class.java).single()
+
+        val error = org.junit.jupiter.api.assertThrows<ApiException> {
+            signupService.completeVerification(userId, token, "a-hash-that-is-no-longer-stored")
+        }
+
+        assertThat(error.message).isEqualTo(wrongPassword)
+        assertThat(count("SELECT count(*) FROM email_tokens WHERE used_at IS NULL")).isEqualTo(1)
+        assertThat(count("SELECT count(*) FROM users WHERE email_verified_at IS NOT NULL")).isZero()
     }
 }
