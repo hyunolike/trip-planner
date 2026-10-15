@@ -45,6 +45,17 @@ class EmailTokenService(
         return token
     }
 
+    /** 소비하지 않고 유효한 토큰인지만 확인해 사용자 id를 돌려준다. */
+    @Transactional(readOnly = true)
+    fun peek(token: String, purpose: TokenPurpose): UUID? =
+        jdbc.sql(
+            """
+            SELECT user_id FROM email_tokens
+            WHERE token_hash = :hash AND purpose = :purpose AND used_at IS NULL AND expires_at > :now
+            """.trimIndent(),
+        ).param("now", now()).param("hash", sha256Hex(token)).param("purpose", purpose.dbValue)
+            .query(UUID::class.java).optional().orElse(null)
+
     /** 유효하면 원자적으로 사용 처리하고 사용자 id를 돌려준다. 없거나, 용도가 다르거나, 만료됐거나, 이미 썼으면 null. */
     @Transactional
     fun consume(token: String, purpose: TokenPurpose): UUID? =

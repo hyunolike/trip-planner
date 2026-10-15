@@ -17,7 +17,7 @@ data class SignupRequest(
     @field:NotBlank @field:Size(max = 30) val nickname: String,
 )
 
-data class TokenRequest(@field:NotBlank val token: String)
+data class VerifyEmailRequest(@field:NotBlank val token: String, @field:NotBlank val password: String)
 data class EmailRequest(@field:Email @field:NotBlank @field:Size(max = 254) val email: String)
 data class MessageResponse(val message: String)
 
@@ -32,8 +32,8 @@ class EmailAuthController(private val signupService: SignupService) {
     }
 
     @PostMapping("/verify-email")
-    fun verify(@Valid @RequestBody body: TokenRequest): MessageResponse {
-        signupService.verify(body.token)
+    fun verify(@Valid @RequestBody body: VerifyEmailRequest): MessageResponse {
+        signupService.verify(body.token, body.password)
         return MessageResponse("이메일을 확인했어요. 이제 로그인할 수 있어요.")
     }
 

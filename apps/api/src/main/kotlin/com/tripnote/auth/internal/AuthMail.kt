@@ -23,7 +23,8 @@ class AuthMailer(
         event.email,
         "[여행노트] 이메일 주소를 확인해 주세요",
         """
-        아래 링크를 열면 가입이 끝나요. 링크는 24시간 동안 쓸 수 있어요.
+        아래 링크를 열면 가입이 끝나요. 링크 페이지에서 가입할 때 정한 비밀번호를 한 번 더 입력해야 해요.
+        링크는 24시간 동안 쓸 수 있어요.
 
         ${props.webBaseUrl}/verify-email?token=${tokens.issue(event.userId, TokenPurpose.VERIFY)}
 

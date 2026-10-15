@@ -37,10 +37,10 @@ class EmailSignupTest : IntegrationTest() {
         signup("mina@example.com")
         val token = tokenIn(awaitMail("mina@example.com"))
 
-        postJson("/api/v1/auth/verify-email", """{"token":"$token"}""").andExpect { status { isOk() } }
+        postJson("/api/v1/auth/verify-email", """{"token":"$token","password":"trip-note-2027"}""").andExpect { status { isOk() } }
         assertThat(count("SELECT count(*) FROM users WHERE email_verified_at IS NOT NULL")).isEqualTo(1)
 
-        postJson("/api/v1/auth/verify-email", """{"token":"$token"}""").andExpect {
+        postJson("/api/v1/auth/verify-email", """{"token":"$token","password":"trip-note-2027"}""").andExpect {
             status { isBadRequest() }
             jsonPath("$.detail") { value("링크가 만료됐거나 이미 사용됐어요. 새 링크를 요청해 주세요.") }
         }
@@ -52,7 +52,7 @@ class EmailSignupTest : IntegrationTest() {
         val token = tokenIn(awaitMail("mina@example.com"))
         clock.advance(Duration.ofHours(25))
 
-        postJson("/api/v1/auth/verify-email", """{"token":"$token"}""").andExpect { status { isBadRequest() } }
+        postJson("/api/v1/auth/verify-email", """{"token":"$token","password":"trip-note-2027"}""").andExpect { status { isBadRequest() } }
     }
 
     @Test
@@ -71,7 +71,7 @@ class EmailSignupTest : IntegrationTest() {
     @Test
     fun `signing up with a verified email answers the same and mails a notice instead`() {
         signup("mina@example.com")
-        postJson("/api/v1/auth/verify-email", """{"token":"${tokenIn(awaitMail("mina@example.com"))}"}""")
+        postJson("/api/v1/auth/verify-email", """{"token":"${tokenIn(awaitMail("mina@example.com"))}","password":"trip-note-2027"}""")
         mail.sent.clear()
 
         signup("MINA@example.com", nickname = "다른사람").andExpect { status { isAccepted() } }
@@ -110,12 +110,56 @@ class EmailSignupTest : IntegrationTest() {
         signup("mina@example.com", password = "real-owner-pass-2", nickname = "진짜")
         val second = tokenIn(awaitMail("mina@example.com"))
 
-        postJson("/api/v1/auth/verify-email", """{"token":"$first"}""").andExpect { status { isBadRequest() } }
-        postJson("/api/v1/auth/verify-email", """{"token":"$second"}""").andExpect { status { isOk() } }
+        postJson("/api/v1/auth/verify-email", """{"token":"$first","password":"real-owner-pass-2"}""").andExpect { status { isBadRequest() } }
+        postJson("/api/v1/auth/verify-email", """{"token":"$second","password":"real-owner-pass-2"}""").andExpect { status { isOk() } }
 
         val hash = credentials.findAll().single().passwordHash
         assertThat(passwordEncoder.matches("real-owner-pass-2", hash)).isTrue()
         assertThat(passwordEncoder.matches("squatter-pass-1", hash)).isFalse()
         assertThat(jdbc.sql("SELECT nickname FROM users").query(String::class.java).single()).isEqualTo("진짜")
+    }
+
+    private fun verify(token: String, password: String) =
+        postJson("/api/v1/auth/verify-email", """{"token":"$token","password":"$password"}""")
+
+    private val wrongPassword = "비밀번호가 맞지 않아요. 가입할 때 정한 비밀번호를 입력해 주세요."
+
+    @Test
+    fun `a wrong password does not consume the link`() {
+        signup("mina@example.com")
+        val token = tokenIn(awaitMail("mina@example.com"))
+
+        verify(token, "not-the-password-1").andExpect {
+            status { isBadRequest() }
+            jsonPath("$.detail") { value(wrongPassword) }
+        }
+        assertThat(count("SELECT count(*) FROM email_tokens WHERE used_at IS NULL")).isEqualTo(1)
+        verify(token, "trip-note-2027").andExpect { status { isOk() } }
+    }
+
+    @Test
+    fun `a pre-registering attacker cannot get the victim verified with the attacker password`() {
+        signup("mina@example.com", password = "victim-pass-bbb1")
+        awaitMail("mina@example.com")
+        mail.sent.clear()
+        signup("mina@example.com", password = "attacker-pass-a1")
+        val newest = tokenIn(awaitMail("mina@example.com"))
+
+        verify(newest, "victim-pass-bbb1").andExpect {
+            status { isBadRequest() }
+            jsonPath("$.detail") { value(wrongPassword) }
+        }
+        assertThat(count("SELECT count(*) FROM users WHERE email_verified_at IS NOT NULL")).isZero()
+        assertThat(count("SELECT count(*) FROM email_tokens WHERE used_at IS NULL")).isEqualTo(1)
+
+        mail.sent.clear()
+        signup("mina@example.com", password = "victim-pass-bbb1")
+        val latest = tokenIn(awaitMail("mina@example.com"))
+        verify(latest, "victim-pass-bbb1").andExpect { status { isOk() } }
+
+        assertThat(count("SELECT count(*) FROM users WHERE email_verified_at IS NOT NULL")).isEqualTo(1)
+        val hash = credentials.findAll().single().passwordHash
+        assertThat(passwordEncoder.matches("victim-pass-bbb1", hash)).isTrue()
+        assertThat(passwordEncoder.matches("attacker-pass-a1", hash)).isFalse()
     }
 }
