@@ -2,11 +2,17 @@ package com.tripnote.auth
 
 import com.tripnote.IntegrationTest
 import com.tripnote.common.sha256Hex
+import com.tripnote.auth.internal.PasswordCredentialRepository
 import java.time.Duration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.crypto.password.PasswordEncoder
 
 class EmailSignupTest : IntegrationTest() {
+    @Autowired lateinit var passwordEncoder: PasswordEncoder
+    @Autowired lateinit var credentials: PasswordCredentialRepository
+
     private fun count(sql: String, vararg params: Any) =
         jdbc.sql(sql).params(*params).query(Int::class.java).single()
 
@@ -84,6 +90,8 @@ class EmailSignupTest : IntegrationTest() {
         assertThat(awaitMail("mina@example.com").text).contains("verify-email?token=")
 
         postJson("/api/v1/auth/verify-email/resend", """{"email":"nobody@example.com"}""").andExpect { status { isAccepted() } }
+        Thread.sleep(1000)
+        assertThat(mail.sent.none { it.to?.contains("nobody@example.com") == true }).isTrue()
     }
 
     @Test
@@ -92,5 +100,22 @@ class EmailSignupTest : IntegrationTest() {
             status { isBadRequest() }
             jsonPath("$.detail") { value("입력값을 확인해 주세요.") }
         }
+    }
+
+    @Test
+    fun `re-signup of an unverified email replaces the password and voids the older link`() {
+        signup("mina@example.com", password = "squatter-pass-1", nickname = "스쿼터")
+        val first = tokenIn(awaitMail("mina@example.com"))
+        mail.sent.clear()
+        signup("mina@example.com", password = "real-owner-pass-2", nickname = "진짜")
+        val second = tokenIn(awaitMail("mina@example.com"))
+
+        postJson("/api/v1/auth/verify-email", """{"token":"$first"}""").andExpect { status { isBadRequest() } }
+        postJson("/api/v1/auth/verify-email", """{"token":"$second"}""").andExpect { status { isOk() } }
+
+        val hash = credentials.findAll().single().passwordHash
+        assertThat(passwordEncoder.matches("real-owner-pass-2", hash)).isTrue()
+        assertThat(passwordEncoder.matches("squatter-pass-1", hash)).isFalse()
+        assertThat(jdbc.sql("SELECT nickname FROM users").query(String::class.java).single()).isEqualTo("진짜")
     }
 }

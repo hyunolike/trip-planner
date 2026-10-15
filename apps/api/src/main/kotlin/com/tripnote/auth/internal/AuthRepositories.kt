@@ -4,7 +4,7 @@ import java.util.UUID
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface UserRepository : JpaRepository<UserEntity, UUID> {
-    fun findByEmailIgnoreCase(email: String): UserEntity?
+    fun findByEmail(email: String): UserEntity?
 }
 
 interface UserIdentityRepository : JpaRepository<UserIdentityEntity, UUID> {

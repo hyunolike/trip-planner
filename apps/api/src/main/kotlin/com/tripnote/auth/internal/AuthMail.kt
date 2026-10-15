@@ -4,15 +4,20 @@ import com.tripnote.common.TripnoteProperties
 import org.springframework.mail.SimpleMailMessage
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.modulith.events.ApplicationModuleListener
+import java.util.UUID
 import org.springframework.stereotype.Component
 
-data class VerificationMailRequested(val email: String, val token: String)
+data class VerificationMailRequested(val userId: UUID, val email: String)
 data class AccountExistsMailRequested(val email: String)
-data class PasswordResetMailRequested(val email: String, val token: String)
+data class PasswordResetMailRequested(val userId: UUID, val email: String)
 data class SocialOnlyAccountMailRequested(val email: String, val provider: String)
 
 @Component
-class AuthMailer(private val sender: JavaMailSender, private val props: TripnoteProperties) {
+class AuthMailer(
+    private val sender: JavaMailSender,
+    private val props: TripnoteProperties,
+    private val tokens: EmailTokenService,
+) {
     @ApplicationModuleListener
     fun on(event: VerificationMailRequested) = send(
         event.email,
@@ -20,7 +25,7 @@ class AuthMailer(private val sender: JavaMailSender, private val props: Tripnote
         """
         아래 링크를 열면 가입이 끝나요. 링크는 24시간 동안 쓸 수 있어요.
 
-        ${props.webBaseUrl}/verify-email?token=${event.token}
+        ${props.webBaseUrl}/verify-email?token=${tokens.issue(event.userId, TokenPurpose.VERIFY)}
 
         직접 가입하지 않았다면 이 메일은 무시해 주세요.
         """.trimIndent(),
@@ -47,7 +52,7 @@ class AuthMailer(private val sender: JavaMailSender, private val props: Tripnote
         """
         아래 링크에서 새 비밀번호를 정할 수 있어요. 링크는 30분 동안 한 번만 쓸 수 있어요.
 
-        ${props.webBaseUrl}/reset-password?token=${event.token}
+        ${props.webBaseUrl}/reset-password?token=${tokens.issue(event.userId, TokenPurpose.RESET)}
 
         직접 요청하지 않았다면 이 메일은 무시해 주세요. 비밀번호는 바뀌지 않아요.
         """.trimIndent(),

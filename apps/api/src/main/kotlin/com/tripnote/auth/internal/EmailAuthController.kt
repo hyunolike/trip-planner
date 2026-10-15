@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 
 data class SignupRequest(
-    @field:Email @field:NotBlank val email: String,
+    @field:Email @field:NotBlank @field:Size(max = 254) val email: String,
     @field:NotBlank val password: String,
     @field:NotBlank @field:Size(max = 30) val nickname: String,
 )
 
 data class TokenRequest(@field:NotBlank val token: String)
-data class EmailRequest(@field:Email @field:NotBlank val email: String)
+data class EmailRequest(@field:Email @field:NotBlank @field:Size(max = 254) val email: String)
 data class MessageResponse(val message: String)
 
 @RestController

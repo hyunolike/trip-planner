@@ -2,8 +2,11 @@ package com.tripnote.auth.internal
 
 import com.tripnote.common.ApiException
 import com.tripnote.common.sha1Hex
+import java.net.http.HttpClient
+import java.time.Duration
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
+import org.springframework.http.client.JdkClientHttpRequestFactory
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientException
@@ -16,7 +19,13 @@ fun interface BreachedPasswordChecker {
 @Component
 class HibpBreachedPasswordChecker(builder: RestClient.Builder) : BreachedPasswordChecker {
     private val log = LoggerFactory.getLogger(javaClass)
-    private val client = builder.baseUrl("https://api.pwnedpasswords.com").build()
+    private val client = builder
+        .baseUrl("https://api.pwnedpasswords.com")
+        .requestFactory(
+            JdkClientHttpRequestFactory(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(3)).build())
+                .apply { setReadTimeout(Duration.ofSeconds(3)) },
+        )
+        .build()
 
     override fun isBreached(password: String): Boolean {
         val hash = sha1Hex(password).uppercase()
