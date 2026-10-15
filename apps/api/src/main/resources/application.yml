@@ -38,7 +38,7 @@ spring:
         schema-initialization:
           enabled: true
 server:
-  forward-headers-strategy: framework
+  forward-headers-strategy: native
 management:
   health:
     mail:

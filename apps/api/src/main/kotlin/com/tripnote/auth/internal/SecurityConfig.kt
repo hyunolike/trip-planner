@@ -22,7 +22,6 @@ class SecurityConfig {
         .securityContext { it.securityContextRepository(contextRepository) }
         .authorizeHttpRequests {
             it.requestMatchers("/actuator/health/**").permitAll()
-                .requestMatchers("/api/v1/auth/logout").authenticated()
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 .anyRequest().authenticated()
         }

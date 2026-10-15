@@ -5,6 +5,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.web.servlet.get
+import org.springframework.test.web.servlet.request.RequestPostProcessor
 import org.springframework.test.web.servlet.post
 
 class LoginTest : IntegrationTest() {
@@ -20,6 +21,8 @@ class LoginTest : IntegrationTest() {
         assertThat(cookie.secure).isTrue()
         assertThat(cookie.isHttpOnly).isTrue()
         assertThat(cookie.path).isEqualTo("/")
+        assertThat(cookie.maxAge).isEqualTo(30 * 24 * 60 * 60)
+        assertThat(cookie.domain).isNull()
         mvc.get("/api/v1/me") { cookie(cookie) }.andExpect {
             status { isOk() }
             jsonPath("$.email") { value("mina@example.com") }
@@ -63,6 +66,26 @@ class LoginTest : IntegrationTest() {
             header { exists("Retry-After") }
             jsonPath("$.detail") { value("요청이 너무 많아요. 잠시 후 다시 시도해 주세요.") }
         }
+    }
+
+    @Test
+    fun `session cookie header is SameSite Lax without a Domain`() {
+        createVerifiedUser("mina@example.com")
+
+        val header = postJson("/api/v1/auth/login", """{"email":"mina@example.com","password":"trip-note-2027"}""")
+            .andReturn().response.getHeaders("Set-Cookie").first { it.startsWith("__Host-SESSION=") }
+
+        assertThat(header).contains("SameSite=Lax").contains("Secure").contains("HttpOnly").doesNotContain("Domain=")
+    }
+
+    @Test
+    fun `failures from one client do not lock the real owner out elsewhere`() {
+        createVerifiedUser("mina@example.com")
+        repeat(10) { loginAttempt("mina@example.com", "wrong-password-1") }
+
+        postJson("/api/v1/auth/login", """{"email":"mina@example.com","password":"trip-note-2027"}""") {
+            with(RequestPostProcessor { it.remoteAddr = "203.0.113.7"; it })
+        }.andExpect { status { isOk() } }
     }
 
     @Test

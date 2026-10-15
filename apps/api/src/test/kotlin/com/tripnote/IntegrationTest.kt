@@ -22,6 +22,7 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActionsDsl
 import org.springframework.test.web.servlet.post
+import org.springframework.test.web.servlet.MockHttpServletRequestDsl
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -42,10 +43,11 @@ abstract class IntegrationTest {
         redis.execute { it.serverCommands().flushAll(); null }
     }
 
-    fun postJson(path: String, body: String): ResultActionsDsl = mvc.post(path) {
+    fun postJson(path: String, body: String, customize: MockHttpServletRequestDsl.() -> Unit = {}): ResultActionsDsl = mvc.post(path) {
         contentType = MediaType.APPLICATION_JSON
         content = body
         with(csrf())
+        customize()
     }
 
     fun signup(email: String, password: String = "trip-note-2027", nickname: String = "미나") =

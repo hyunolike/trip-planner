@@ -5,7 +5,6 @@ import com.tripnote.common.ApiException
 import org.springframework.http.HttpStatus
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 
 @Service
 class PasswordLoginService(
@@ -16,7 +15,7 @@ class PasswordLoginService(
     // 없는 이메일에도 같은 시간을 쓰도록 비교할 더미 해시
     private val dummyHash = passwordEncoder.encode("tripnote-dummy-password")!!
 
-    @Transactional(readOnly = true)
+    // 트랜잭션 없이 짧은 조회 두 번만 하고, 느린 Argon2 비교 동안 DB 연결을 잡지 않는다.
     fun authenticate(rawEmail: String, password: String): SessionUser {
         val user = users.findByEmail(normalizeEmail(rawEmail))
         val hash = user?.let { credentials.findById(it.id).orElse(null)?.passwordHash }
