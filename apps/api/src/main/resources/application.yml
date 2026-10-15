@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: tripnote-api
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/tripnote}
+    username: ${DATABASE_USER:tripnote}
+    password: ${DATABASE_PASSWORD:tripnote}
+    hikari:
+      maximum-pool-size: 10
+  data:
+    redis:
+      host: ${VALKEY_HOST:localhost}
+      port: ${VALKEY_PORT:6379}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    locations: classpath:db/migration
+server:
+  forward-headers-strategy: framework
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+tripnote:
+  web-base-url: ${TRIPNOTE_WEB_BASE_URL:http://localhost:3000}
+  mail-from: ${TRIPNOTE_MAIL_FROM:no-reply@tripnote.local}
+  samples-dir: ${TRIPNOTE_SAMPLES_DIR:../../sample}
+  system-user-email: ${TRIPNOTE_SYSTEM_USER_EMAIL:ops@tripnote.local}
+  seed-samples: ${TRIPNOTE_SEED_SAMPLES:false}
