@@ -1,9 +1,65 @@
+buildscript {
+    dependencies { classpath(libs.flyway.postgresql.plugin) }
+}
+
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.spring)
     alias(libs.plugins.kotlin.jpa)
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
+    alias(libs.plugins.jooq.codegen)
+    alias(libs.plugins.flyway)
+}
+
+extra["jooq.version"] = libs.versions.jooq.get()
+
+val localDb = mapOf(
+    "url" to (System.getenv("JOOQ_DB_URL") ?: "jdbc:postgresql://localhost:5432/tripnote"),
+    "user" to "tripnote",
+    "password" to "tripnote",
+)
+
+flyway {
+    url = localDb["url"]
+    user = localDb["user"]
+    password = localDb["password"]
+    locations = arrayOf("filesystem:src/main/resources/db/migration")
+    cleanDisabled = false
+}
+
+jooq {
+    configuration {
+        jdbc {
+            driver = "org.postgresql.Driver"
+            url = localDb["url"]
+            user = localDb["user"]
+            password = localDb["password"]
+        }
+        generator {
+            database {
+                name = "org.jooq.meta.postgres.PostgresDatabase"
+                inputSchema = "public"
+                excludes = "flyway_schema_history|event_publication.*|spatial_ref_sys|geography_columns|geometry_columns|postgis_.*|regexp_.*|st_.*|geometry_dump|valid_detail"
+            }
+            generate {
+                isJavaTimeTypes = true
+                isPojos = false
+                isDaos = false
+                isRoutines = false
+                isUdts = false
+                isImplicitJoinPathsToMany = false
+            }
+            target {
+                packageName = "com.tripnote.jooq"
+                directory = "src/main/generated"
+            }
+        }
+    }
+}
+
+sourceSets {
+    main { java { srcDir("src/main/generated") } }
 }
 
 group = "com.tripnote"
@@ -39,6 +95,8 @@ dependencies {
     implementation(platform(libs.spring.modulith.bom))
     implementation("org.springframework.modulith:spring-modulith-starter-core")
     implementation("org.springframework.modulith:spring-modulith-starter-jdbc")
+    implementation("org.springframework.boot:spring-boot-starter-jooq")
+    jooqCodegen("org.postgresql:postgresql")
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
