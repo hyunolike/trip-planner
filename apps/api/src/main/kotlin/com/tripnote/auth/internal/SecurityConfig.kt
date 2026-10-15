@@ -23,7 +23,8 @@ class SecurityConfig {
         http: HttpSecurity,
         contextRepository: SecurityContextRepository,
         oidcUserService: GoogleOidcUserService,
-        signIn: SessionSignIn,
+        successHandler: GoogleLoginSuccessHandler,
+        failureHandler: GoogleLoginFailureHandler,
         props: TripnoteProperties,
     ): SecurityFilterChain = http
         .csrf { it.spa() }
@@ -34,13 +35,12 @@ class SecurityConfig {
                 .anyRequest().authenticated()
         }
         .oauth2Login {
-            it.userInfoEndpoint { endpoint -> endpoint.oidcUserService(oidcUserService) }
+            // 스프링이 만드는 /login HTML을 API 호스트에서 내지 않고 웹의 로그인 화면을 로그인 페이지로 지정한다.
+            it.loginPage("${props.webBaseUrl}/login")
+                .userInfoEndpoint { endpoint -> endpoint.oidcUserService(oidcUserService) }
                 .authorizedClientRepository(HttpSessionOAuth2AuthorizedClientRepository())
-                .successHandler { request, response, authentication ->
-                    signIn.signIn((authentication.principal as TripnoteOidcUser).sessionUser, request, response)
-                    response.sendRedirect("${props.webBaseUrl}/")
-                }
-                .failureHandler { _, response, _ -> response.sendRedirect("${props.webBaseUrl}/login?error=google") }
+                .successHandler(successHandler)
+                .failureHandler(failureHandler)
         }
         .logout {
             it.logoutUrl("/api/v1/auth/logout")

@@ -5,6 +5,8 @@ import org.springframework.mail.SimpleMailMessage
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.modulith.events.ApplicationModuleListener
 import java.util.UUID
+import org.slf4j.LoggerFactory
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Component
 
 data class VerificationMailRequested(val userId: UUID, val email: String)
@@ -17,9 +19,12 @@ class AuthMailer(
     private val sender: JavaMailSender,
     private val props: TripnoteProperties,
     private val tokens: EmailTokenService,
+    private val users: UserRepository,
 ) {
+    private val log = LoggerFactory.getLogger(javaClass)
+
     @ApplicationModuleListener
-    fun on(event: VerificationMailRequested) = send(
+    fun on(event: VerificationMailRequested) = ifUserExists(event.userId) { send(
         event.email,
         "[여행노트] 이메일 주소를 확인해 주세요",
         """
@@ -30,7 +35,7 @@ class AuthMailer(
 
         직접 가입하지 않았다면 이 메일은 무시해 주세요.
         """.trimIndent(),
-    )
+    ) }
 
     @ApplicationModuleListener
     fun on(event: AccountExistsMailRequested) = send(
@@ -47,7 +52,7 @@ class AuthMailer(
     )
 
     @ApplicationModuleListener
-    fun on(event: PasswordResetMailRequested) = send(
+    fun on(event: PasswordResetMailRequested) = ifUserExists(event.userId) { send(
         event.email,
         "[여행노트] 비밀번호 재설정 링크",
         """
@@ -57,7 +62,7 @@ class AuthMailer(
 
         직접 요청하지 않았다면 이 메일은 무시해 주세요. 비밀번호는 바뀌지 않아요.
         """.trimIndent(),
-    )
+    ) }
 
     @ApplicationModuleListener
     fun on(event: SocialOnlyAccountMailRequested) = send(
@@ -70,6 +75,19 @@ class AuthMailer(
         ${props.webBaseUrl}/login
         """.trimIndent(),
     )
+
+    /** 그 사이 계정이 지워졌으면(예: 구글 로그인이 미인증 계정을 대체) 메일을 보내지 않고 정상 종료한다. 실패하면 이벤트가 영원히 다시 발행된다. */
+    private fun ifUserExists(userId: UUID, action: () -> Unit) {
+        if (!users.existsById(userId)) {
+            log.info("skipping mail for deleted user {}", userId)
+            return
+        }
+        try {
+            action()
+        } catch (e: DataIntegrityViolationException) {
+            log.info("skipping mail for user {} deleted while issuing a token", userId)
+        }
+    }
 
     private fun send(to: String, subject: String, text: String) {
         sender.send(SimpleMailMessage().apply {

@@ -35,7 +35,13 @@ class IdentityService(
 
         // 가입, 인증 메일 확인과 같은 users 행을 먼저 잠근 뒤에 연결, 삭제, 생성을 결정한다(잠금 순서: users -> identities).
         val existing = users.lockByEmail(email)
+        if (existing != null && existing.status == "system") {
+            throw OAuth2AuthenticationException(OAuth2Error("account_unavailable"))
+        }
         if (existing != null && existing.emailVerifiedAt != null) {
+            if (identities.findByUserId(existing.id).any { it.provider == profile.provider }) {
+                throw OAuth2AuthenticationException(OAuth2Error("account_conflict"))
+            }
             identities.save(UserIdentityEntity(userId = existing.id, provider = profile.provider, providerSubject = profile.subject))
             return existing.toSession()
         }
@@ -48,7 +54,7 @@ class IdentityService(
         val user = users.saveAndFlush(
             UserEntity(
                 email = email,
-                nickname = (profile.name ?: email.substringBefore('@')).take(30),
+                nickname = (profile.name?.trim()?.takeIf { it.isNotEmpty() } ?: email.substringBefore('@')).take(30),
                 emailVerifiedAt = clock.instant(),
                 avatarUrl = profile.picture,
             ),

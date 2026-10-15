@@ -9,7 +9,25 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException
+import org.springframework.security.oauth2.core.OAuth2Error
 import org.springframework.test.web.servlet.get
+import com.tripnote.auth.SessionUser
+import com.tripnote.auth.internal.AuthMailer
+import com.tripnote.auth.internal.GoogleLoginFailureHandler
+import com.tripnote.auth.internal.GoogleLoginSuccessHandler
+import com.tripnote.auth.internal.GoogleOidcUserService
+import com.tripnote.auth.internal.TripnoteOidcUser
+import com.tripnote.auth.internal.VerificationMailRequested
+import com.tripnote.common.TripnoteProperties
+import java.time.Instant
+import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.mock.web.MockHttpServletResponse
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.oauth2.core.oidc.OidcIdToken
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser
 
 class GoogleLoginTest : IntegrationTest() {
     @Autowired lateinit var identities: IdentityService
@@ -71,5 +89,107 @@ class GoogleLoginTest : IntegrationTest() {
         assertThatThrownBy { identities.resolveExternal(google(verified = false)) }
             .isInstanceOf(OAuth2AuthenticationException::class.java)
         assertThat(count("SELECT count(*) FROM users")).isZero()
+    }
+
+    @Autowired lateinit var oidcUserService: GoogleOidcUserService
+    @Autowired lateinit var successHandler: GoogleLoginSuccessHandler
+    @Autowired lateinit var failureHandler: GoogleLoginFailureHandler
+    @Autowired lateinit var mailer: AuthMailer
+    @Autowired lateinit var props: TripnoteProperties
+
+    @Test
+    fun `a blank google name falls back to the email local part`() {
+        val user = identities.resolveExternal(google().copy(name = "  "))
+
+        assertThat(user.nickname).isEqualTo("mina")
+    }
+
+    @Test
+    fun `a data integrity violation is retried once`() {
+        var calls = 0
+        val expected = identities.resolveExternal(google())
+        val user = oidcUserService.resolveWithRetry(google()) {
+            if (calls++ == 0) throw DataIntegrityViolationException("users_email_key")
+            identities.resolveExternal(it)
+        }
+
+        assertThat(calls).isEqualTo(2)
+        assertThat(user.userId).isEqualTo(expected.userId)
+    }
+
+    @Test
+    fun `a repeated data integrity violation becomes an account conflict`() {
+        assertThatThrownBy { oidcUserService.resolveWithRetry(google()) { throw DataIntegrityViolationException("dup") } }
+            .isInstanceOf(OAuth2AuthenticationException::class.java)
+            .extracting { (it as OAuth2AuthenticationException).error.errorCode }.isEqualTo("account_conflict")
+    }
+
+    @Test
+    fun `a system account is never linked or deleted`() {
+        jdbc.sql("INSERT INTO users (email, nickname, status) VALUES ('mina@example.com', '시스템', 'system')").update()
+
+        assertThatThrownBy { identities.resolveExternal(google()) }
+            .isInstanceOf(OAuth2AuthenticationException::class.java)
+            .extracting { (it as OAuth2AuthenticationException).error.errorCode }.isEqualTo("account_unavailable")
+        assertThat(count("SELECT count(*) FROM users WHERE status = 'system'")).isEqualTo(1)
+        assertThat(count("SELECT count(*) FROM user_identities")).isZero()
+    }
+
+    @Test
+    fun `a second google identity for the same user is refused`() {
+        val existing = createVerifiedUser("mina@example.com")
+        identities.resolveExternal(google())
+
+        assertThatThrownBy { identities.resolveExternal(google(subject = "google-sub-2")) }
+            .isInstanceOf(OAuth2AuthenticationException::class.java)
+            .extracting { (it as OAuth2AuthenticationException).error.errorCode }.isEqualTo("account_conflict")
+        assertThat(count("SELECT count(*) FROM user_identities WHERE user_id = '$existing'")).isEqualTo(2)
+    }
+
+    @Test
+    fun `the mailer skips a verification mail for a deleted user`() {
+        mailer.on(VerificationMailRequested(UUID.randomUUID(), "gone@example.com"))
+
+        assertThat(mail.sent).isEmpty()
+    }
+
+    @Test
+    fun `the generated login page is not served`() {
+        mvc.get("/login").andExpect { status { isUnauthorized() } }
+    }
+
+    @Test
+    fun `the success handler signs in with a session user and redirects home`() {
+        val sessionUser = SessionUser(UUID.randomUUID(), "mina@example.com", "미나")
+        val idToken = OidcIdToken("t", Instant.now(), Instant.now().plusSeconds(60), mapOf("sub" to "s"))
+        val principal = TripnoteOidcUser(DefaultOidcUser(listOf(SimpleGrantedAuthority("OIDC_USER")), idToken), sessionUser)
+        val request = MockHttpServletRequest()
+        val response = MockHttpServletResponse()
+        try {
+            successHandler.onAuthenticationSuccess(
+                request, response,
+                UsernamePasswordAuthenticationToken.authenticated(principal, null, principal.authorities),
+            )
+
+            val authentication = SecurityContextHolder.getContext().authentication
+            assertThat(authentication).isInstanceOf(UsernamePasswordAuthenticationToken::class.java)
+            assertThat(authentication!!.principal).isEqualTo(sessionUser)
+            assertThat(request.getSession(false)).isNotNull()
+            assertThat(response.redirectedUrl).isEqualTo("${props.webBaseUrl}/")
+        } finally {
+            SecurityContextHolder.clearContext()
+        }
+    }
+
+    @Test
+    fun `the failure handler redirects without leaking the reason`() {
+        val response = MockHttpServletResponse()
+
+        failureHandler.onAuthenticationFailure(
+            MockHttpServletRequest(), response,
+            OAuth2AuthenticationException(OAuth2Error("account_conflict", "secret detail", null)),
+        )
+
+        assertThat(response.redirectedUrl).isEqualTo("${props.webBaseUrl}/login?error=google")
     }
 }
