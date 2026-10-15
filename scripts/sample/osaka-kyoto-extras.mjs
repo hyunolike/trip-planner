@@ -113,7 +113,10 @@ export function buildLinkGroups() {
 
 function viewHtml(view, selector) {
   const html = renderApp(trip, airportGuide, 0, STATE, false, false, false, 'other', false, view, 'summary');
-  return new JSDOM(html).window.document.querySelector(selector).innerHTML;
+  const root = new JSDOM(html).window.document.querySelector(selector);
+  // The countdown is live UI that depends on the current time; the new app recomputes it from startDate.
+  root.querySelectorAll('.trip-countdown').forEach((element) => element.remove());
+  return root.innerHTML;
 }
 
 export function buildSections() {

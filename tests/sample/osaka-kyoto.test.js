@@ -1,5 +1,5 @@
 /** @vitest-environment node */
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { trip } from '../../src/data.js';
 import { validateTrip } from '../../scripts/sample/validate.mjs';
 import { KNOWN_DAY_KEYS, KNOWN_STOP_KEYS, KNOWN_TOUR_KEYS, SLUG, buildOsakaKyotoTrip, toPhoto } from '../../scripts/sample/osaka-kyoto.mjs';
@@ -116,5 +116,19 @@ describe('buildOsakaKyotoTripFull', () => {
       expect(section.legacy).toBe(true);
       expect(section.blocks[0].html.length).toBeGreaterThan(200);
     }
+  });
+
+  describe('determinism', () => {
+    afterEach(() => vi.useRealTimers());
+
+    it('does not depend on the current time', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
+      const first = JSON.stringify(buildOsakaKyotoTripFull());
+      vi.setSystemTime(new Date('2026-12-31T12:00:00Z'));
+      const second = JSON.stringify(buildOsakaKyotoTripFull());
+      expect(second).toBe(first);
+      expect(first).not.toContain('trip-countdown');
+    });
   });
 });
