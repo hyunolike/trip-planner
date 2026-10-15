@@ -21,9 +21,10 @@ spring:
       port: ${VALKEY_PORT:6379}
   session:
     timeout: 30d
-    redis:
-      namespace: tripnote:session
-      repository-type: indexed
+    data:
+      redis:
+        namespace: tripnote:session
+        repository-type: indexed
   jpa:
     open-in-view: false
     hibernate:
