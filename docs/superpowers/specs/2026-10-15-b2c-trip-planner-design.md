@@ -1,6 +1,6 @@
 # B2C 여행 일정표 서비스 설계
 
-작성일: 2026-10-15 · 상태: 검토 대기 · 기반 코드: `8f855f8` (Osaka Kyoto trip planner site)
+작성일: 2026-10-15 · 상태: 검토 대기 · 기반 코드: `8f855f8` (Osaka Kyoto trip planner site) · 디자인 시스템: `2026-10-15-design-system.md`
 
 ## 0. 이해한 내용 (확인 요청)
 
@@ -90,7 +90,7 @@ MVP는 첫 번째 페르소나를 기준으로 만든다. 기존 앱이 이 페�
 
 ### 2.1 디자인 시스템
 
-`DESIGN_SYSTEM.md`의 토큰(흰 캔버스, 차콜 텍스트, 파란 액션 1색, SUIT Variable, 140/220ms 모션)을 그대로 쓴다. 새로 추가하는 것만 적는다.
+새 디자인 시스템 "여행노트"를 별도로 구축했다. 원본은 https://claude.ai/artifact/BHPfvH34YRJYhptoUbwXnh 이고 저장소 사본은 `docs/superpowers/specs/2026-10-15-design-system.md`다. 방향은 "손에 든 여행 노트": 액션 색 `brand` 하나, UI는 IBM Plex Sans KR, 시각·코드는 IBM Plex Mono, 여행 제목만 Gowun Batang. 토큰 2테마(light·dark), 컴포넌트 15종, 에셋 66종(로고 7·아이콘 53·일러스트 6)이 포함된다. 아래는 그 위에 이 서비스 화면이 더하는 규칙이다.
 
 | 추가 요소 | 규칙 |
 | --- | --- |
@@ -264,7 +264,7 @@ GET   /weather?lat&lng&date       Redis 30분 캐시
 | `src/map.js` (285줄) | 로직 함수(`getDayRouteSegments`, `pointAlongPath`, `createGoogleMapsUrl`)는 그대로 `lib/map/`으로. `mountTripMap`은 React 훅으로 감싼다. 테스트 유지. |
 | `src/weather.js`, `countdown.js`, `day-route.js` | 순수 함수라 그대로 옮긴다. |
 | `src/render.js`, `main.js` | 문자열 템플릿을 React 컴포넌트로 다시 쓴다. 구조(날짜 바, 간략/상세, 스톱 행, 디스클로저)는 1:1 대응. |
-| `src/design-system.css` (1,447줄) | 토큰과 컴포넌트 스타일을 그대로 가져와 CSS Modules로 쪼갠다. Tailwind는 쓰지 않는다. |
+| `src/design-system.css` (1,447줄) | 새 디자인 시스템의 `tokens.css`와 `bundle.css`로 대체한다. safe-area, sticky, 포커스 트랩 같은 레이아웃 규칙만 가져온다. Tailwind는 쓰지 않는다. |
 | `src/state.js` | 비로그인 완료 체크용으로 남긴다. 로그인 후 서버 저장으로 전환하며 localStorage 값을 1회 올린다. |
 | `src/*-guides.js`, `place-guides.js` | 데이터는 `guides.blocks`로 이관. 렌더 함수는 블록 렌더러 1개로 대체. |
 | `public/images/*` | 샘플 여행 이미지는 객체 저장소로 올리고 DB에는 URL만 둔다. 출처 표기 유지. |
@@ -317,4 +317,4 @@ GET   /weather?lat&lng&date       Redis 30분 캐시
 3. **샘플 공개 범위**: 기존 가족 정보(예약 확정, 호텔, 항공편)를 그대로 공개할지, 일반화할지.
 4. **복제 허용**: 샘플을 누구나 내 여행으로 복제하게 둘지.
 5. **호스팅**: Vercel + 기존에 쓰던 API 서버 환경(GCP VM 또는 EC2) 그대로인지.
-6. **서비스 이름과 도메인**: 현재 "여행노트/TripNote" 브랜드를 유지할지.
+6. **서비스 이름과 도메인**: 디자인 시스템은 "여행노트" 브랜드로 만들었다. 바꾸려면 커버와 로고를 다시 만든다.
