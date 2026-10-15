@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { trip } from '../../src/data.js';
 import { validateTrip } from '../../scripts/sample/validate.mjs';
-import { KNOWN_DAY_KEYS, KNOWN_STOP_KEYS, KNOWN_TOUR_KEYS, SLUG, buildOsakaKyotoTrip, toPhoto } from '../../scripts/sample/osaka-kyoto.mjs';
+import { KNOWN_DAY_KEYS, KNOWN_STOP_KEYS, KNOWN_TRIP_KEYS, KNOWN_TOUR_KEYS, SLUG, buildOsakaKyotoTrip, toPhoto } from '../../scripts/sample/osaka-kyoto.mjs';
 
 describe('buildOsakaKyotoTrip', () => {
   const out = buildOsakaKyotoTrip();
@@ -60,6 +60,7 @@ describe('buildOsakaKyotoTrip', () => {
     expect([...stopKeys].filter((key) => !KNOWN_STOP_KEYS.includes(key))).toEqual([]);
     expect([...dayKeys].filter((key) => !KNOWN_DAY_KEYS.includes(key))).toEqual([]);
     expect([...tourKeys].filter((key) => !KNOWN_TOUR_KEYS.includes(key))).toEqual([]);
+    expect(Object.keys(trip).filter((key) => !KNOWN_TRIP_KEYS.includes(key))).toEqual([]);
   });
 });
 
@@ -81,15 +82,57 @@ describe('buildOsakaKyotoTripFull', () => {
     for (const item of [...osakaDining, ...osakaShopping, ...kyotoShopping]) expect(ids).toContain(item.id);
   });
 
-  it('turns stop restaurants into dining places without duplicates', () => {
-    const sourceNames = new Set(trip.days.flatMap((day) => day.stops).filter((stop) => stop.restaurant).map((stop) => stop.restaurant.name));
-    const mealPlaces = out.places.filter((place) => place.id.startsWith('meal-'));
-    expect(mealPlaces.map((place) => place.name).sort()).toEqual([...sourceNames].sort());
-    for (const stop of trip.days.flatMap((day) => day.stops).filter((s) => s.restaurant)) {
+  const RESTAURANT_ALIASES = { '이즈모우나기 루쿠아점': 'izumo' };
+  const restaurantStops = trip.days.flatMap((day) => day.stops).filter((stop) => stop.restaurant);
+
+  it('merges stop restaurants into existing dining places and creates meal places only for the rest', () => {
+    const diningIds = new Set(osakaDining.map((item) => item.id));
+    const diningByName = new Map(osakaDining.map((item) => [item.name, item.id]));
+    for (const stop of restaurantStops) {
       const mapped = stops.find((s) => s.id === stop.id);
-      expect(mapped.placeId).toBeTruthy();
-      expect(out.places.find((place) => place.id === mapped.placeId).name).toBe(stop.restaurant.name);
+      const existingId = diningByName.get(stop.restaurant.name) ?? RESTAURANT_ALIASES[stop.restaurant.name];
+      if (existingId) expect(mapped.placeId).toBe(existingId);
+      else expect(mapped.placeId).toBe(`meal-${stop.id}`);
     }
+    const mealPlaces = out.places.filter((place) => place.id.startsWith('meal-'));
+    const mealNames = restaurantStops.map((stop) => stop.restaurant.name).filter((name) => !diningByName.has(name) && !RESTAURANT_ALIASES[name]);
+    expect(mealPlaces.map((place) => place.name).sort()).toEqual([...new Set(mealNames)].sort());
+    expect(diningIds.has('izumo') && diningIds.has('bonkuraya-plus')).toBe(true);
+  });
+
+  it('keeps place names unique and every restaurant stop pointing at the matching place', () => {
+    const names = out.places.map((place) => place.name);
+    expect(names.length).toBe(new Set(names).size);
+    for (const stop of restaurantStops) {
+      const place = out.places.find((p) => p.id === stops.find((s) => s.id === stop.id).placeId);
+      const expectedIds = [RESTAURANT_ALIASES[stop.restaurant.name]].filter(Boolean);
+      expect(place.name === stop.restaurant.name || expectedIds.includes(place.id)).toBe(true);
+    }
+  });
+
+  it('merges restaurant-only fields into the dining place without overwriting', () => {
+    const find = (id) => out.places.find((p) => p.id === id);
+    const izumoSrc = osakaDining.find((d) => d.id === 'izumo');
+    const lunch = trip.days[0].stops.find((s) => s.id === 'd1-lunch').restaurant;
+    const izumo = find('izumo');
+    expect(izumo.name).toBe(izumoSrc.name);
+    expect(izumo.menu).toBe(izumoSrc.menu);
+    expect(izumo.alternatives).toEqual(lunch.alternatives);
+    expect(izumo.note).toContain(izumoSrc.note);
+    expect(izumo.note).toContain(lunch.note);
+    expect(izumo.sources.map((s) => s.url)).toContain(lunch.link.url);
+    const bonkuraya = find('bonkuraya-plus');
+    const dinner = trip.days[0].stops.find((s) => s.id === 'd1-dinner').restaurant;
+    expect(bonkuraya.note).toContain(dinner.note);
+    expect(bonkuraya.sources.map((s) => s.url).filter((url) => url === dinner.link.url)).toHaveLength(1);
+  });
+
+  it('uses region labels for area, never a stop title', () => {
+    const titles = new Set(trip.days.flatMap((day) => day.stops.map((stop) => stop.title)));
+    for (const place of out.places) expect(titles.has(place.area)).toBe(false);
+    const meal = out.places.filter((place) => place.id.startsWith('meal-'));
+    expect(meal.length).toBeGreaterThan(0);
+    for (const place of meal) expect(['오사카', '교토', '교토 북부', '교토 · 간사이공항']).toContain(place.area);
   });
 
   it('turns place guides into structured blocks', () => {

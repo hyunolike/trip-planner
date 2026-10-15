@@ -6,6 +6,8 @@ export { compact, toLink };
 export const SLUG = 'osaka-kyoto-family-2026';
 const YEAR = trip.days[0].date.slice(0, 4);
 
+// dates는 startDate/endDate에서 만들어 내므로 옮기지 않는다.
+export const KNOWN_TRIP_KEYS = ['title', 'subtitle', 'heroPhoto', 'heroSlides', 'dates', 'travelers', 'flights', 'route', 'days'];
 export const KNOWN_STOP_KEYS = ['id', 'time', 'title', 'type', 'details', 'duration', 'transport', 'coordinates', 'links', 'transit', 'buffer', 'hotelPhoto', 'approximate', 'timing', 'restaurant', 'photo'];
 // dateLabel, routeIndex는 date와 경로 순서에서 다시 계산하는 표시용 값이라 옮기지 않는다.
 export const KNOWN_DAY_KEYS = ['number', 'date', 'dateLabel', 'city', 'theme', 'color', 'routeIndex', 'note', 'stops', 'tour'];

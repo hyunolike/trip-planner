@@ -15,13 +15,50 @@ const STATE = { completedStops: [], completedPreparation: [], day4Option: 'slow-
 
 const htmlBlock = (title, html) => ({ type: 'html', title, html });
 
+// 일정 도시 코드(src/data.js의 day.city)를 다른 장소와 같은 지역 라벨로 바꾼다.
+const CITY_AREA = { OSAKA: '오사카', KYOTO: '교토', 'KYOTO NORTH': '교토 북부', 'KYOTO → KIX': '교토 · 간사이공항' };
+
+// 이름이 달라도 osakaDining에 있는 같은 가게를 가리키는 일정 식당 이름.
+const RESTAURANT_ALIASES = { '이즈모우나기 루쿠아점': 'izumo' };
+
+// 기존 맛집 항목의 값은 덮어쓰지 않고, 일정 식당에만 있는 값만 채운다.
+// 두 note는 서로 다른 맥락(가게 소개 / 이 일정에서의 안내)이라 원문 그대로 줄바꿈으로 이어 붙인다.
+function mergeRestaurant(place, restaurant) {
+  if (restaurant.alternatives && !place.alternatives) place.alternatives = restaurant.alternatives;
+  if (restaurant.menu && !place.menu) place.menu = restaurant.menu;
+  if (restaurant.note) {
+    if (!place.note) place.note = restaurant.note;
+    else if (!place.note.includes(restaurant.note)) place.note = `${place.note}\n${restaurant.note}`;
+  }
+  if (restaurant.link) {
+    place.sources ??= [];
+    if (!place.sources.some((source) => source.url === restaurant.link.url)) place.sources.push(toLink(restaurant.link));
+  }
+}
+
 export function buildPlaces() {
+  const dining = osakaDining.map((item) => compact({
+    id: item.id, kind: 'dining', name: item.name, branch: item.branch, area: item.area, category: item.category, icon: item.icon,
+    menu: item.menu, address: item.address, hours: item.hours, mapUrl: item.mapUrl, note: item.note,
+    sources: [item.source, item.menuSource].filter(Boolean).map(toLink), checkedAt: item.checkedAt,
+  }));
+  const diningById = new Map(dining.map((place) => [place.id, place]));
+  const diningIdByName = new Map(dining.map((place) => [place.name, place.id]));
+
   const placeIdByRestaurant = new Map();
   const mealPlaces = [];
   for (const day of trip.days) {
     for (const stop of day.stops) {
       const restaurant = stop.restaurant;
-      if (!restaurant || placeIdByRestaurant.has(restaurant.name)) continue;
+      if (!restaurant) continue;
+      const existingId = diningIdByName.get(restaurant.name) ?? RESTAURANT_ALIASES[restaurant.name];
+      const existing = existingId && diningById.get(existingId);
+      if (existing) {
+        placeIdByRestaurant.set(restaurant.name, existing.id);
+        mergeRestaurant(existing, restaurant);
+        continue;
+      }
+      if (placeIdByRestaurant.has(restaurant.name)) continue;
       const id = `meal-${stop.id}`;
       placeIdByRestaurant.set(restaurant.name, id);
       mealPlaces.push(compact({
@@ -29,7 +66,7 @@ export function buildPlaces() {
         kind: 'dining',
         name: restaurant.name,
         branch: restaurant.english,
-        area: stop.title,
+        area: CITY_AREA[day.city],
         menu: restaurant.menu,
         note: restaurant.note,
         alternatives: restaurant.alternatives,
@@ -37,12 +74,6 @@ export function buildPlaces() {
       }));
     }
   }
-
-  const dining = osakaDining.map((item) => compact({
-    id: item.id, kind: 'dining', name: item.name, branch: item.branch, area: item.area, category: item.category, icon: item.icon,
-    menu: item.menu, address: item.address, hours: item.hours, mapUrl: item.mapUrl, note: item.note,
-    sources: [item.source, item.menuSource].filter(Boolean).map(toLink), checkedAt: item.checkedAt,
-  }));
 
   const shopping = [...osakaShopping, ...kyotoShopping].map((item) => compact({
     id: item.id, kind: 'shopping', name: item.name, branch: item.branch, area: item.area, category: item.category, icon: item.icon,

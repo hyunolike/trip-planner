@@ -458,7 +458,7 @@
               ]
             ]
           },
-          "placeId": "meal-d1-lunch",
+          "placeId": "izumo",
           "guide": {
             "kind": "place",
             "title": "호텔에서 식당까지 연결 동선",
@@ -1011,7 +1011,7 @@
             "label": "닛폰바시 선착장에서 식당까지 도보",
             "icon": "🚶"
           },
-          "placeId": "meal-d1-dinner"
+          "placeId": "bonkuraya-plus"
         },
         {
           "id": "d1-return",
@@ -2553,49 +2553,11 @@
   ],
   "places": [
     {
-      "id": "meal-d1-lunch",
-      "kind": "dining",
-      "name": "이즈모우나기 루쿠아점",
-      "branch": "Izumo · LUCUA B2F",
-      "area": "우메다 점심 · 이즈모우나기",
-      "menu": "장어·계란 덮밥",
-      "note": "호텔에 짐을 맡긴 뒤 가까운 루쿠아 지하 2층에서 점심. 대기가 길면 같은 건물의 다른 식당을 선택하고 14:05 전후 출발을 목표로 해요.",
-      "alternatives": [
-        "루쿠아 내 다른 식당 — 대기가 짧은 곳",
-        "오사카역 주변 우동·초밥"
-      ],
-      "sources": [
-        {
-          "label": "공식 매장 안내",
-          "url": "https://www.lucua.jp/shopguide/id924.html"
-        }
-      ]
-    },
-    {
-      "id": "meal-d1-dinner",
-      "kind": "dining",
-      "name": "본쿠라야 PLUS",
-      "branch": "Bonkuraya PLUS · Nakaza Cuidaore 3F",
-      "area": "크루즈 후 저녁 · 본쿠라야 PLUS",
-      "menu": "오코노미야키·야키소바",
-      "note": "크루즈 하선 후 20:30 식사 시작을 목표로 하는 저녁 후보이며 식당 예약은 별도예요. 늦은 저녁이므로 하루카스 입장 전에 간단한 간식을 먹고, 식당 대기가 길면 가까운 다른 식당으로 변경해요.",
-      "alternatives": [
-        "와규 이다텐 — 와규 덮밥·스키야키",
-        "규몬 도톤보리 2호점 — 라멘·규카츠"
-      ],
-      "sources": [
-        {
-          "label": "공식 매장 안내",
-          "url": "https://bonkuraya-plus.com/jp/shopinfo/"
-        }
-      ]
-    },
-    {
       "id": "meal-d2-lunch",
       "kind": "dining",
       "name": "아라시야마 키주로",
       "branch": "Arashiyama Kijurou",
-      "area": "아라시야마 키주로 점심",
+      "area": "교토",
       "menu": "와규 스테이크 찬합·유바덮밥",
       "note": "일본 정원을 보며 먹는 와규 점심. 예약 불가라 12시 전 방문을 권장하고, 어린이 소고기덮밥도 있어요.",
       "alternatives": [
@@ -2614,7 +2576,7 @@
       "kind": "dining",
       "name": "이치란 교토 가와라마치점",
       "branch": "ICHIRAN Kyoto Kawaramachi",
-      "area": "이치란 가와라마치 저녁",
+      "area": "교토",
       "menu": "천연 돈코츠 라멘·키즈 라멘",
       "note": "가와라마치역 9번 출구에서 도보 약 3분. 어린이 식기는 있지만 전 좌석이 독립형 카운터라 가족끼리 마주 앉기는 어렵고 저녁 대기가 생길 수 있어요.",
       "alternatives": [
@@ -2633,7 +2595,7 @@
       "kind": "dining",
       "name": "아마노하시다테 자유 점심",
       "branch": "Lunch on your own",
-      "area": "자유 점심 · 식비 별도",
+      "area": "교토 북부",
       "menu": "식비 별도",
       "note": "아마노하시다테 자유시간 안에서 식사합니다. 전망대 이동과 식당 대기 시간을 함께 고려하세요.",
       "alternatives": [
@@ -2652,7 +2614,7 @@
       "kind": "dining",
       "name": "교토가츠규 교토역전점",
       "branch": "GYUKATSU Kyoto Katsugyu · Kyoto Ekimae",
-      "area": "교토가츠규 교토역전점 저녁",
+      "area": "교토 북부",
       "menu": "규카츠 정식",
       "note": "교토역 북쪽의 교토역전점입니다. 공식 영업시간 10:30–22:30, 마지막 주문 22:00. 투어 도착과 식당 대기에 맞춰 저녁 시각을 조정하고, 대기가 길면 쇼핑 시간을 줄이세요.",
       "alternatives": [
@@ -2671,7 +2633,7 @@
       "kind": "dining",
       "name": "카츠쿠라 교토 포르타점",
       "branch": "Katsukura Kyoto Porta",
-      "area": "교토역 점심",
+      "area": "교토 · 간사이공항",
       "menu": "돈카츠",
       "note": "아이와 함께 먹기 편한 4일차 점심 기본안.",
       "alternatives": [
@@ -2690,7 +2652,7 @@
       "kind": "dining",
       "name": "KAMUKURA Premium",
       "branch": "KIX T1 International · 2F",
-      "area": "출국 후 면세구역 저녁·휴식",
+      "area": "교토 · 간사이공항",
       "menu": "와규·차슈·치킨 라멘",
       "note": "출국심사 후 북쪽 와쇼쿠 푸드코트의 라멘 후보. 공용 280석이지만 대기가 있으면 중앙 구역의 빠른 식사로 변경해요. 19:10부터 게이트 이동을 시작합니다.",
       "alternatives": [
@@ -2716,7 +2678,7 @@
       "address": "오사카시 주오구 도톤보리 1-7-21 · 나카자 쿠이다오레 빌딩 3층",
       "hours": "월–토 11:00–23:30 (주문 23:00까지) · 일·공휴일 11:00–22:30 (주문 22:00까지)",
       "mapUrl": "https://maps.app.goo.gl/n6BDdcTog1VXuB4PA?g_st=ic",
-      "note": "도톤보리 점심·저녁 식사 후보. PLUS 매장으로, 같은 이름의 다른 지점과 구분해 주세요. 사전 예약이 가능하고 어린이 동반도 가능합니다. 휴무는 건물 운영에 따라 달라요.",
+      "note": "도톤보리 점심·저녁 식사 후보. PLUS 매장으로, 같은 이름의 다른 지점과 구분해 주세요. 사전 예약이 가능하고 어린이 동반도 가능합니다. 휴무는 건물 운영에 따라 달라요.\n크루즈 하선 후 20:30 식사 시작을 목표로 하는 저녁 후보이며 식당 예약은 별도예요. 늦은 저녁이므로 하루카스 입장 전에 간단한 간식을 먹고, 식당 대기가 길면 가까운 다른 식당으로 변경해요.",
       "sources": [
         {
           "label": "공식 매장 안내",
@@ -2726,6 +2688,10 @@
           "label": "건물 공식 메뉴·매장 안내",
           "url": "https://nakaza-cuidaore.com/shop/bonkuraya/"
         }
+      ],
+      "alternatives": [
+        "와규 이다텐 — 와규 덮밥·스키야키",
+        "규몬 도톤보리 2호점 — 라멘·규카츠"
       ]
     },
     {
@@ -2764,7 +2730,7 @@
       "address": "오사카시 기타구 우메다 3-1-3 · 루쿠아 B2F 바루치카",
       "hours": "11:00–23:00",
       "mapUrl": "https://www.google.com/maps/search/?api=1&query=%E3%81%86%E3%81%AA%E3%81%8E%20%E4%B8%B2%E7%84%BC%E3%81%8D%20%E3%81%84%E3%81%A5%E3%82%82%20%E3%83%AB%E3%82%AF%E3%82%A2%20%E5%A4%A7%E9%98%AA%20%E6%A2%85%E7%94%B03-1-3",
-      "note": "오사카역 주변에서 식사할 때 들를 후보. 지점이 정해지지 않아 루쿠아점을 기준으로 정리했어요.",
+      "note": "오사카역 주변에서 식사할 때 들를 후보. 지점이 정해지지 않아 루쿠아점을 기준으로 정리했어요.\n호텔에 짐을 맡긴 뒤 가까운 루쿠아 지하 2층에서 점심. 대기가 길면 같은 건물의 다른 식당을 선택하고 14:05 전후 출발을 목표로 해요.",
       "sources": [
         {
           "label": "공식 매장 안내",
@@ -2774,6 +2740,10 @@
           "label": "대표 메뉴 안내",
           "url": "https://www.lucua.jp/special/kanbanmenu/"
         }
+      ],
+      "alternatives": [
+        "루쿠아 내 다른 식당 — 대기가 짧은 곳",
+        "오사카역 주변 우동·초밥"
       ]
     },
     {
