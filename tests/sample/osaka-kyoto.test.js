@@ -46,6 +46,7 @@ describe('buildOsakaKyotoTrip', () => {
     expect(mappedDay.tour.title).toBe(sourceDay.tour.title);
     expect(mappedDay.tour.provider).toBe(sourceDay.tour.seller);
     expect(mappedDay.tour.fees).toHaveLength(sourceDay.tour.fees.length);
+    expect(mappedDay.tour.feeNote).toBe(sourceDay.tour.feeNote);
   });
 
   it('renames photo.source to sourceUrl', () => {
@@ -59,5 +60,61 @@ describe('buildOsakaKyotoTrip', () => {
     expect([...stopKeys].filter((key) => !KNOWN_STOP_KEYS.includes(key))).toEqual([]);
     expect([...dayKeys].filter((key) => !KNOWN_DAY_KEYS.includes(key))).toEqual([]);
     expect([...tourKeys].filter((key) => !KNOWN_TOUR_KEYS.includes(key))).toEqual([]);
+  });
+});
+
+import { osakaDining, osakaShopping, kyotoShopping } from '../../src/data.js';
+import { placeGuides } from '../../src/place-guides.js';
+import { preparationGroups } from '../../src/preparation.js';
+import { buildOsakaKyotoTripFull } from '../../scripts/sample/osaka-kyoto.mjs';
+
+describe('buildOsakaKyotoTripFull', () => {
+  const out = buildOsakaKyotoTripFull();
+  const stops = out.days.flatMap((day) => day.stops);
+
+  it('is schema-valid', () => {
+    expect(validateTrip(out)).toEqual({ ok: true, errors: [] });
+  });
+
+  it('includes every dining and shopping candidate as a place', () => {
+    const ids = out.places.map((place) => place.id);
+    for (const item of [...osakaDining, ...osakaShopping, ...kyotoShopping]) expect(ids).toContain(item.id);
+  });
+
+  it('turns stop restaurants into dining places without duplicates', () => {
+    const sourceNames = new Set(trip.days.flatMap((day) => day.stops).filter((stop) => stop.restaurant).map((stop) => stop.restaurant.name));
+    const mealPlaces = out.places.filter((place) => place.id.startsWith('meal-'));
+    expect(mealPlaces.map((place) => place.name).sort()).toEqual([...sourceNames].sort());
+    for (const stop of trip.days.flatMap((day) => day.stops).filter((s) => s.restaurant)) {
+      const mapped = stops.find((s) => s.id === stop.id);
+      expect(mapped.placeId).toBeTruthy();
+      expect(out.places.find((place) => place.id === mapped.placeId).name).toBe(stop.restaurant.name);
+    }
+  });
+
+  it('turns place guides into structured blocks', () => {
+    for (const stopId of Object.keys(placeGuides)) {
+      const guide = stops.find((stop) => stop.id === stopId).guide;
+      expect(guide.kind).toBe('place');
+      expect(guide.blocks.find((block) => block.type === 'steps').items).toEqual(placeGuides[stopId].steps);
+    }
+  });
+
+  it('keeps hotel, breakfast and transit guides as html blocks', () => {
+    const htmlTitles = stops.flatMap((stop) => stop.guide?.blocks.filter((block) => block.type === 'html').map((block) => block.title) ?? []);
+    expect(htmlTitles).toEqual(expect.arrayContaining(['숙소 안내', '조식 안내', '이동 안내']));
+  });
+
+  it('maps every checklist item with its priority', () => {
+    expect(out.checklistGroups.map((group) => group.items.length)).toEqual(preparationGroups.map((group) => group.items.length));
+    expect(out.checklistGroups[0].items[0]).toEqual({ id: 'passports', priority: '필수', title: '가족 3명 여권 원본', description: preparationGroups[0].items[0][3] });
+  });
+
+  it('keeps the legacy screens as sections', () => {
+    expect(out.sections.map((section) => section.id)).toEqual(['overview', 'airport', 'food', 'shopping', 'links', 'preparation']);
+    for (const section of out.sections) {
+      expect(section.legacy).toBe(true);
+      expect(section.blocks[0].html.length).toBeGreaterThan(200);
+    }
   });
 });

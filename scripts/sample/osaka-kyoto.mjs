@@ -124,3 +124,14 @@ export function buildOsakaKyotoTrip({ placeIdByRestaurant = new Map(), guideFor,
     },
   });
 }
+
+import { buildChecklistGroups, buildGuide, buildLinkGroups, buildPlaces, buildSections } from './osaka-kyoto-extras.mjs';
+
+export function buildOsakaKyotoTripFull() {
+  const { places, placeIdByRestaurant } = buildPlaces();
+  return buildOsakaKyotoTrip({
+    placeIdByRestaurant,
+    guideFor: buildGuide,
+    extras: { places, linkGroups: buildLinkGroups(), checklistGroups: buildChecklistGroups(), sections: buildSections() },
+  });
+}
