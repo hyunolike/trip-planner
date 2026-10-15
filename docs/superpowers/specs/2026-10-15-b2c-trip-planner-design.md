@@ -1,6 +1,6 @@
 # B2C 여행 일정표 서비스 설계
 
-작성일: 2026-10-15 · 상태: 검토 대기 · 기반 코드: `8f855f8` (Osaka Kyoto trip planner site) · 디자인 시스템: `2026-10-15-design-system.md`
+작성일: 2026-10-15 · 개정: 2026-10-16(기술 리서치 반영) · 상태: 검토 대기 · 기반 코드: `8f855f8` (Osaka Kyoto trip planner site) · 디자인 시스템: `2026-10-15-design-system.md`
 
 ## 0. 이해한 내용 (확인 요청)
 
@@ -178,23 +178,46 @@ MVP는 첫 번째 페르소나를 기준으로 만든다. 기존 앱이 이 페�
 
 **B를 권장한다.** 공유·복제·멤버 권한은 서버 로직이 중심이고, 이미 같은 구조로 서비스 두 개를 운영해 본 경험이 있다. 몇 주 안에 띄우는 것이 최우선이면 A로 가되, 테이블 설계는 동일하게 쓴다.
 
+### 3.1.1 기술 기준선 (2026-10 리서치 반영)
+
+`reports/여행노트 기술 스택 트렌드 2026.md`의 권고를 반영했다. 버전은 2026-10-15 기준이며 Renovate가 갱신한다. 각 선택의 대안과 기각 이유는 `docs/adr/`에 있다.
+
+| 영역 | 선택 | 대신 쓰지 않은 것 | ADR |
+| --- | --- | --- | --- |
+| 런타임 | Spring Boot 4.1.x, Spring Framework 7, Java 25, Kotlin 2.3.x | Boot 3.5(2026-06-30 OSS 종료), 4.0.x(2026-12-31 종료) | 0001 |
+| 동시성 | Spring MVC + 가상 스레드, Hikari 풀 크기 명시, 외부 호출에 `@ConcurrencyLimit`·`@Retryable` | 코루틴 + WebFlux + R2DBC, Resilience4j | 0001 |
+| 모듈 | Spring Modulith 2.1. auth, trip, share, progress, weather 모듈과 `ApplicationModules.verify()` 테스트 | MSA, Kafka | 0002 |
+| 비동기 이벤트 | Modulith JDBC 이벤트 퍼블리케이션 레지스트리(아웃박스) | Kafka, RabbitMQ | 0002 |
+| 영속성 | 쓰기는 Spring Data JPA(Hibernate 7), 읽기는 jOOQ 3.21. 컨트롤러는 DTO만 노출 | QueryDSL(원본 2021-07 이후 릴리스 없음) | 0003 |
+| DB | PostgreSQL 18 + PostGIS 3.6. PK `uuidv7()`, 좌표 `geography(Point,4326)` + GiST, 동선 `geography(LineString)`. Flyway 12 | MySQL | 0004 |
+| 세션·캐시 | Valkey 9.1 + Spring Session(불투명 세션 ID). 날씨 캐시와 레이트리밋 버킷도 같은 인스턴스 | JWT 쿠키, Redis 8(AGPL) | 0005 |
+| 프론트 | Next.js 16.4 Cache Components, React 19.3 + React Compiler, TanStack Query v5 persist + paused mutations, Zustand 5 | SWR, Edge 런타임 | 0006 |
+| 지도 | MapLibre GL JS 6 + `react-map-gl/maplibre`, Protomaps PMTiles(`name:ko`)를 R2에서 서빙. Google Places·Routes는 서버에서만 호출 | Leaflet(2023-05 이후 릴리스 없음), 카카오맵(국내 지도만) | 0007 |
+| 편집 | `@dnd-kit/core` 6.3 + sortable, 순서는 fractional index, `version` 컬럼 낙관적 잠금 | `@dnd-kit/react` 0.x | 0007 |
+| 디자인 토큰 | DTCG 2025.10 JSON → Style Dictionary 5 → `tokens.css`. 컴포넌트는 CSS Modules | Tailwind v4(디자인 시스템이 이미 토큰 CSS로 완결) | 0006 |
+| API 계약 | springdoc-openapi 3 → `openapi.json` CI 커밋 → `openapi-typescript` + `openapi-fetch`. `/api/v1` | 수동 타입 | 0006 |
+| 관측성 | `spring-boot-starter-opentelemetry` → Grafana Cloud Free(OTLP 직결), ECS 구조화 로그, Sentry(프론트·API), Speed Insights | Datadog, OTel Collector | 0008 |
+| 배포 | Vercel Pro. API는 도쿄 컨테이너 1대(Docker Compose blue/green + Caddy). DB는 Supabase 서울 Pro | Kubernetes, AWS App Runner(2026-04-30 신규 중단) | 0008 |
+
+**실시간 협업(2단계)**은 CRDT 없이 필드 단위 마지막 저장 우선 + `version` 충돌 감지 + SSE presence로 시작한다. **AI 기능**은 MVP에서 제외하고, 3단계에서 "블로그 글·예약 메일 → 스톱" 구조화 추출과 결정론적 시간 검증, Promptfoo 골든셋을 함께 넣는 경우에만 도입한다.
+
 ### 3.2 시스템 구성
 
 ```
 브라우저 ──▶ Next.js (Vercel)
               ├ /app 라우트 · 서버 컴포넌트 · OG 태그
-              ├ /api/* BFF 프록시 (__Host- httpOnly 쿠키 ↔ API Bearer)
-              └ 클라이언트: Leaflet 지도, 편집 UI, React Query
+              ├ /api/* same-origin rewrite (__Host- httpOnly 세션 쿠키)
+              └ 클라이언트: MapLibre 지도, 편집 UI(dnd-kit), TanStack Query
                      │
                      ▼
-            Spring Boot API (Kotlin, Modulith)
-              ├ auth      카카오·구글 OAuth, 세션 JWT
+            Spring Boot 4.1 API (Kotlin 2.3, Java 25, Modulith 2.1)
+              ├ auth      카카오·구글 OAuth, Spring Session
               ├ trip      여행·날짜·스톱·섹션 CRUD, 권한
               ├ share     공유 토큰, 복제
               ├ progress  완료 체크
-              └ weather   Open-Meteo 프록시 (Redis 30분 캐시)
-                     │
-            PostgreSQL (Flyway) · Redis · 객체 저장소(이미지)
+              └ weather   Open-Meteo 프록시 (Valkey 30분 캐시)
+                     │   모듈 간 이벤트: JDBC 이벤트 레지스트리(아웃박스)
+            PostgreSQL 18 + PostGIS (Flyway) · Valkey · R2(이미지·지도 타일)
 ```
 
 ### 3.3 데이터 모델
@@ -261,10 +284,10 @@ GET   /weather?lat&lng&date       Redis 30분 캐시
 
 | 기존 파일 | 처리 |
 | --- | --- |
-| `src/map.js` (285줄) | 로직 함수(`getDayRouteSegments`, `pointAlongPath`, `createGoogleMapsUrl`)는 그대로 `lib/map/`으로. `mountTripMap`은 React 훅으로 감싼다. 테스트 유지. |
+| `src/map.js` (285줄) | 로직 함수(`getDayRouteSegments`, `pointAlongPath`, `createGoogleMapsUrl`)는 그대로 `lib/map/`으로. `mountTripMap`의 Leaflet 렌더링은 MapLibre 훅으로 다시 쓰고, 경로 재생은 `pointAlongPath`를 재사용한다. 테스트 유지. |
 | `src/weather.js`, `countdown.js`, `day-route.js` | 순수 함수라 그대로 옮긴다. |
 | `src/render.js`, `main.js` | 문자열 템플릿을 React 컴포넌트로 다시 쓴다. 구조(날짜 바, 간략/상세, 스톱 행, 디스클로저)는 1:1 대응. |
-| `src/design-system.css` (1,447줄) | 새 디자인 시스템의 `tokens.css`와 `bundle.css`로 대체한다. safe-area, sticky, 포커스 트랩 같은 레이아웃 규칙만 가져온다. Tailwind는 쓰지 않는다. |
+| `src/design-system.css` (1,447줄) | 새 디자인 시스템으로 대체한다. 토큰은 DTCG JSON에서 Style Dictionary로 `tokens.css`를 생성하고, 컴포넌트 스타일은 `bundle.css`를 CSS Modules로 나눈다. safe-area, sticky, 포커스 트랩 같은 레이아웃 규칙만 가져온다. Tailwind는 쓰지 않는다. |
 | `src/state.js` | 비로그인 완료 체크용으로 남긴다. 로그인 후 서버 저장으로 전환하며 localStorage 값을 1회 올린다. |
 | `src/*-guides.js`, `place-guides.js` | 데이터는 `guides.blocks`로 이관. 렌더 함수는 블록 렌더러 1개로 대체. |
 | `public/images/*` | 샘플 여행 이미지는 객체 저장소로 올리고 DB에는 URL만 둔다. 출처 표기 유지. |
@@ -282,20 +305,26 @@ GET   /weather?lat&lng&date       Redis 30분 캐시
 
 ### 3.7 보안·운영
 
-- 토큰은 `__Host-` httpOnly 쿠키에만. JWT에 세션 ID를 넣어 로그아웃 즉시 반영(오구오구 M1과 동일).
+- 인증은 BFF 세션 방식이다. `__Host-` httpOnly 쿠키에는 불투명 세션 ID만 두고, 세션은 Spring Session이 Valkey에 저장한다. 로그아웃과 강제 만료가 즉시 반영된다. CSRF는 Security 7 `csrf.spa()`. 카카오 클라이언트는 `client_secret_post`.
+- 카카오 로그인은 닉네임, 프로필 이미지, 이메일(선택 동의)만 받는다. 이메일 필수 동의는 비즈 앱 심사가 필요해 보류한다.
+- 탈퇴는 세 단계로 처리한다. 계정과 여행 삭제, 카카오·구글 토큰 revoke, 업로드 이미지 삭제 큐. 2025-02 개인정보위 소셜 로그인 점검에서 지적된 항목이다.
 - 공유 토큰은 32바이트 랜덤, 기본 만료 없음, owner가 회수 가능.
 - 쓰기 API는 사용자당 분당 제한. 이미지 업로드(3단계)는 5MB·webp 변환.
-- Sentry(프론트·API), 구조화 로그. 개인정보처리방침은 첫 배포 전에 둔다.
+- 관측성은 OpenTelemetry로 Grafana Cloud에 보내고, 오류는 Sentry로 받는다. SLO는 세 개다. 일정표 조회 성공률 99.5%, 일정표 첫 화면 LCP p75 2.5초 이하, 스톱 저장 p95 500ms 이하. 에러 버짓을 다 쓰면 기능 작업을 멈추고 안정화한다.
+- 개인정보처리방침(2025-04 작성지침 기준)과 위탁·국외 이전 업체 목록은 첫 배포 전에 둔다.
+- CI 공급망: 액션 SHA 고정 + Renovate, 클라우드 인증은 OIDC, 이미지는 Trivy 검사와 빌드 증명(Artifact Attestation).
 - 샘플 외 여행은 기본 `private`. 검색 엔진에는 `public`만 노출한다.
 
 ### 3.8 테스트
 
 | 층 | 도구 | 대상 |
 | --- | --- | --- |
-| 순수 함수 | Vitest (기존 유지) | map, weather, countdown, day-route |
-| 컴포넌트 | Vitest + Testing Library | 날짜 바, 스톱 행, 편집 시트, 빈 상태 |
-| API | JUnit + Testcontainers | 권한 규칙, 복제, 순서 변경, 시더 멱등성 |
-| E2E | Playwright | 로그인 → 여행 생성 → 스톱 3개 추가 → 공유 링크로 비로그인 열기 → 샘플 복제. 모바일 375px과 데스크톱 1280px 두 뷰포트 |
+| 순수 함수 | Vitest 5 (기존 테스트 유지) | map, weather, countdown, day-route |
+| 컴포넌트 | Vitest 5 Browser Mode + Testing Library, `toMatchScreenshot` | 날짜 바, 스톱 행, 편집 시트, 빈 상태 |
+| 모듈 경계 | Spring Modulith `ApplicationModules.verify()` | 모듈 간 금지 의존 |
+| API | JUnit 6 + MockK + Testcontainers 2(PostgreSQL 18 + PostGIS, Valkey) | 권한 규칙, 복제, 순서 변경, 시더 멱등성, 이벤트 재전송 |
+| E2E | Playwright 1.64 + `@axe-core/playwright`, `getByRole` 기반 | 로그인 → 여행 생성 → 스톱 3개 추가 → 공유 링크로 비로그인 열기 → 샘플 복제. 모바일 375px과 데스크톱 1280px |
+| 부하 | k6 2.1 | 일정표 조회와 스톱 저장. 결과 그래프를 README에 둔다 |
 
 ## 4. 단계별 작업 (추정)
 
@@ -312,7 +341,7 @@ GET   /weather?lat&lng&date       Redis 30분 캐시
 
 ## 5. 결정이 필요한 질문
 
-1. **스택**: B(Next.js + Spring Boot)로 가도 되는가, 아니면 속도를 위해 A(Supabase)인가?
+1. **스택**: B(Next.js + Spring Boot)로 진행한다고 가정하고 기술 기준선과 ADR을 썼다. A로 바꾸면 ADR 0001~0005를 다시 쓴다.
 2. **로그인**: 카카오 + 구글이면 충분한가? 애플 로그인은 iOS 앱이 없으니 뺀다.
 3. **샘플 공개 범위**: 기존 가족 정보(예약 확정, 호텔, 항공편)를 그대로 공개할지, 일반화할지.
 4. **복제 허용**: 샘플을 누구나 내 여행으로 복제하게 둘지.
