@@ -1,0 +1,7 @@
+Share image: tripnote-og-v1.jpg / tripnote-og.svg
+Photo: 663highland, Tenryu-ji Sogenchi garden.
+Source: https://commons.wikimedia.org/wiki/File:Tenryuji_Kyoto41n4592.jpg
+License: https://creativecommons.org/licenses/by-sa/3.0/
+Changes: photograph cropped for a branded social card; title and logo added.
+The adapted share image is provided under CC BY-SA 3.0.
+Tripnote logo: original vector artwork created for this project.

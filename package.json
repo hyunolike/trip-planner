@@ -1,0 +1,20 @@
+{
+  "name": "osaka-kyoto-family-trip",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "jsdom": "^26.1.0",
+    "vite": "^7.1.7",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4"
+  }
+}
