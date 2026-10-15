@@ -3,9 +3,6 @@ package com.tripnote.auth
 import com.tripnote.IntegrationTest
 import java.time.Duration
 import org.assertj.core.api.Assertions.assertThat
-import org.awaitility.kotlin.atMost
-import org.awaitility.kotlin.await
-import org.awaitility.kotlin.until
 import org.junit.jupiter.api.Test
 import org.springframework.test.web.servlet.get
 
@@ -15,11 +12,6 @@ class PasswordResetTest : IntegrationTest() {
 
     private fun confirm(token: String, password: String) =
         postJson("/api/v1/auth/password-reset/confirm", """{"token":"$token","password":"$password"}""")
-
-    /** 비동기 메일 리스너가 이 테스트의 메일을 모두 보낸 뒤에 끝나, 다음 테스트로 메일이 새지 않게 한다. */
-    private fun settleMails(count: Int) {
-        await atMost Duration.ofSeconds(10) until { mail.sent.size >= count }
-    }
 
     @Test
     fun `reset replaces the password and ends existing sessions`() {
@@ -104,7 +96,6 @@ class PasswordResetTest : IntegrationTest() {
         repeat(5) { requestReset("mina@example.com").andExpect { status { isAccepted() } } }
 
         requestReset("mina@example.com").andExpect { status { isTooManyRequests() } }
-        settleMails(5)
     }
 
     @Test
@@ -112,7 +103,6 @@ class PasswordResetTest : IntegrationTest() {
         repeat(10) { signup("user$it@example.com").andExpect { status { isAccepted() } } }
 
         signup("user10@example.com").andExpect { status { isTooManyRequests() } }
-        settleMails(10)
     }
 
     @Test
@@ -123,7 +113,6 @@ class PasswordResetTest : IntegrationTest() {
         }
 
         postJson("/api/v1/auth/verify-email/resend", """{"email":"mina@example.com"}""").andExpect { status { isTooManyRequests() } }
-        settleMails(6)
     }
 
     @Test

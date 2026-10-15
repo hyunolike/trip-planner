@@ -5,8 +5,10 @@ import com.tripnote.support.RecordingMailSender
 import java.time.Duration
 import jakarta.servlet.http.Cookie
 import java.util.UUID
+import org.awaitility.core.ConditionTimeoutException
 import org.awaitility.kotlin.atMost
 import org.awaitility.kotlin.await
+import org.awaitility.kotlin.until
 import org.awaitility.kotlin.untilNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -37,10 +39,25 @@ abstract class IntegrationTest {
 
     @BeforeEach
     fun cleanDatabase() {
+        awaitNoInFlightEvents()
         jdbc.sql("TRUNCATE users, trips CASCADE").update()
         mail.sent.clear()
         clock.reset()
         redis.execute { it.serverCommands().flushAll(); null }
+    }
+
+    /**
+     * 이전 테스트의 비동기 이벤트 리스너가 아직 users/email_tokens에 쓰고 있으면 TRUNCATE와 교착한다.
+     * completion-mode가 delete라서 event_publication 행이 남아 있으면 리스너가 아직 진행 중이다.
+     */
+    private fun awaitNoInFlightEvents() {
+        try {
+            await atMost Duration.ofSeconds(10) until {
+                jdbc.sql("SELECT count(*) FROM event_publication").query(Long::class.java).single() == 0L
+            }
+        } catch (e: ConditionTimeoutException) {
+            throw IllegalStateException("event_publication rows still present after 10s; refusing to truncate under a running listener", e)
+        }
     }
 
     fun postJson(path: String, body: String, customize: MockHttpServletRequestDsl.() -> Unit = {}): ResultActionsDsl = mvc.post(path) {
