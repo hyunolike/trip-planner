@@ -3,6 +3,8 @@ package com.tripnote
 import com.tripnote.support.MutableClock
 import com.tripnote.support.RecordingMailSender
 import java.time.Duration
+import jakarta.servlet.http.Cookie
+import java.util.UUID
 import org.awaitility.kotlin.atMost
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.untilNotNull
@@ -14,6 +16,8 @@ import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.mail.SimpleMailMessage
+import org.springframework.data.redis.core.StringRedisTemplate
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActionsDsl
@@ -27,12 +31,15 @@ abstract class IntegrationTest {
     @Autowired lateinit var jdbc: JdbcClient
     @Autowired lateinit var mail: RecordingMailSender
     @Autowired lateinit var clock: MutableClock
+    @Autowired lateinit var redis: StringRedisTemplate
+    @Autowired lateinit var passwordEncoder: PasswordEncoder
 
     @BeforeEach
     fun cleanDatabase() {
         jdbc.sql("TRUNCATE users, trips CASCADE").update()
         mail.sent.clear()
         clock.reset()
+        redis.execute { it.serverCommands().flushAll(); null }
     }
 
     fun postJson(path: String, body: String): ResultActionsDsl = mvc.post(path) {
@@ -49,4 +56,19 @@ abstract class IntegrationTest {
 
     fun tokenIn(message: SimpleMailMessage): String =
         Regex("token=([A-Za-z0-9_-]+)").find(message.text!!)!!.groupValues[1]
+
+    fun createVerifiedUser(email: String, password: String = "trip-note-2027", nickname: String = "미나"): UUID {
+        val id = jdbc.sql("INSERT INTO users (email, nickname, email_verified_at) VALUES (?, ?, now()) RETURNING id")
+            .params(email, nickname).query(UUID::class.java).single()
+        jdbc.sql("INSERT INTO user_identities (user_id, provider, provider_subject) VALUES (?, 'password', ?)")
+            .params(id, id.toString()).update()
+        jdbc.sql("INSERT INTO password_credentials (user_id, password_hash) VALUES (?, ?)")
+            .params(id, passwordEncoder.encode(password)!!).update()
+        return id
+    }
+
+    fun login(email: String, password: String = "trip-note-2027"): Cookie =
+        postJson("/api/v1/auth/login", """{"email":"$email","password":"$password"}""")
+            .andExpect { status { isOk() } }
+            .andReturn().response.getCookie("__Host-SESSION")!!
 }

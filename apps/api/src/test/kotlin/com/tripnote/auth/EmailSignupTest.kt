@@ -9,10 +9,8 @@ import java.time.Duration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.security.crypto.password.PasswordEncoder
 
 class EmailSignupTest : IntegrationTest() {
-    @Autowired lateinit var passwordEncoder: PasswordEncoder
     @Autowired lateinit var credentials: PasswordCredentialRepository
     @Autowired lateinit var signupService: SignupService
 
