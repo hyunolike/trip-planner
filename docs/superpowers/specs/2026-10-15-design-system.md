@@ -184,9 +184,9 @@ Button, TextField, SegmentedControl, TopBar(편집 바), DayBar, BottomNav, Stop
 
 ## 에셋
 
-Codex CLI(`codex exec`)로 제작한 벡터 66종. 모두 명시적 hex 색, `currentColor` 없음, xmllint·rsvg-convert 검증 통과.
+Codex CLI(`codex exec`)로 제작한 벡터 73종. 모두 명시적 hex 색, `currentColor` 없음, xmllint·rsvg-convert 검증 통과.
 
-- Logos 7: mark, mark-mono-ink, mark-mono-white, app-icon, app-icon-maskable, favicon, og-frame. 마크는 접힌 노트 위 점선 경로와 핀.
+- Logos 14 (`brand/logo/`에 사본): symbol(+mono-ink·mono-white), wordmark(+white), lockup-horizontal·vertical·mono-ink·mono-white·on-brand, app-icon, app-icon-maskable, favicon, og-frame. 심볼은 접힌 노트 위 점선 경로와 핀, 워드마크 "여행노트"는 100×148 격자·획 14의 도형 글자(서체 비의존). 세 방향(기본·모티프·배지)을 받아 기본형을 채택하고 '행'·'노' 글자와 심볼을 두 번 다듬었다.
 - Icons 53: 24px 라인, 1.75px, 둥근 끝. 일정 유형 12 · 동작 18 · 여행 정보 12 · 날씨 6 · 내비 5. 잉크 `#171b22` 고정이라 색을 바꾸려면 인라인 SVG.
 - Illustrations 6: empty-itinerary, empty-checklist, empty-search, empty-share, offline(240×160), hero-route(640×360).
 
