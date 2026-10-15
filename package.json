@@ -8,7 +8,8 @@
     "build": "vite build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "sample:validate": "node scripts/sample/validate.mjs sample/*.json"
+    "sample:validate": "node scripts/sample/validate.mjs sample/*.json",
+    "sample:export": "node scripts/sample/export-osaka-kyoto.mjs"
   },
   "devDependencies": {
     "ajv": "^8.17.1",

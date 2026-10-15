@@ -108,6 +108,8 @@ export function buildLinkGroups() {
   return [
     { label: '공식 안내', links: Object.values(officialLinks).map(toLink) },
     { label: '여행지 소개', links: trip.heroSlides.map((slide) => ({ label: slide.place, url: slide.blogUrl })) },
+    // Weather attribution link rendered by src/weather.js renderCard; the forecast itself is fetched live.
+    { label: '날씨 출처', links: [{ label: 'Open-Meteo', url: 'https://open-meteo.com/' }] },
   ];
 }
 
