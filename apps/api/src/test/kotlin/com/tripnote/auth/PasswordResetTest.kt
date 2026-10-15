@@ -3,6 +3,9 @@ package com.tripnote.auth
 import com.tripnote.IntegrationTest
 import java.time.Duration
 import org.assertj.core.api.Assertions.assertThat
+import org.awaitility.kotlin.atMost
+import org.awaitility.kotlin.await
+import org.awaitility.kotlin.until
 import org.junit.jupiter.api.Test
 import org.springframework.test.web.servlet.get
 
@@ -12,6 +15,11 @@ class PasswordResetTest : IntegrationTest() {
 
     private fun confirm(token: String, password: String) =
         postJson("/api/v1/auth/password-reset/confirm", """{"token":"$token","password":"$password"}""")
+
+    /** 비동기 메일 리스너가 이 테스트의 메일을 모두 보낸 뒤에 끝나, 다음 테스트로 메일이 새지 않게 한다. */
+    private fun settleMails(count: Int) {
+        await atMost Duration.ofSeconds(10) until { mail.sent.size >= count }
+    }
 
     @Test
     fun `reset replaces the password and ends existing sessions`() {
@@ -96,6 +104,7 @@ class PasswordResetTest : IntegrationTest() {
         repeat(5) { requestReset("mina@example.com").andExpect { status { isAccepted() } } }
 
         requestReset("mina@example.com").andExpect { status { isTooManyRequests() } }
+        settleMails(5)
     }
 
     @Test
@@ -103,6 +112,7 @@ class PasswordResetTest : IntegrationTest() {
         repeat(10) { signup("user$it@example.com").andExpect { status { isAccepted() } } }
 
         signup("user10@example.com").andExpect { status { isTooManyRequests() } }
+        settleMails(10)
     }
 
     @Test
@@ -113,6 +123,7 @@ class PasswordResetTest : IntegrationTest() {
         }
 
         postJson("/api/v1/auth/verify-email/resend", """{"email":"mina@example.com"}""").andExpect { status { isTooManyRequests() } }
+        settleMails(6)
     }
 
     @Test
@@ -137,5 +148,40 @@ class PasswordResetTest : IntegrationTest() {
             status { isTooManyRequests() }
             jsonPath("$.detail") { value("요청이 너무 많아요. 잠시 후 다시 시도해 주세요.") }
         }
+    }
+
+    @Test
+    fun `reset requests are limited per ip`() {
+        repeat(20) { requestReset("user$it@example.com").andExpect { status { isAccepted() } } }
+
+        requestReset("another@example.com").andExpect { status { isTooManyRequests() } }
+    }
+
+    @Test
+    fun `confirm attempts are limited per ip`() {
+        repeat(20) { confirm("bogus-token-$it", "new-trip-note-2027").andExpect { status { isBadRequest() } } }
+
+        confirm("bogus-token-x", "new-trip-note-2027").andExpect { status { isTooManyRequests() } }
+    }
+
+    @Test
+    fun `an unknown token is rejected before the password is even checked`() {
+        confirm("bogus-token", "short").andExpect {
+            status { isBadRequest() }
+            jsonPath("$.detail") { value("링크가 만료됐거나 이미 사용됐어요. 새 링크를 요청해 주세요.") }
+        }
+    }
+
+    @Test
+    fun `a non-active account cannot get a credential through reset`() {
+        val id = createVerifiedUser("mina@example.com")
+        requestReset("mina@example.com")
+        val token = tokenIn(awaitMail("mina@example.com"))
+        jdbc.sql("UPDATE users SET status = 'system' WHERE id = ?").param(id).update()
+
+        confirm(token, "new-trip-note-2027").andExpect { status { isBadRequest() } }
+
+        postJson("/api/v1/auth/login", """{"email":"mina@example.com","password":"new-trip-note-2027"}""")
+            .andExpect { status { isUnauthorized() } }
     }
 }

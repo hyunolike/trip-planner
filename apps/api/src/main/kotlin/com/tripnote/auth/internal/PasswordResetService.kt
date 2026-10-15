@@ -39,16 +39,18 @@ class PasswordResetService(
     }
 
     /**
-     * 정책 검사(외부 HTTP)와 Argon2 해시는 트랜잭션 밖에서, 토큰을 소비하기 전에 한다.
+     * 토큰을 먼저 확인(소비 없이)한 뒤, 정책 검사(외부 HTTP)와 Argon2 해시는 트랜잭션 밖에서 토큰 소비 전에 한다.
      * 이어지는 짧은 트랜잭션은 users 행을 먼저 잠그고 토큰 소비, 자격 증명 쓰기, 세션 폐기를 한다.
      */
     fun confirm(token: String, newPassword: String) {
         val expired = ApiException(HttpStatus.BAD_REQUEST, "링크가 만료됐거나 이미 사용됐어요. 새 링크를 요청해 주세요.")
+        // 값싼 토큰 확인을 먼저 해서, 없는 토큰으로는 비싼 정책 검사와 Argon2를 돌리지 못하게 한다.
+        val userId = tokens.peek(token, TokenPurpose.RESET) ?: throw expired
         passwordPolicy.check(newPassword)
         val hash = passwordEncoder.encode(newPassword)!!
-        val userId = tokens.peek(token, TokenPurpose.RESET) ?: throw expired
         tx.executeWithoutResult {
             val user = users.lockById(userId) ?: throw expired
+            if (user.status != "active") throw expired
             val consumed = tokens.consume(token, TokenPurpose.RESET) ?: throw expired
             check(consumed == userId)
             val credential = credentials.findById(userId).orElse(null)

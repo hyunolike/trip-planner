@@ -2,13 +2,19 @@ package com.tripnote.auth
 
 import com.tripnote.IntegrationTest
 import org.assertj.core.api.Assertions.assertThat
+import com.tripnote.auth.internal.PasswordLoginService
+import com.tripnote.common.ApiException
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.request.RequestPostProcessor
 import org.springframework.test.web.servlet.post
 
 class LoginTest : IntegrationTest() {
+    @Autowired lateinit var loginService: PasswordLoginService
+
     private fun loginAttempt(email: String, password: String) =
         postJson("/api/v1/auth/login", """{"email":"$email","password":"$password"}""")
 
@@ -101,5 +107,19 @@ class LoginTest : IntegrationTest() {
     @Test
     fun `me without a session is unauthorized`() {
         mvc.get("/api/v1/me").andExpect { status { isUnauthorized() } }
+    }
+
+    @Test
+    fun `a login whose verified hash was replaced meanwhile is rejected`() {
+        val id = createVerifiedUser("mina@example.com")
+        val staleHash = jdbc.sql("SELECT password_hash FROM password_credentials WHERE user_id = ?").param(id)
+            .query(String::class.java).single()
+        jdbc.sql("UPDATE password_credentials SET password_hash = ? WHERE user_id = ?")
+            .params(passwordEncoder.encode("new-trip-note-2027")!!, id).update()
+
+        assertThatThrownBy { loginService.completeLogin(id, staleHash) }
+            .isInstanceOfSatisfying(ApiException::class.java) {
+                assertThat(it.status.value()).isEqualTo(401)
+            }
     }
 }

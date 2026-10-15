@@ -19,6 +19,7 @@ spring:
     redis:
       host: ${VALKEY_HOST:localhost}
       port: ${VALKEY_PORT:6379}
+      timeout: 3s
   session:
     timeout: 30d
     data:

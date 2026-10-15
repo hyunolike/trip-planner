@@ -79,7 +79,8 @@ class EmailAuthController(
     }
 
     @PostMapping("/password-reset/confirm")
-    fun confirmReset(@Valid @RequestBody body: ResetConfirmRequest): MessageResponse {
+    fun confirmReset(@Valid @RequestBody body: ResetConfirmRequest, request: HttpServletRequest): MessageResponse {
+        rateLimiter.check("reset-confirm-ip", request.remoteAddr, limit = 20, window = HOUR)
         resetService.confirm(body.token, body.password)
         return MessageResponse("비밀번호를 바꿨어요. 새 비밀번호로 로그인해 주세요.")
     }
