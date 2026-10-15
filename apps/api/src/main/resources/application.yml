@@ -20,6 +20,13 @@ spring:
       ddl-auto: validate
   flyway:
     locations: classpath:db/migration
+  modulith:
+    events:
+      completion-mode: delete
+      republish-outstanding-events-on-restart: true
+      jdbc:
+        schema-initialization:
+          enabled: true
 server:
   forward-headers-strategy: framework
 management:
