@@ -37,6 +37,18 @@ describe('sanitizeLegacyHtml', () => {
     expect(clean).toContain('<a href="#preparation">준비물</a>');
   });
 
+  it('never lets author-supplied target or rel through, even when the href only looks internal', () => {
+    const tabnab = sanitizeLegacyHtml('<a href="https:\\\\evil.example" target="_blank" rel="opener">x</a>');
+    expect(tabnab).toContain('target="_blank"');
+    expect(tabnab).toContain('rel="noopener noreferrer"');
+    expect(tabnab).not.toContain('opener"');
+    expect(tabnab).not.toMatch(/rel="opener/);
+
+    const internal = sanitizeLegacyHtml('<a href="/x" target="_top" rel="opener">y</a>');
+    expect(internal).toBe('<a href="/x">y</a>');
+    expect(sanitizeLegacyHtml('<a href="mailto:a@b.c" target="_blank">m</a>')).toBe('<a href="mailto:a@b.c">m</a>');
+  });
+
   it('strips classes, ids and inline styles so legacy markup cannot borrow app styles', () => {
     const clean = sanitizeLegacyHtml('<div class="skip-link" id="main" style="position:fixed"><b>여권</b></div>');
     expect(clean).toBe('<div><b>여권</b></div>');
