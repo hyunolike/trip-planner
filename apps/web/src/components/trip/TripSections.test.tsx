@@ -1,9 +1,20 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { danangTrip, osakaTrip } from '@test/fixtures/trip';
 import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { ReactElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { readTrip } from '@/lib/trip/content';
 import { TripScreen } from './TripScreen';
+
+vi.mock('@/lib/api/client', () => ({
+  api: { GET: vi.fn(async () => ({ data: { date: '2026-10-21', status: 'out_of_range' } })) },
+}));
+
+function renderScreen(ui: ReactElement) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
+}
 
 vi.mock('@/components/map/LazyTripMap', () => ({ LazyTripMap: () => <div data-testid="map" /> }));
 
@@ -22,7 +33,7 @@ describe('trip sections', () => {
   });
 
   it('offers the five sections and starts on the itinerary', () => {
-    render(<TripScreen trip={osaka} initialDay={0} />);
+    renderScreen(<TripScreen trip={osaka} initialDay={0} />);
     const nav = screen.getByRole('navigation', { name: '여행 노트 섹션' });
 
     expect(
@@ -35,7 +46,7 @@ describe('trip sections', () => {
   });
 
   it('shows dining and shopping candidates as place cards', async () => {
-    render(<TripScreen trip={osaka} initialDay={0} />);
+    renderScreen(<TripScreen trip={osaka} initialDay={0} />);
 
     await goTo('#food');
     expect(screen.getByRole('heading', { level: 2, name: '맛집 후보' })).toBeInTheDocument();
@@ -48,7 +59,7 @@ describe('trip sections', () => {
   });
 
   it('groups booking and official links', async () => {
-    render(<TripScreen trip={osaka} initialDay={0} />);
+    renderScreen(<TripScreen trip={osaka} initialDay={0} />);
     await goTo('#links');
 
     const groups = screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
@@ -57,7 +68,7 @@ describe('trip sections', () => {
   });
 
   it('checks preparation items and remembers them', async () => {
-    render(<TripScreen trip={osaka} initialDay={0} />);
+    renderScreen(<TripScreen trip={osaka} initialDay={0} />);
     await goTo('#preparation');
     const first = osaka.content.checklistGroups[0]!.items[0]!;
 
@@ -71,12 +82,12 @@ describe('trip sections', () => {
 
   it('opens on the section named in the address', () => {
     window.history.replaceState(null, '', '/t/osaka-kyoto-family-2026#preparation');
-    render(<TripScreen trip={osaka} initialDay={0} />);
+    renderScreen(<TripScreen trip={osaka} initialDay={0} />);
     expect(screen.getByRole('heading', { level: 2, name: '준비물' })).toBeInTheDocument();
   });
 
   it('keeps the legacy overview and airport guides under trip info, collapsed', () => {
-    render(<TripScreen trip={osaka} initialDay={0} />);
+    renderScreen(<TripScreen trip={osaka} initialDay={0} />);
     const info = screen.getByRole('region', { name: '여행 전체 안내' });
 
     const summaries = [...info.querySelectorAll(':scope > details > summary')].map((s) => s.textContent);
@@ -86,7 +97,7 @@ describe('trip sections', () => {
 
   it('shows the day tour with its fees on the tour day', () => {
     const tourDay = osaka.days.findIndex((d) => d.tour);
-    render(<TripScreen trip={osaka} initialDay={tourDay} />);
+    renderScreen(<TripScreen trip={osaka} initialDay={tourDay} />);
 
     expect(screen.getByRole('heading', { name: '바다의 교토 일일투어' })).toBeInTheDocument();
     expect(screen.getByText('입장료·승선료 확인')).toBeInTheDocument();
@@ -94,7 +105,7 @@ describe('trip sections', () => {
   });
 
   it('lists the day places with directions and opens a guide from the index', async () => {
-    const { container } = render(<TripScreen trip={osaka} initialDay={0} />);
+    const { container } = renderScreen(<TripScreen trip={osaka} initialDay={0} />);
     const index = screen.getByRole('region', { name: '명소 가는 길' });
     const firstButton = within(index).getAllByRole('button')[0]!;
     const key = firstButton.getAttribute('data-stop-key')!;
@@ -106,7 +117,7 @@ describe('trip sections', () => {
   });
 
   it('shows flights for a trip that has no legacy overview', () => {
-    render(<TripScreen trip={readTrip(danangTrip())} initialDay={0} />);
+    renderScreen(<TripScreen trip={readTrip(danangTrip())} initialDay={0} />);
     const info = screen.getByRole('region', { name: '여행 전체 안내' });
     expect(within(info).getByText('항공편과 이동 경로')).toBeInTheDocument();
   });

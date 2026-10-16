@@ -1,9 +1,20 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { danangTrip, osakaTrip } from '@test/fixtures/trip';
 import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { ReactElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { readTrip } from '@/lib/trip/content';
 import { TripScreen } from './TripScreen';
+
+vi.mock('@/lib/api/client', () => ({
+  api: { GET: vi.fn(async () => ({ data: { date: '2026-10-21', status: 'out_of_range' } })) },
+}));
+
+function renderScreen(ui: ReactElement) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
+}
 
 vi.mock('@/components/map/LazyTripMap', () => ({
   LazyTripMap: (props: { selectedKey?: string; selectionNonce?: number }) => (
@@ -21,7 +32,7 @@ describe('TripScreen', () => {
   });
 
   it('shows the trip header with dates, length and a read-only badge', () => {
-    render(<TripScreen trip={osaka} initialDay={0} />);
+    renderScreen(<TripScreen trip={osaka} initialDay={0} />);
 
     expect(screen.getByRole('heading', { level: 1, name: osaka.title })).toBeInTheDocument();
     expect(screen.getByText('2026.10.21 – 10.24 · 4일')).toBeInTheDocument();
@@ -31,13 +42,13 @@ describe('TripScreen', () => {
   });
 
   it('marks a researched sample as an example', () => {
-    render(<TripScreen trip={readTrip(danangTrip())} initialDay={0} />);
+    renderScreen(<TripScreen trip={readTrip(danangTrip())} initialDay={0} />);
     expect(screen.getByText('샘플 일정')).toBeInTheDocument();
     expect(screen.getByText(/여러 여행 상품을 참고해 새로 짠 예시 일정이에요/)).toBeInTheDocument();
   });
 
   it('lists every stop of the selected day in order', () => {
-    render(<TripScreen trip={osaka} initialDay={0} />);
+    renderScreen(<TripScreen trip={osaka} initialDay={0} />);
     const list = screen.getByRole('list', { name: '1일차 일정' });
 
     // 이관 HTML 가이드 안에도 h3가 있으므로 행마다 첫 h3만 읽는다.
@@ -48,7 +59,7 @@ describe('TripScreen', () => {
 
   it('switches days from the day bar and keeps the choice in the address', async () => {
     window.history.replaceState(null, '', '/t/osaka-kyoto-family-2026#itinerary');
-    render(<TripScreen trip={osaka} initialDay={0} />);
+    renderScreen(<TripScreen trip={osaka} initialDay={0} />);
     const bar = screen.getByRole('navigation', { name: '날짜 선택' });
 
     await userEvent.click(within(bar).getByRole('button', { name: /2일차/ }));
@@ -60,7 +71,7 @@ describe('TripScreen', () => {
   });
 
   it('opens every stop detail in detail mode', async () => {
-    const { container } = render(<TripScreen trip={osaka} initialDay={0} />);
+    const { container } = renderScreen(<TripScreen trip={osaka} initialDay={0} />);
     expect(container.querySelectorAll('details[data-stop-detail][open]')).toHaveLength(0);
 
     await userEvent.click(screen.getByRole('button', { name: '상세 일정' }));
@@ -69,7 +80,7 @@ describe('TripScreen', () => {
   });
 
   it('checks a stop, counts it, remembers it and can hide it', async () => {
-    render(<TripScreen trip={osaka} initialDay={0} />);
+    renderScreen(<TripScreen trip={osaka} initialDay={0} />);
     const first = day1.stops[0]!;
 
     await userEvent.click(screen.getByRole('button', { name: `일정 완료 표시: ${first.title}` }));
@@ -88,7 +99,7 @@ describe('TripScreen', () => {
   });
 
   it('links a located stop to Google Maps and shows its details', async () => {
-    const { container } = render(<TripScreen trip={osaka} initialDay={0} />);
+    const { container } = renderScreen(<TripScreen trip={osaka} initialDay={0} />);
     const kix = day1.stops.find((s) => s.key === 'd1-kix')!;
     const row = container.querySelector('#stop-d1-kix') as HTMLElement;
 
@@ -106,7 +117,7 @@ describe('TripScreen', () => {
 
   it('calls onLocate when the location button is pressed', async () => {
     const onLocate = vi.fn();
-    render(<TripScreen trip={osaka} initialDay={0} onLocate={onLocate} />);
+    renderScreen(<TripScreen trip={osaka} initialDay={0} onLocate={onLocate} />);
     const kix = day1.stops.find((s) => s.key === 'd1-kix')!;
 
     await userEvent.click(screen.getByRole('button', { name: `${kix.title} 지도에서 보기` }));
@@ -115,7 +126,7 @@ describe('TripScreen', () => {
   });
 
   it('sends a new map request each time the same stop is located', async () => {
-    render(<TripScreen trip={osaka} initialDay={0} />);
+    renderScreen(<TripScreen trip={osaka} initialDay={0} />);
     const button = screen.getByRole('button', { name: `${day1.stops[0]!.title} 지도에서 보기` });
 
     await userEvent.click(button);

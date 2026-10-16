@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { DayRoute } from '@/components/map/DayRoute';
+import { WeatherCard } from '@/components/weather/WeatherCard';
 import { useCompletion } from '@/lib/trip/completion';
 import type { TripView } from '@/lib/trip/content';
 import { useHashSection } from '@/lib/trip/sections';
@@ -75,7 +76,7 @@ export function TripScreen({ trip, initialDay, onLocate }: Props) {
               before={<DayRoute day={day} selectedKey={selected} selectionNonce={selectionNonce} onSelect={select} />}
               resources={
                 <>
-                  {/* Task 10: 날씨 카드 */}
+                  <WeatherCard day={day} timezone={trip.timezone} />
                   {day.tour ? <TourGuide tour={day.tour} date={day.date} /> : null}
                   <SightGuideIndex day={day} />
                 </>
