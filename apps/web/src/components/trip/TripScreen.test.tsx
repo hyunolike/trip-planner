@@ -7,8 +7,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { readTrip } from '@/lib/trip/content';
 import { TripScreen } from './TripScreen';
 
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
+
 vi.mock('@/lib/api/client', () => ({
-  api: { GET: vi.fn(async () => ({ data: { date: '2026-10-21', status: 'out_of_range' } })) },
+  api: {
+    GET: vi.fn(async (path: string) =>
+      path === '/api/v1/me'
+        ? { response: new Response(null, { status: 401 }) }
+        : { data: { date: '2026-10-21', status: 'out_of_range' }, response: new Response() },
+    ),
+  },
 }));
 
 function renderScreen(ui: ReactElement) {

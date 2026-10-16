@@ -58,9 +58,10 @@ type Props = {
   selectedKey?: string;
   selectionNonce?: number;
   onSelect: (key: string) => void;
+  onPick?: (coordinates: LatLng) => void;
 };
 
-export default function TripMap({ points, segments, selectedKey, selectionNonce, onSelect }: Props) {
+export default function TripMap({ points, segments, selectedKey, selectionNonce, onSelect, onPick }: Props) {
   const mapRef = useRef<MapRef>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const [style, setStyle] = useState<StyleSpecification | string>();
@@ -68,6 +69,7 @@ export default function TripMap({ points, segments, selectedKey, selectionNonce,
   const [playing, setPlaying] = useState(false);
   const [playhead, setPlayhead] = useState<{ at: LatLng; label: string }>();
   const [visible, setVisible] = useState(true);
+  const [mapReady, setMapReady] = useState(false);
   const dark = useMedia('(prefers-color-scheme: dark)');
   const reduceMotion = useMedia('(prefers-reduced-motion: reduce)');
   const palette = dark ? colors.dark : colors.light;
@@ -105,6 +107,15 @@ export default function TripMap({ points, segments, selectedKey, selectionNonce,
     [points, segments],
   );
   const routes = useMemo(() => routeFeatures(segments, palette), [segments, palette]);
+
+  // initialViewState는 지도 생성 때만 적용된다. 날짜가 바뀌면 새 동선으로 다시 맞춘다.
+  useEffect(() => {
+    if (!mapReady || !bounds) return;
+    mapRef.current?.fitBounds(bounds, { padding: 48, maxZoom: 15, duration: 0 });
+    const center = mapRef.current?.getCenter();
+    if (center && frameRef.current)
+      frameRef.current.dataset.center = `${center.lng.toFixed(4)},${center.lat.toFixed(4)}`;
+  }, [bounds, mapReady]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: selectionNonce는 같은 핀을 다시 눌러도 이동하게 하는 요청 번호라 일부러 의존성에 둔다.
   useEffect(() => {
@@ -160,8 +171,12 @@ export default function TripMap({ points, segments, selectedKey, selectionNonce,
           locale={MAP_LOCALE}
           dragRotate={false}
           attributionControl={{ compact: true }}
-          onLoad={recordCenter}
+          onLoad={() => {
+            setMapReady(true);
+            recordCenter();
+          }}
           onMoveEnd={recordCenter}
+          onClick={onPick ? (event) => onPick([event.lngLat.lat, event.lngLat.lng]) : undefined}
         >
           <NavigationControl showCompass={false} position="top-right" />
           <Source id="route" type="geojson" data={routes}>

@@ -19,6 +19,14 @@ class TripCloneService(
     fun clone(sourceSlug: String, userId: UUID): CreatedTrip {
         val source = queries.find(sourceSlug, userId) ?: throw access.notFound()
         if (!source.permissions.canClone) throw ApiException(HttpStatus.FORBIDDEN, "이 일정은 복제할 수 없어요.")
+        return copy(source.id, userId)
+    }
+
+    /** The caller must validate and lock the share grant in the same transaction. */
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    fun cloneShared(sourceId: UUID, userId: UUID): CreatedTrip = copy(sourceId, userId)
+
+    private fun copy(sourceId: UUID, userId: UUID): CreatedTrip {
         val slug = slugs.next()
 
         val newId = jdbc.sql(
@@ -27,14 +35,14 @@ class TripCloneService(
             SELECT :slug, :owner, title, subtitle, start_date, end_date, timezone, 'private', false, id, content FROM trips WHERE id = :source
             RETURNING id
             """.trimIndent(),
-        ).param("slug", slug).param("owner", userId).param("source", source.id).query(UUID::class.java).optional().orElseThrow { access.notFound() }
+        ).param("slug", slug).param("owner", userId).param("source", sourceId).query(UUID::class.java).optional().orElseThrow { access.notFound() }
 
         jdbc.sql(
             """
             INSERT INTO trip_days (trip_id, number, date, city, theme, note, color, tour)
             SELECT :target, number, date, city, theme, note, color, tour FROM trip_days WHERE trip_id = :source
             """.trimIndent(),
-        ).param("target", newId).param("source", source.id).update()
+        ).param("target", newId).param("source", sourceId).update()
 
         jdbc.sql(
             """
@@ -47,14 +55,14 @@ class TripCloneService(
             JOIN trip_days nd ON nd.trip_id = :target AND nd.number = od.number
             WHERE s.trip_id = :source
             """.trimIndent(),
-        ).param("target", newId).param("source", source.id).update()
+        ).param("target", newId).param("source", sourceId).update()
 
         jdbc.sql(
             """
             INSERT INTO places (trip_id, key, kind, name, area, details, position)
             SELECT :target, key, kind, name, area, details, position FROM places WHERE trip_id = :source
             """.trimIndent(),
-        ).param("target", newId).param("source", source.id).update()
+        ).param("target", newId).param("source", sourceId).update()
 
         jdbc.sql("INSERT INTO trip_members (trip_id, user_id, role) VALUES (:target, :owner, 'owner')")
             .param("target", newId).param("owner", userId).update()

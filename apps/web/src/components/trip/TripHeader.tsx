@@ -2,9 +2,10 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui';
 import type { TripView } from '@/lib/trip/content';
 import { formatDateRange, tripLength } from '@/lib/trip/format';
+import { TripActions } from './TripActions';
 import styles from './TripHeader.module.css';
 
-export function TripHeader({ trip }: { trip: TripView }) {
+export function TripHeader({ trip, shareToken }: { trip: TripView; shareToken?: string }) {
   const readOnly = !trip.permissions.canEdit;
   const researched = trip.content.provenance?.kind === 'researched-example';
   return (
@@ -32,8 +33,8 @@ export function TripHeader({ trip }: { trip: TripView }) {
         <div className={styles.notice}>
           {trip.isSample ? <Badge tone="brand">샘플 일정</Badge> : null}
           {readOnly ? <Badge>보기 전용</Badge> : null}
-          {readOnly ? <p>복제해서 내 일정으로 만들기는 곧 열려요.</p> : null}
         </div>
+        <TripActions trip={trip} shareToken={shareToken} />
         {researched ? (
           <p className={styles.notice}>
             여러 여행 상품을 참고해 새로 짠 예시 일정이에요. 운영 정보는 방문 전 공식 안내를 확인해 주세요.

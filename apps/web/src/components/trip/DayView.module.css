@@ -4,6 +4,33 @@
   padding-top: var(--space-5);
 }
 
+.layout,
+.schedule {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+.map {
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: minmax(0, 640px) minmax(0, 1fr);
+    align-items: start;
+  }
+  .schedule {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .map {
+    grid-column: 2;
+    grid-row: 1;
+    position: sticky;
+    top: calc(var(--space-16) + var(--space-8));
+  }
+}
+
 .eyebrow {
   margin: 0;
   font: var(--text-label);

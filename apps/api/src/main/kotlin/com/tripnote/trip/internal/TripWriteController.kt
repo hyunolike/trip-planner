@@ -31,6 +31,33 @@ data class CreateTripRequest(
     val endDate: LocalDate,
     @field:Size(max = 64) val timezone: String? = null,
     @field:Size(max = 40) val city: String? = null,
+    @field:Valid @field:Size(max = 30) val travelers: List<TravelerRequest>? = null,
+)
+
+data class TravelerRequest(
+    @field:NotBlank @field:Size(max = 30) val label: String,
+    @field:Size(max = 16) val emoji: String? = null,
+)
+
+data class StopLinkRequest(
+    @field:NotBlank @field:Size(max = 100) val label: String,
+    @field:NotBlank @field:Size(max = 2048) val url: String,
+    @field:Size(max = 1000) val note: String? = null,
+)
+
+data class UpdateTripRequest(
+    val version: Int,
+    @field:Size(min = 1, max = 60) @field:Pattern(regexp = ".*\\S.*") val title: String? = null,
+    val startDate: LocalDate? = null,
+    val endDate: LocalDate? = null,
+    @field:Pattern(regexp = "^(private|link|public)$") val visibility: String? = null,
+)
+
+data class UpdateDayRequest(
+    val version: Int,
+    @field:Size(max = 40) val city: String? = null,
+    @field:Size(max = 200) val theme: String? = null,
+    @field:Size(max = 4000) val note: String? = null,
 )
 
 data class CreateStopRequest(
@@ -41,6 +68,9 @@ data class CreateStopRequest(
     @field:Size(max = 40) val duration: String? = null,
     @field:Size(min = 2, max = 2) val coordinates: List<Double?>? = null,
     val afterStopId: UUID? = null,
+    @field:Valid @field:Size(max = 20) val links: List<StopLinkRequest>? = null,
+    val clientMutationId: UUID? = null,
+    @field:Size(max = 80) val buffer: String? = null,
 )
 
 data class UpdateStopRequest(
@@ -53,6 +83,7 @@ data class UpdateStopRequest(
     @field:Size(max = 80) val buffer: String? = null,
     @field:Size(min = 2, max = 2) val coordinates: List<Double?>? = null,
     val clearCoordinates: Boolean = false,
+    @field:Valid @field:Size(max = 20) val links: List<StopLinkRequest>? = null,
 )
 
 data class ReorderRequest(@field:NotEmpty val stopIds: List<UUID>)
@@ -62,7 +93,20 @@ class TripWriteController(private val tripsCommands: TripCommandService, private
     @PostMapping("/api/v1/trips")
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@Valid @RequestBody body: CreateTripRequest, @AuthenticationPrincipal user: SessionUser): CreatedTrip =
-        tripsCommands.create(user.userId, body.title, body.startDate, body.endDate, body.timezone, body.city)
+        tripsCommands.create(user.userId, body.title, body.startDate, body.endDate, body.timezone, body.city, body.travelers)
+
+    @PatchMapping("/api/v1/trips/{tripId}")
+    fun updateTrip(@PathVariable tripId: UUID, @Valid @RequestBody body: UpdateTripRequest, @AuthenticationPrincipal user: SessionUser) =
+        tripsCommands.update(tripId, user.userId, body)
+
+    @DeleteMapping("/api/v1/trips/{tripId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun deleteTrip(@PathVariable tripId: UUID, @RequestParam version: Int, @AuthenticationPrincipal user: SessionUser) =
+        tripsCommands.delete(tripId, user.userId, version)
+
+    @PatchMapping("/api/v1/days/{dayId}")
+    fun updateDay(@PathVariable dayId: UUID, @Valid @RequestBody body: UpdateDayRequest, @AuthenticationPrincipal user: SessionUser) =
+        tripsCommands.updateDay(dayId, user.userId, body)
 
     @PostMapping("/api/v1/trips/{slug}/clone")
     @ResponseStatus(HttpStatus.CREATED)
@@ -71,13 +115,13 @@ class TripWriteController(private val tripsCommands: TripCommandService, private
     @PostMapping("/api/v1/days/{dayId}/stops")
     @ResponseStatus(HttpStatus.CREATED)
     fun addStop(@PathVariable dayId: UUID, @Valid @RequestBody body: CreateStopRequest, @AuthenticationPrincipal user: SessionUser): StopDocument =
-        stopCommands.add(dayId, user.userId, NewStop(body.title, LocalTime.parse(body.time), body.type, body.details, body.duration, body.coordinates, body.afterStopId))
+        stopCommands.add(dayId, user.userId, NewStop(body.title, LocalTime.parse(body.time), body.type, body.details, body.duration, body.coordinates, body.afterStopId, body.links, body.clientMutationId, body.buffer))
 
     @PatchMapping("/api/v1/stops/{stopId}")
     fun updateStop(@PathVariable stopId: UUID, @Valid @RequestBody body: UpdateStopRequest, @AuthenticationPrincipal user: SessionUser): StopDocument =
         stopCommands.update(
             stopId, user.userId,
-            StopChanges(body.version, body.title, body.time?.let(LocalTime::parse), body.type, body.details, body.duration, body.buffer, body.coordinates, body.clearCoordinates),
+            StopChanges(body.version, body.title, body.time?.let(LocalTime::parse), body.type, body.details, body.duration, body.buffer, body.coordinates, body.clearCoordinates, body.links),
         )
 
     @DeleteMapping("/api/v1/stops/{stopId}")

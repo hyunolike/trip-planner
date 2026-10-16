@@ -200,6 +200,43 @@
         "tags" : [ "email-auth-controller" ]
       }
     },
+    "/api/v1/days/{dayId}" : {
+      "patch" : {
+        "operationId" : "updateDay",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "dayId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateDayRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TripDocument"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "trip-write-controller" ]
+      }
+    },
     "/api/v1/days/{dayId}/stops" : {
       "post" : {
         "operationId" : "addStop",
@@ -323,6 +360,58 @@
           }
         },
         "tags" : [ "trip-read-controller" ]
+      }
+    },
+    "/api/v1/share/{token}" : {
+      "get" : {
+        "operationId" : "read",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "token",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TripDocument"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "share-controller" ]
+      }
+    },
+    "/api/v1/share/{token}/clone" : {
+      "post" : {
+        "operationId" : "clone_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "token",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CreatedTrip"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "tags" : [ "share-controller" ]
       }
     },
     "/api/v1/stops/{stopId}" : {
@@ -487,6 +576,237 @@
         "tags" : [ "trip-write-controller" ]
       }
     },
+    "/api/v1/trips/{tripId}" : {
+      "delete" : {
+        "operationId" : "deleteTrip",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "tripId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "in" : "query",
+          "name" : "version",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "tags" : [ "trip-write-controller" ]
+      },
+      "patch" : {
+        "operationId" : "updateTrip",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "tripId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateTripRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TripDocument"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "trip-write-controller" ]
+      }
+    },
+    "/api/v1/trips/{tripId}/completions" : {
+      "get" : {
+        "operationId" : "list_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "tripId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string",
+                    "format" : "uuid"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "completion-controller" ]
+      }
+    },
+    "/api/v1/trips/{tripId}/completions/stops/{stopId}" : {
+      "delete" : {
+        "operationId" : "clear",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "tripId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "in" : "path",
+          "name" : "stopId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "tags" : [ "completion-controller" ]
+      },
+      "put" : {
+        "operationId" : "complete",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "tripId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "in" : "path",
+          "name" : "stopId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "tags" : [ "completion-controller" ]
+      }
+    },
+    "/api/v1/trips/{tripId}/share-links" : {
+      "get" : {
+        "operationId" : "list",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "tripId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/ShareLinkSummary"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "share-controller" ]
+      },
+      "post" : {
+        "operationId" : "create_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "tripId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "201" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CreatedShareLink"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "tags" : [ "share-controller" ]
+      }
+    },
+    "/api/v1/trips/{tripId}/share-links/{linkId}" : {
+      "delete" : {
+        "operationId" : "revoke",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "tripId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "in" : "path",
+          "name" : "linkId",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "tags" : [ "share-controller" ]
+      }
+    },
     "/api/v1/weather" : {
       "get" : {
         "operationId" : "weather",
@@ -548,6 +868,15 @@
             "type" : [ "string", "null" ],
             "format" : "uuid"
           },
+          "buffer" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 80,
+            "minLength" : 0
+          },
+          "clientMutationId" : {
+            "type" : [ "string", "null" ],
+            "format" : "uuid"
+          },
           "coordinates" : {
             "type" : [ "array", "null" ],
             "items" : {
@@ -566,6 +895,14 @@
             "type" : [ "string", "null" ],
             "maxLength" : 40,
             "minLength" : 0
+          },
+          "links" : {
+            "type" : [ "array", "null" ],
+            "items" : {
+              "$ref" : "#/components/schemas/StopLinkRequest"
+            },
+            "maxItems" : 20,
+            "minItems" : 0
           },
           "time" : {
             "type" : "string",
@@ -608,9 +945,30 @@
             "type" : "string",
             "maxLength" : 60,
             "minLength" : 0
+          },
+          "travelers" : {
+            "type" : [ "array", "null" ],
+            "items" : {
+              "$ref" : "#/components/schemas/TravelerRequest"
+            },
+            "maxItems" : 30,
+            "minItems" : 0
           }
         },
         "required" : [ "endDate", "startDate", "title" ]
+      },
+      "CreatedShareLink" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "token" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "id", "token" ]
       },
       "CreatedTrip" : {
         "type" : "object",
@@ -775,6 +1133,20 @@
         },
         "required" : [ "password", "token" ]
       },
+      "ShareLinkSummary" : {
+        "type" : "object",
+        "properties" : {
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        },
+        "required" : [ "createdAt", "id" ]
+      },
       "SignupRequest" : {
         "type" : "object",
         "properties" : {
@@ -860,6 +1232,43 @@
           }
         },
         "required" : [ "approximate", "details", "id", "key", "optional", "position", "time", "title", "type", "version" ]
+      },
+      "StopLinkRequest" : {
+        "type" : "object",
+        "properties" : {
+          "label" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "note" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 1000,
+            "minLength" : 0
+          },
+          "url" : {
+            "type" : "string",
+            "maxLength" : 2048,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "label", "url" ]
+      },
+      "TravelerRequest" : {
+        "type" : "object",
+        "properties" : {
+          "emoji" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 16,
+            "minLength" : 0
+          },
+          "label" : {
+            "type" : "string",
+            "maxLength" : 30,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "label" ]
       },
       "TripDocument" : {
         "type" : "object",
@@ -961,6 +1370,31 @@
         },
         "required" : [ "cities", "endDate", "isSample", "slug", "startDate", "stopCount", "title", "visibility" ]
       },
+      "UpdateDayRequest" : {
+        "type" : "object",
+        "properties" : {
+          "city" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 40,
+            "minLength" : 0
+          },
+          "note" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 4000,
+            "minLength" : 0
+          },
+          "theme" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "version" ]
+      },
       "UpdateStopRequest" : {
         "type" : "object",
         "properties" : {
@@ -991,6 +1425,14 @@
             "maxLength" : 40,
             "minLength" : 0
           },
+          "links" : {
+            "type" : [ "array", "null" ],
+            "items" : {
+              "$ref" : "#/components/schemas/StopLinkRequest"
+            },
+            "maxItems" : 20,
+            "minItems" : 0
+          },
           "time" : {
             "type" : [ "string", "null" ],
             "pattern" : "^([01][0-9]|2[0-3]):[0-5][0-9]$"
@@ -1008,6 +1450,34 @@
           "version" : {
             "type" : "integer",
             "format" : "int32"
+          }
+        },
+        "required" : [ "version" ]
+      },
+      "UpdateTripRequest" : {
+        "type" : "object",
+        "properties" : {
+          "endDate" : {
+            "type" : [ "string", "null" ],
+            "format" : "date"
+          },
+          "startDate" : {
+            "type" : [ "string", "null" ],
+            "format" : "date"
+          },
+          "title" : {
+            "type" : [ "string", "null" ],
+            "maxLength" : 60,
+            "minLength" : 1,
+            "pattern" : ".*\\S.*"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "visibility" : {
+            "type" : [ "string", "null" ],
+            "pattern" : "^(private|link|public)$"
           }
         },
         "required" : [ "version" ]

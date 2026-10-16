@@ -12,7 +12,7 @@ import { type LoginValues, loginSchema } from '@/lib/auth/schemas';
 import { useHydrated } from '@/lib/hydration';
 import styles from './Auth.module.css';
 
-export function LoginForm({ googleError }: { googleError: boolean }) {
+export function LoginForm({ googleError, next }: { googleError: boolean; next?: string }) {
   const hydrated = useHydrated();
   const router = useRouter();
   const [serverError, setServerError] = useState<string>();
@@ -23,7 +23,14 @@ export function LoginForm({ googleError }: { googleError: boolean }) {
     try {
       const { response, error } = await api.POST('/api/v1/auth/login', { body: values });
       if (response.ok) {
-        router.replace('/');
+        let destination = '/';
+        try {
+          if (next?.startsWith('/') && new URL(next, 'https://tripnote.invalid').origin === 'https://tripnote.invalid')
+            destination = next;
+        } catch {
+          /* Invalid return paths go home after a successful login. */
+        }
+        router.replace(destination);
         router.refresh();
         return;
       }

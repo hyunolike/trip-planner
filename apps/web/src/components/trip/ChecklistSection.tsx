@@ -4,9 +4,9 @@ import { legacySectionsFor } from '@/lib/trip/sections';
 import { GuideBlocks } from './GuideBlocks';
 import styles from './Sections.module.css';
 
-type Props = { trip: TripView; done: ReadonlySet<string>; onToggle: (id: string) => void };
+type Props = { trip: TripView; done: ReadonlySet<string>; onToggle: (id: string) => void; disabled?: boolean };
 
-export function ChecklistSection({ trip, done, onToggle }: Props) {
+export function ChecklistSection({ trip, done, onToggle, disabled = false }: Props) {
   const groups = trip.content.checklistGroups;
   const legacy = legacySectionsFor(trip, 'preparation');
   return (
@@ -23,7 +23,12 @@ export function ChecklistSection({ trip, done, onToggle }: Props) {
             {group.items.map((item) => (
               <li key={item.id}>
                 <label className={styles.check}>
-                  <input type="checkbox" checked={done.has(item.id)} onChange={() => onToggle(item.id)} />
+                  <input
+                    type="checkbox"
+                    disabled={disabled}
+                    checked={done.has(item.id)}
+                    onChange={() => onToggle(item.id)}
+                  />
                   <span className={styles.checkText}>
                     <span className={styles.checkTitle}>
                       {item.title}

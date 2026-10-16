@@ -1,6 +1,7 @@
 package com.tripnote.weather.internal
 
 import com.tripnote.common.ApiException
+import com.tripnote.common.ClientIp
 import com.tripnote.common.RateLimiter
 import com.tripnote.weather.WeatherResponse
 import jakarta.servlet.http.HttpServletRequest
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class WeatherController(private val weather: WeatherService, private val rateLimiter: RateLimiter) {
+class WeatherController(private val weather: WeatherService, private val rateLimiter: RateLimiter, private val clientIp: ClientIp) {
     @GetMapping("/api/v1/weather")
     fun weather(
         @RequestParam lat: Double,
@@ -28,7 +29,7 @@ class WeatherController(private val weather: WeatherService, private val rateLim
         }
         val zone = runCatching { ZoneId.of(timezone) }
             .getOrElse { throw ApiException(HttpStatus.BAD_REQUEST, "시간대를 확인해 주세요.") }
-        rateLimiter.check("weather-ip", request.remoteAddr, limit = 60, window = Duration.ofMinutes(1))
+        rateLimiter.check("weather-ip", clientIp.resolve(request), limit = 60, window = Duration.ofMinutes(1))
         return weather.forecast(lat, lng, date, zone)
     }
 }

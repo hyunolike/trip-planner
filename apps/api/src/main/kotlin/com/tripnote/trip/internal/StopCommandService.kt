@@ -5,6 +5,10 @@ import com.tripnote.trip.StopDocument
 import java.time.LocalTime
 import java.util.UUID
 import com.tripnote.jooq.Tables.TRIPS
+import com.tripnote.jooq.Tables.TRIP_DAYS
+import com.tripnote.jooq.Tables.STOPS
+import org.jooq.JSONB
+import tools.jackson.databind.json.JsonMapper
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.dao.DataIntegrityViolationException
@@ -21,6 +25,9 @@ data class NewStop(
     val duration: String?,
     val coordinates: List<Double?>?,
     val afterStopId: UUID?,
+    val links: List<StopLinkRequest>? = null,
+    val clientMutationId: UUID? = null,
+    val buffer: String? = null,
 )
 
 data class StopChanges(
@@ -33,6 +40,7 @@ data class StopChanges(
     val buffer: String?,
     val coordinates: List<Double?>?,
     val clearCoordinates: Boolean,
+    val links: List<StopLinkRequest>? = null,
 )
 
 @Service
@@ -42,13 +50,23 @@ class StopCommandService(
     private val access: TripAccess,
     private val queries: TripQueries,
     private val dsl: DSLContext,
+    private val json: JsonMapper,
 ) {
     private val conflictMessage = "다른 곳에서 먼저 고친 내용이 있어요. 최신 내용을 확인하고 다시 저장해 주세요."
 
     @Transactional
     fun add(dayId: UUID, userId: UUID, command: NewStop): StopDocument {
+        lockTripOfDay(dayId)
         val day = days.lockById(dayId) ?: throw access.notFound()
         access.requireEdit(day.tripId, userId)
+        command.clientMutationId?.let { mutation ->
+            val record = dsl.fetchOne("SELECT stop_id FROM stop_create_mutations WHERE user_id = ? AND day_id = ? AND client_mutation_id = ?", userId, dayId, mutation)
+            if (record != null) {
+                val existing = record.get("stop_id", UUID::class.java) ?: throw ApiException(HttpStatus.CONFLICT, "이미 삭제한 일정이에요.")
+                return queries.stop(existing)
+            }
+        }
+        checkLinks(command.links)
         checkCoordinates(command.coordinates)
         val ordered = stops.findByDayIdOrderByPositionAsc(dayId)
         val afterIndex = command.afterStopId?.let { id -> ordered.indexOfFirst { it.id == id }.also { if (it < 0) throw ApiException(HttpStatus.BAD_REQUEST, "이 날짜에 없는 일정 뒤에는 추가할 수 없어요.") } }
@@ -65,6 +83,7 @@ class StopCommandService(
             details = command.details.orEmpty(),
         ).apply {
             duration = command.duration
+            buffer = command.buffer
             command.coordinates?.let { lat = it[0]; lng = it[1] }
         }
         val saved = try {
@@ -72,14 +91,18 @@ class StopCommandService(
         } catch (exception: DataIntegrityViolationException) {
             throw positionConflict(exception, day.id)
         }
+        command.links?.let { dsl.update(STOPS).set(STOPS.LINKS, JSONB.valueOf(json.writeValueAsString(it))).where(STOPS.ID.eq(saved.id)).execute() }
+        command.clientMutationId?.let { dsl.execute("INSERT INTO stop_create_mutations(user_id, day_id, client_mutation_id, stop_id) VALUES (?, ?, ?, ?)", userId, dayId, it, saved.id) }
         touchTrip(day.tripId)
         return queries.stop(saved.id)
     }
 
     @Transactional
     fun update(stopId: UUID, userId: UUID, changes: StopChanges): StopDocument {
+        lockTripOfStop(stopId)
         val stop = stops.findById(stopId).orElseThrow { access.notFound() }
         access.requireEdit(stop.tripId, userId)
+        checkLinks(changes.links)
         checkCoordinates(changes.coordinates)
         if (changes.clearCoordinates && changes.coordinates != null) throw ApiException(HttpStatus.BAD_REQUEST, "좌표를 지우면서 동시에 지정할 수 없어요.")
         if (stop.version != changes.version) throw ApiException(HttpStatus.CONFLICT, conflictMessage, body = queries.stop(stopId))
@@ -96,12 +119,17 @@ class StopCommandService(
         } catch (exception: ObjectOptimisticLockingFailureException) {
             throw ApiException(HttpStatus.CONFLICT, conflictMessage, body = queries.stop(stopId))
         }
+        if (changes.links != null && stop.version == changes.version) {
+            dsl.update(STOPS).set(STOPS.VERSION, STOPS.VERSION.plus(1)).where(STOPS.ID.eq(stopId)).execute()
+        }
+        changes.links?.let { dsl.update(STOPS).set(STOPS.LINKS, JSONB.valueOf(json.writeValueAsString(it))).where(STOPS.ID.eq(stopId)).execute() }
         touchTrip(stop.tripId)
         return queries.stop(stopId)
     }
 
     @Transactional
     fun delete(stopId: UUID, userId: UUID, version: Int) {
+        lockTripOfStop(stopId)
         val stop = stops.findById(stopId).orElseThrow { access.notFound() }
         access.requireEdit(stop.tripId, userId)
         if (stop.version != version) throw ApiException(HttpStatus.CONFLICT, conflictMessage, body = queries.stop(stopId))
@@ -116,6 +144,7 @@ class StopCommandService(
 
     @Transactional
     fun reorder(dayId: UUID, userId: UUID, stopIds: List<UUID>): List<StopDocument> {
+        lockTripOfDay(dayId)
         val day = days.lockById(dayId) ?: throw access.notFound()
         access.requireEdit(day.tripId, userId)
         val current = stops.findByDayIdOrderByPositionAsc(dayId)
@@ -141,6 +170,25 @@ class StopCommandService(
     private fun touchTrip(tripId: UUID) {
         dsl.update(TRIPS).set(TRIPS.VERSION, TRIPS.VERSION.plus(1)).set(TRIPS.UPDATED_AT, DSL.currentOffsetDateTime())
             .where(TRIPS.ID.eq(tripId)).execute()
+    }
+
+    private fun lockTripOfDay(dayId: UUID) {
+        val tripId = dsl.select(TRIP_DAYS.TRIP_ID).from(TRIP_DAYS).where(TRIP_DAYS.ID.eq(dayId)).fetchOne(TRIP_DAYS.TRIP_ID) ?: throw access.notFound()
+        dsl.select(TRIPS.ID).from(TRIPS).where(TRIPS.ID.eq(tripId)).forUpdate().fetchOne() ?: throw access.notFound()
+    }
+
+    private fun lockTripOfStop(stopId: UUID) {
+        val tripId = dsl.select(STOPS.TRIP_ID).from(STOPS).where(STOPS.ID.eq(stopId)).fetchOne(STOPS.TRIP_ID) ?: throw access.notFound()
+        dsl.select(TRIPS.ID).from(TRIPS).where(TRIPS.ID.eq(tripId)).forUpdate().fetchOne() ?: throw access.notFound()
+    }
+
+    private fun checkLinks(links: List<StopLinkRequest>?) {
+        links?.forEach { link ->
+            val uri = runCatching { java.net.URI(link.url) }.getOrNull()
+            if (uri == null || uri.scheme?.lowercase() !in setOf("https", "http") || uri.host.isNullOrBlank() || uri.userInfo != null) {
+                throw ApiException(HttpStatus.BAD_REQUEST, "링크는 http 또는 https 주소로 입력해 주세요.")
+            }
+        }
     }
 
     private fun positionConflict(exception: DataIntegrityViolationException, dayId: UUID): ApiException {

@@ -22,6 +22,7 @@ const sans = IBM_Plex_Sans_KR({
 const mono = IBM_Plex_Mono({ weight: ['500'], subsets: ['latin'], variable: '--font-mono-web', display: 'swap' });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.SITE_ORIGIN ?? 'http://localhost:3000'),
   title: { default: '여행노트', template: '%s · 여행노트' },
   description: '예약은 어디서든, 일정은 여기서. 여행 당일 손에 들고 보는 일정표예요.',
   icons: { icon: '/brand/favicon.svg', apple: '/brand/app-icon.svg' },

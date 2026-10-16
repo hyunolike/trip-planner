@@ -47,6 +47,11 @@ export function MyTrips({ account }: { account: Account }) {
       <h2 id="my-trips-title" className={styles.sectionTitle}>
         {account.me.nickname}님의 여행
       </h2>
+      <div className={styles.actions}>
+        <Button href="/trips/new" variant="primary">
+          여행 만들기
+        </Button>
+      </div>
       {account.trips.length ? (
         <div className={styles.cards}>
           {account.trips.map((trip) => (
@@ -57,7 +62,7 @@ export function MyTrips({ account }: { account: Account }) {
         <EmptyState
           illustration="empty-itinerary"
           title="아직 만든 여행이 없어요"
-          text="여행 만들기는 곧 열려요. 먼저 샘플 일정을 둘러보세요."
+          text="목적지와 날짜를 정하고 첫 일정을 채워 보세요."
           action={<Button href="#samples">샘플 일정 보기</Button>}
           headingLevel={3}
         />

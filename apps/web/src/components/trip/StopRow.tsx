@@ -13,9 +13,10 @@ type Props = {
   mode: 'summary' | 'detail';
   onToggle: (key: string) => void;
   onLocate?: (key: string) => void;
+  disabled?: boolean;
 };
 
-export function StopRow({ stop, done, mode, onToggle, onLocate }: Props) {
+export function StopRow({ stop, done, mode, onToggle, onLocate, disabled = false }: Props) {
   return (
     <li id={`stop-${stop.key}`} className={[styles.row, done ? styles.done : ''].filter(Boolean).join(' ')}>
       <div className={styles.time}>
@@ -83,6 +84,7 @@ export function StopRow({ stop, done, mode, onToggle, onLocate }: Props) {
         type="button"
         className={styles.check}
         aria-pressed={done}
+        disabled={disabled}
         aria-label={`일정 완료 표시: ${stop.title}`}
         onClick={() => onToggle(stop.key)}
       >
