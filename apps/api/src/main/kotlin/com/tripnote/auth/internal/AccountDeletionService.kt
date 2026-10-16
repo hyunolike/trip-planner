@@ -21,6 +21,9 @@ class AccountDeletionService(
      * 네트워크 호출은 잠금과 트랜잭션 밖에서 한다. 업로드 이미지 삭제는 사진 업로드를 만드는 3단계에서 추가한다.
      */
     fun delete(userId: UUID, googleAccessToken: String?) {
+        // 잠금 없는 선확인: 시스템 계정이나 없는 계정이면 구글을 건드리기 전에 답한다. 잠금 아래에서 다시 확인한다.
+        val existing = users.findById(userId).orElse(null) ?: throw ApiException(HttpStatus.NOT_FOUND, "계정을 찾을 수 없어요.")
+        if (existing.status == "system") throw ApiException(HttpStatus.FORBIDDEN, "시스템 계정은 삭제할 수 없어요.")
         googleAccessToken?.let { token ->
             runCatching { revoker.revoke(token) }.onFailure { log.warn("google token revoke failed for {}: {}", userId, it.message) }
         }

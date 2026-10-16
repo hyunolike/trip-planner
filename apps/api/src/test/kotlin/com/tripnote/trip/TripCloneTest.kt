@@ -73,4 +73,18 @@ class TripCloneTest : IntegrationTest() {
 
         mvc.post("/api/v1/trips/secret-trip/clone") { cookie(other); with(csrf()) }.andExpect { status { isNotFound() } }
     }
+
+    @Test
+    fun `cloning your own private trip is refused`() {
+        val owner = createVerifiedUser("owner@example.com")
+        val session = login("owner@example.com")
+        val tripId = jdbc.sql("INSERT INTO trips (slug, owner_id, title, start_date, end_date) VALUES ('my-private', ?, '내 여행', '2027-01-01', '2027-01-01') RETURNING id")
+            .param(owner).query(UUID::class.java).single()
+        jdbc.sql("INSERT INTO trip_members (trip_id, user_id, role) VALUES (?, ?, 'owner')").params(tripId, owner).update()
+
+        mvc.post("/api/v1/trips/my-private/clone") { cookie(session); with(csrf()) }.andExpect {
+            status { isForbidden() }
+            jsonPath("$.detail") { value("이 일정은 복제할 수 없어요.") }
+        }
+    }
 }

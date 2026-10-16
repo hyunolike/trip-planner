@@ -5,6 +5,7 @@ import java.util.UUID
 import org.springframework.http.HttpStatus
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
 
 @Service
@@ -14,7 +15,7 @@ class TripCloneService(
     private val slugs: SlugGenerator,
     private val access: TripAccess,
 ) {
-    @Transactional
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     fun clone(sourceSlug: String, userId: UUID): CreatedTrip {
         val source = queries.find(sourceSlug, userId) ?: throw access.notFound()
         if (!source.permissions.canClone) throw ApiException(HttpStatus.FORBIDDEN, "이 일정은 복제할 수 없어요.")
@@ -26,7 +27,7 @@ class TripCloneService(
             SELECT :slug, :owner, title, subtitle, start_date, end_date, timezone, 'private', false, id, content FROM trips WHERE id = :source
             RETURNING id
             """.trimIndent(),
-        ).param("slug", slug).param("owner", userId).param("source", source.id).query(UUID::class.java).single()
+        ).param("slug", slug).param("owner", userId).param("source", source.id).query(UUID::class.java).optional().orElseThrow { access.notFound() }
 
         jdbc.sql(
             """
