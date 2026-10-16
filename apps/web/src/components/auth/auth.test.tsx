@@ -188,3 +188,12 @@ describe('ResendVerificationForm', () => {
     expect(POST).not.toHaveBeenCalled();
   });
 });
+
+describe('forms posted before hydration', () => {
+  it('never put credentials in the query string', () => {
+    const { container: login } = render(<LoginForm googleError={false} />);
+    expect(login.querySelector('form')).toHaveAttribute('method', 'post');
+    const { container: signup } = render(<SignupForm />);
+    expect(signup.querySelector('form')).toHaveAttribute('method', 'post');
+  });
+});

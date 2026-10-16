@@ -2,7 +2,7 @@
 
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { colors } from '@tripnote/design-tokens';
-import type { StyleSpecification } from 'maplibre-gl';
+import { type StyleSpecification, setWorkerUrl } from 'maplibre-gl';
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Layer, type MapRef, Map as MapView, Marker, NavigationControl, Source } from 'react-map-gl/maplibre';
 import { Button } from '@/components/ui';
@@ -14,6 +14,9 @@ import styles from './TripMap.module.css';
 
 const STYLE_URL = process.env.NEXT_PUBLIC_MAP_STYLE_URL ?? 'https://tiles.openfreemap.org/styles/liberty';
 const SEGMENT_MS = 2500;
+
+// 운영 빌드에서는 번들러가 import.meta.url을 바꿔 MapLibre가 워커 파일을 못 찾는다. sync:images가 public/maplibre에 복사한 워커를 쓴다.
+setWorkerUrl('/maplibre/maplibre-gl-worker.mjs');
 
 function useMedia(query: string): boolean {
   return useSyncExternalStore(
@@ -156,11 +159,14 @@ export default function TripMap({ points, segments, selectedKey, selectionNonce,
                   ]
                     .filter(Boolean)
                     .join(' ')}
-                  aria-label={`${index + 1}번째 장소 ${point.title}${point.approximate ? ' (대략 위치)' : ''}`}
                   aria-pressed={selected}
                   onClick={() => onSelect(point.key)}
                 >
                   {index + 1}
+                  <span className="visually-hidden">
+                    번째 장소 {point.title}
+                    {point.approximate ? ' (대략 위치)' : ''}
+                  </span>
                 </button>
               </Marker>
             );

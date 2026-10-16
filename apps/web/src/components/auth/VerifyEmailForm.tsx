@@ -42,7 +42,7 @@ export function VerifyEmailForm({ token }: { token: string }) {
   }
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
+    <form method="post" className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
       <h1 className={styles.title}>이메일 인증</h1>
       <p className={styles.lead}>본인 확인을 위해 가입할 때 정한 비밀번호를 한 번 더 입력해 주세요.</p>
       <TextField
@@ -81,7 +81,7 @@ export function ResendVerificationForm() {
   }
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
+    <form method="post" className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
       <h2 className={styles.title}>인증 메일 다시 받기</h2>
       <TextField
         label="이메일"

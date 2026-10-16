@@ -120,14 +120,14 @@ describe('TripScreen', () => {
     renderScreen(<TripScreen trip={osaka} initialDay={0} onLocate={onLocate} />);
     const kix = day1.stops.find((s) => s.key === 'd1-kix')!;
 
-    await userEvent.click(screen.getByRole('button', { name: `${kix.title} 지도에서 보기` }));
+    await userEvent.click(screen.getByRole('button', { name: `위치 · ${kix.title} 지도에서 보기` }));
 
     expect(onLocate).toHaveBeenCalledWith('d1-kix');
   });
 
   it('sends a new map request each time the same stop is located', async () => {
     renderScreen(<TripScreen trip={osaka} initialDay={0} />);
-    const button = screen.getByRole('button', { name: `${day1.stops[0]!.title} 지도에서 보기` });
+    const button = screen.getByRole('button', { name: `위치 · ${day1.stops[0]!.title} 지도에서 보기` });
 
     await userEvent.click(button);
     const first = screen.getByTestId('map').dataset.nonce;

@@ -32,7 +32,7 @@ export function LoginForm({ googleError }: { googleError: boolean }) {
   }
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
+    <form method="post" className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
       <h1 className={styles.title}>로그인</h1>
       {googleError ? (
         <p role="alert" className={styles.error}>

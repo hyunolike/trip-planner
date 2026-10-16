@@ -37,14 +37,9 @@ export function StopRow({ stop, done, mode, onToggle, onLocate }: Props) {
             </span>
           ) : null}
           {stop.coordinates && onLocate ? (
-            <button
-              type="button"
-              className={styles.locate}
-              onClick={() => onLocate(stop.key)}
-              aria-label={`${stop.title} 지도에서 보기`}
-            >
+            <button type="button" className={styles.locate} onClick={() => onLocate(stop.key)}>
               <Icon name="map-pin" size={16} />
-              위치
+              위치 <span className="visually-hidden">· {stop.title} 지도에서 보기</span>
             </button>
           ) : null}
         </div>

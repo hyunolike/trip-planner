@@ -39,7 +39,7 @@ export function SignupForm() {
   }
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
+    <form method="post" className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
       <h1 className={styles.title}>이메일로 가입</h1>
       <TextField
         label="닉네임"
