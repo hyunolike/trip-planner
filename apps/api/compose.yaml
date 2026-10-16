@@ -7,6 +7,11 @@ services:
       POSTGRES_PASSWORD: tripnote
     ports: ["5432:5432"]
     volumes: ["db-data:/var/lib/postgresql"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U tripnote -d tripnote"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
   valkey:
     image: valkey/valkey:9.1
     command: ["valkey-server", "--appendonly", "yes"]

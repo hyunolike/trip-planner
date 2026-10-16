@@ -6,8 +6,7 @@
     "version" : "v1"
   },
   "servers" : [ {
-    "url" : "http://localhost",
-    "description" : "Generated server url"
+    "url" : "/"
   } ],
   "paths" : {
     "/api/v1/auth/login" : {
@@ -36,6 +35,18 @@
           }
         },
         "tags" : [ "session-controller" ]
+      }
+    },
+    "/api/v1/auth/logout" : {
+      "post" : {
+        "operationId" : "logout",
+        "responses" : {
+          "204" : {
+            "description" : "로그아웃됨. 본문 없음"
+          }
+        },
+        "summary" : "로그아웃",
+        "tags" : [ "auth" ]
       }
     },
     "/api/v1/auth/password-reset" : {
@@ -584,13 +595,7 @@
           "theme" : {
             "type" : "string"
           },
-          "tour" : {
-            "oneOf" : [ {
-              "$ref" : "#/components/schemas/JsonNode"
-            }, {
-              "type" : "null"
-            } ]
-          }
+          "tour" : { }
         }
       },
       "EmailRequest" : {
@@ -604,85 +609,6 @@
           }
         },
         "required" : [ "email" ]
-      },
-      "JsonNode" : {
-        "type" : "object",
-        "properties" : {
-          "array" : {
-            "type" : "boolean"
-          },
-          "bigDecimal" : {
-            "type" : "boolean"
-          },
-          "bigInteger" : {
-            "type" : "boolean"
-          },
-          "binary" : {
-            "type" : "boolean"
-          },
-          "boolean" : {
-            "type" : "boolean"
-          },
-          "container" : {
-            "type" : "boolean"
-          },
-          "double" : {
-            "type" : "boolean"
-          },
-          "embeddedValue" : {
-            "type" : "boolean"
-          },
-          "empty" : {
-            "type" : "boolean"
-          },
-          "float" : {
-            "type" : "boolean"
-          },
-          "floatingPointNumber" : {
-            "type" : "boolean"
-          },
-          "int" : {
-            "type" : "boolean"
-          },
-          "integralNumber" : {
-            "type" : "boolean"
-          },
-          "long" : {
-            "type" : "boolean"
-          },
-          "missingNode" : {
-            "type" : "boolean"
-          },
-          "nodeType" : {
-            "type" : "string",
-            "enum" : [ "ARRAY", "BINARY", "BOOLEAN", "MISSING", "NULL", "NUMBER", "OBJECT", "POJO", "STRING" ]
-          },
-          "null" : {
-            "type" : "boolean"
-          },
-          "number" : {
-            "type" : "boolean"
-          },
-          "object" : {
-            "type" : "boolean"
-          },
-          "pojo" : {
-            "type" : "boolean"
-          },
-          "short" : {
-            "type" : "boolean"
-          },
-          "string" : {
-            "type" : "boolean"
-          },
-          "textual" : {
-            "type" : "boolean",
-            "deprecated" : true
-          },
-          "valueNode" : {
-            "type" : "boolean"
-          }
-        }
       },
       "LoginRequest" : {
         "type" : "object",
@@ -737,9 +663,7 @@
           "area" : {
             "type" : "string"
           },
-          "details" : {
-            "$ref" : "#/components/schemas/JsonNode"
-          },
+          "details" : { },
           "id" : {
             "type" : "string",
             "format" : "uuid"
@@ -826,20 +750,8 @@
           "duration" : {
             "type" : [ "string", "null" ]
           },
-          "guide" : {
-            "oneOf" : [ {
-              "$ref" : "#/components/schemas/JsonNode"
-            }, {
-              "type" : "null"
-            } ]
-          },
-          "hotelPhoto" : {
-            "oneOf" : [ {
-              "$ref" : "#/components/schemas/JsonNode"
-            }, {
-              "type" : "null"
-            } ]
-          },
+          "guide" : { },
+          "hotelPhoto" : { },
           "id" : {
             "type" : "string",
             "format" : "uuid"
@@ -847,23 +759,11 @@
           "key" : {
             "type" : "string"
           },
-          "links" : {
-            "oneOf" : [ {
-              "$ref" : "#/components/schemas/JsonNode"
-            }, {
-              "type" : "null"
-            } ]
-          },
+          "links" : { },
           "optional" : {
             "type" : "boolean"
           },
-          "photo" : {
-            "oneOf" : [ {
-              "$ref" : "#/components/schemas/JsonNode"
-            }, {
-              "type" : "null"
-            } ]
-          },
+          "photo" : { },
           "placeKey" : {
             "type" : [ "string", "null" ]
           },
@@ -879,13 +779,7 @@
           "title" : {
             "type" : "string"
           },
-          "transit" : {
-            "oneOf" : [ {
-              "$ref" : "#/components/schemas/JsonNode"
-            }, {
-              "type" : "null"
-            } ]
-          },
+          "transit" : { },
           "transportIcon" : {
             "type" : [ "string", "null" ]
           },
@@ -901,9 +795,7 @@
       "TripDocument" : {
         "type" : "object",
         "properties" : {
-          "content" : {
-            "$ref" : "#/components/schemas/JsonNode"
-          },
+          "content" : { },
           "days" : {
             "type" : "array",
             "items" : {
@@ -968,13 +860,7 @@
               "type" : "string"
             }
           },
-          "coverPhoto" : {
-            "oneOf" : [ {
-              "$ref" : "#/components/schemas/JsonNode"
-            }, {
-              "type" : "null"
-            } ]
-          },
+          "coverPhoto" : { },
           "endDate" : {
             "type" : "string",
             "format" : "date"

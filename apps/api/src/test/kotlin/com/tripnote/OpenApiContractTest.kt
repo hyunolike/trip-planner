@@ -20,7 +20,10 @@ class OpenApiContractTest : IntegrationTest() {
         if (System.getProperty("openapi.write") == "true") Files.writeString(file, pretty)
 
         assertThat(json.readTree(raw).get("openapi").asString()).startsWith("3.")
-        assertThat(pretty).contains("/api/v1/trips/{slug}", "/api/v1/auth/signup", "/api/v1/days/{dayId}/stops/order")
+        assertThat(pretty).contains("/api/v1/trips/{slug}", "/api/v1/auth/signup", "/api/v1/days/{dayId}/stops/order", "/api/v1/auth/logout")
+        assertThat(pretty).doesNotContain("bigDecimal", "\"JsonNode\"")
+        assertThat(json.readTree(raw).get("servers").size()).isEqualTo(1)
+        assertThat(json.readTree(raw).get("servers").get(0).get("url").asString()).isEqualTo("/")
         assertThat(Files.readString(file))
             .withFailMessage("openapi.json is stale. Run: ./gradlew test --tests com.tripnote.OpenApiContractTest -Dopenapi.write=true")
             .isEqualTo(pretty)
