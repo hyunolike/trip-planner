@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { DayRoute } from '@/components/map/DayRoute';
 import { useCompletion } from '@/lib/trip/completion';
 import type { TripView } from '@/lib/trip/content';
 import { useHashSection } from '@/lib/trip/sections';
@@ -22,6 +23,7 @@ export function TripScreen({ trip, initialDay, onLocate }: Props) {
   const [dayIndex, setDayIndex] = useState(initialDay);
   const [mode, setMode] = useState<'summary' | 'detail'>('summary');
   const [hideDone, setHideDone] = useState(false);
+  const [selected, setSelected] = useState<string>();
   const completion = useCompletion(trip.slug);
   const section = useHashSection();
   const day = trip.days[dayIndex] ?? trip.days[0];
@@ -32,6 +34,7 @@ export function TripScreen({ trip, initialDay, onLocate }: Props) {
 
   function selectDay(index: number) {
     setDayIndex(index);
+    setSelected(undefined);
     const url = new URL(window.location.href);
     url.searchParams.set('day', String(index + 1));
     window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
@@ -40,7 +43,8 @@ export function TripScreen({ trip, initialDay, onLocate }: Props) {
   const locate =
     onLocate ??
     ((key: string) => {
-      document.getElementById(`stop-${key}`)?.scrollIntoView?.({ block: 'center' });
+      setSelected(key);
+      document.getElementById('day-map')?.scrollIntoView?.({ block: 'center' });
     });
 
   if (!day) return null;
@@ -61,7 +65,7 @@ export function TripScreen({ trip, initialDay, onLocate }: Props) {
               hideDone={hideDone}
               onHideDoneChange={setHideDone}
               onLocate={locate}
-              before={null /* Task 9: 그날 지도 */}
+              before={<DayRoute day={day} selectedKey={selected} onSelect={setSelected} />}
               resources={
                 <>
                   {/* Task 10: 날씨 카드 */}

@@ -5,6 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { readTrip } from '@/lib/trip/content';
 import { TripScreen } from './TripScreen';
 
+vi.mock('@/components/map/LazyTripMap', () => ({ LazyTripMap: () => <div data-testid="map" /> }));
+
 const osaka = readTrip(osakaTrip());
 const day1 = osaka.days[0]!;
 const day2 = osaka.days[1]!;

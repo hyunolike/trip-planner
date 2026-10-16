@@ -1,9 +1,11 @@
 import { danangTrip, osakaTrip } from '@test/fixtures/trip';
 import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { readTrip } from '@/lib/trip/content';
 import { TripScreen } from './TripScreen';
+
+vi.mock('@/components/map/LazyTripMap', () => ({ LazyTripMap: () => <div data-testid="map" /> }));
 
 const osaka = readTrip(osakaTrip());
 
