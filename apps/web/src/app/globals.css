@@ -77,6 +77,11 @@ a {
   padding: 0 var(--gutter) var(--space-16);
 }
 
+.page-narrow {
+  max-width: calc(420px + 2 * var(--gutter));
+  padding-top: var(--space-8);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
