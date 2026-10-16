@@ -3,6 +3,7 @@ package com.tripnote.auth.internal
 import com.tripnote.common.TripnoteProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder
@@ -32,6 +33,7 @@ class SecurityConfig {
         .authorizeHttpRequests {
             it.requestMatchers("/actuator/health/**").permitAll()
                 .requestMatchers("/api/v1/auth/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/trips/*", "/api/v1/samples").permitAll()
                 .anyRequest().authenticated()
         }
         .oauth2Login {
