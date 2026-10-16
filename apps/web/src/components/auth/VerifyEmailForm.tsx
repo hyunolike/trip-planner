@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { Button, TextField } from '@/components/ui';
 import { api } from '@/lib/api/client';
 import { problemMessage } from '@/lib/api/errors';
-import { type VerifyValues, verifySchema } from '@/lib/auth/schemas';
+import { type EmailValues, emailSchema, type VerifyValues, verifySchema } from '@/lib/auth/schemas';
 import styles from './Auth.module.css';
 
 export function VerifyEmailForm({ token }: { token: string }) {
@@ -59,6 +59,49 @@ export function VerifyEmailForm({ token }: { token: string }) {
       ) : null}
       <Button type="submit" variant="primary" size="lg" disabled={formState.isSubmitting}>
         가입 마치기
+      </Button>
+    </form>
+  );
+}
+
+export function ResendVerificationForm() {
+  const [sent, setSent] = useState<string>();
+  const [serverError, setServerError] = useState<string>();
+  const { register, handleSubmit, formState } = useForm<EmailValues>({ resolver: zodResolver(emailSchema) });
+
+  async function onSubmit(values: EmailValues) {
+    setServerError(undefined);
+    try {
+      const { data, error, response } = await api.POST('/api/v1/auth/verify-email/resend', { body: values });
+      if (data) setSent(data.message);
+      else setServerError(problemMessage(error, response.status));
+    } catch (e) {
+      setServerError(problemMessage(e));
+    }
+  }
+
+  return (
+    <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
+      <h2 className={styles.title}>인증 메일 다시 받기</h2>
+      <TextField
+        label="이메일"
+        type="email"
+        autoComplete="email"
+        error={formState.errors.email?.message}
+        {...register('email')}
+      />
+      {sent ? (
+        <p role="status" className={styles.done}>
+          {sent}
+        </p>
+      ) : null}
+      {serverError ? (
+        <p role="alert" className={styles.error}>
+          {serverError}
+        </p>
+      ) : null}
+      <Button type="submit" variant="primary" size="lg" disabled={formState.isSubmitting}>
+        인증 메일 다시 받기
       </Button>
     </form>
   );

@@ -5,7 +5,7 @@ import { DeleteAccount, LogoutButton } from './AccountActions';
 import { LoginForm } from './LoginForm';
 import { ResetConfirmForm, ResetRequestForm } from './ResetForms';
 import { SignupForm } from './SignupForm';
-import { VerifyEmailForm } from './VerifyEmailForm';
+import { ResendVerificationForm, VerifyEmailForm } from './VerifyEmailForm';
 
 const router = { replace: vi.fn(), refresh: vi.fn(), push: vi.fn() };
 vi.mock('next/navigation', () => ({ useRouter: () => router }));
@@ -163,5 +163,28 @@ describe('AccountActions', () => {
 
     expect(DELETE).toHaveBeenCalledWith('/api/v1/me');
     expect(router.replace).toHaveBeenCalledWith('/');
+  });
+});
+
+describe('ResendVerificationForm', () => {
+  it('asks for a new verification mail and shows the neutral message', async () => {
+    POST.mockResolvedValue(reply(202, { message: '가입된 이메일이면 인증 메일을 보냈어요.' }));
+    render(<ResendVerificationForm />);
+
+    await userEvent.type(screen.getByLabelText('이메일'), 'mina@example.com');
+    await userEvent.click(screen.getByRole('button', { name: '인증 메일 다시 받기' }));
+
+    expect(POST).toHaveBeenCalledWith('/api/v1/auth/verify-email/resend', { body: { email: 'mina@example.com' } });
+    expect(await screen.findByRole('status')).toHaveTextContent('인증 메일을 보냈어요');
+  });
+
+  it('blocks a bad email without calling the api', async () => {
+    render(<ResendVerificationForm />);
+
+    await userEvent.type(screen.getByLabelText('이메일'), 'mina');
+    await userEvent.click(screen.getByRole('button', { name: '인증 메일 다시 받기' }));
+
+    expect(await screen.findByText('이메일 주소를 확인해 주세요.')).toBeInTheDocument();
+    expect(POST).not.toHaveBeenCalled();
   });
 });
