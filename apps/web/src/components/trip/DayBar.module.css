@@ -1,0 +1,71 @@
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+}
+
+.list {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(72px, 1fr);
+  max-width: var(--container-sm);
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.day {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+  min-height: 64px;
+  padding: var(--space-2) var(--space-1) var(--space-3);
+  border: 0;
+  background: transparent;
+  color: var(--ink-muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.number {
+  font: var(--text-label);
+  letter-spacing: 0.02em;
+}
+
+.date {
+  font: var(--text-data);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.city {
+  font: var(--text-caption);
+}
+
+.day[aria-current="date"] {
+  color: var(--brand);
+  background: var(--surface-brand);
+}
+
+.day[aria-current="date"] .date {
+  color: var(--brand);
+}
+
+.day[aria-current="date"]::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--brand);
+}

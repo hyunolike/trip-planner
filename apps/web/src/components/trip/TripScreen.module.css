@@ -1,0 +1,27 @@
+.main {
+  width: 100%;
+  max-width: var(--container-sm);
+  margin: 0 auto;
+  padding: 0 var(--gutter) var(--space-16);
+}
+
+.skeletonHeader,
+.skeletonBar,
+.skeletonList {
+  background: var(--surface-sunken);
+}
+
+.skeletonHeader {
+  height: 160px;
+}
+
+.skeletonBar {
+  height: 64px;
+  margin-top: 1px;
+}
+
+.skeletonList {
+  height: 360px;
+  margin-top: var(--space-5);
+  border-radius: var(--radius-md);
+}
