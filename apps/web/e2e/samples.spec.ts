@@ -13,6 +13,9 @@ test('a visitor finds the public sample from home and reads it', async ({ page }
   const days = page.getByRole('navigation', { name: '날짜 선택' }).getByRole('button');
   await expect(days).toHaveCount(5);
 
+  // 처음 지도가 뜬 다음 날짜를 바꿔야 initialViewState만 적용하던 회귀를 잡는다.
+  await mapCenter(page);
+
   await days.nth(2).click();
   await expect(page).toHaveURL(/\?day=3/);
   await expect(days.nth(2)).toHaveAttribute('aria-current', 'date');

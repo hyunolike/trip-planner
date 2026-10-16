@@ -1,14 +1,17 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { type Ref, useImperativeHandle } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const mapProps: Record<string, unknown>[] = [];
+const fitBounds = vi.fn();
 
 vi.mock('maplibre-gl/dist/maplibre-gl.css', () => ({}));
 vi.mock('maplibre-gl', () => ({ setWorkerUrl: vi.fn() }));
 vi.mock('react-map-gl/maplibre', () => ({
   Map: (props: Record<string, unknown>) => {
     mapProps.push(props);
-    return <div data-testid="maplibre" />;
+    useImperativeHandle(props.ref as Ref<unknown>, () => ({ fitBounds, getCenter: () => ({ lng: 135, lat: 34 }) }));
+    return <button type="button" data-testid="maplibre" onClick={() => (props.onLoad as () => void)()} />;
   },
   Layer: () => null,
   Marker: () => null,
@@ -31,6 +34,7 @@ describe('TripMap', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     mapProps.length = 0;
+    fitBounds.mockClear();
   });
 
   it('shows a Korean message instead of a blank map when the style request fails', async () => {
@@ -57,5 +61,31 @@ describe('TripMap', () => {
     expect(locale['NavigationControl.ZoomOut']).toBe('지도 축소');
     expect(locale['CooperativeGesturesHandler.MobileHelpText']).toBe('두 손가락으로 지도를 움직여요.');
     expect(Object.values(locale).every((text) => /[가-힣]/.test(text))).toBe(true);
+  });
+
+  it('fits the new day after an already loaded map changes from Japan to Vietnam', async () => {
+    vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: true, json: async () => ({ version: 8, sources: {}, layers: [] }) })),
+    );
+    const view = renderMap();
+    fireEvent.click(await screen.findByTestId('maplibre'));
+    view.rerender(
+      <TripMap
+        points={[{ key: 'b', title: '호이안', time: '09:00', coordinates: [15.88, 108.33], approximate: false }]}
+        segments={[]}
+        onSelect={() => {}}
+      />,
+    );
+    await waitFor(() =>
+      expect(fitBounds).toHaveBeenLastCalledWith(
+        [
+          [108.33, 15.88],
+          [108.33, 15.88],
+        ],
+        { padding: 48, maxZoom: 15, duration: 0 },
+      ),
+    );
   });
 });
