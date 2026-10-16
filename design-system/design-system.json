@@ -1,0 +1,565 @@
+{
+ "v": 3,
+ "layout": "files",
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-10-15T11:13:23Z"
+ },
+ "title": "여행노트",
+ "namespace": "TripNote",
+ "libraries": [],
+ "sections": {},
+ "groups": [
+  "Logos",
+  "Icons",
+  "Illustrations"
+ ],
+ "assetGroups": {
+  "Logos": {
+   "name": "Logos",
+   "tile": "l",
+   "order": [
+    "symbol.svg",
+    "symbol-mono-ink.svg",
+    "symbol-mono-white.svg",
+    "wordmark.svg",
+    "wordmark-white.svg",
+    "lockup-horizontal.svg",
+    "lockup-vertical.svg",
+    "lockup-mono-ink.svg",
+    "lockup-mono-white.svg",
+    "lockup-on-brand.svg",
+    "app-icon.svg",
+    "app-icon-maskable.svg",
+    "favicon.svg",
+    "og-frame.svg"
+   ],
+   "files": {
+    "symbol.svg": {
+     "name": "symbol.svg",
+     "blob": "35039c81a3d9d2271de7a5b8aaafb532",
+     "size": 943,
+     "type": "image/svg+xml"
+    },
+    "symbol-mono-ink.svg": {
+     "name": "symbol-mono-ink.svg",
+     "blob": "461fac84707b8edfa869e1942214e6e5",
+     "size": 1135,
+     "type": "image/svg+xml"
+    },
+    "symbol-mono-white.svg": {
+     "name": "symbol-mono-white.svg",
+     "blob": "cb47bc3fdc378d43ae5f2113f01e2fde",
+     "size": 1137,
+     "type": "image/svg+xml"
+    },
+    "wordmark.svg": {
+     "name": "wordmark.svg",
+     "blob": "c43666eb5acd1d7a18083eb0d65cf854",
+     "size": 3637,
+     "type": "image/svg+xml"
+    },
+    "wordmark-white.svg": {
+     "name": "wordmark-white.svg",
+     "blob": "7fe68ba7fbefd34f3ea1cba3d2fe0c9f",
+     "size": 3643,
+     "type": "image/svg+xml"
+    },
+    "lockup-horizontal.svg": {
+     "name": "lockup-horizontal.svg",
+     "blob": "f0c590a8b9b7b1b3fe13df1ed0f80313",
+     "size": 4572,
+     "type": "image/svg+xml"
+    },
+    "lockup-vertical.svg": {
+     "name": "lockup-vertical.svg",
+     "blob": "899e5779342467e54112bc53c11c1452",
+     "size": 4572,
+     "type": "image/svg+xml"
+    },
+    "lockup-mono-ink.svg": {
+     "name": "lockup-mono-ink.svg",
+     "blob": "ae11f9cb9d79229456d26dff19e35c5e",
+     "size": 4753,
+     "type": "image/svg+xml"
+    },
+    "lockup-mono-white.svg": {
+     "name": "lockup-mono-white.svg",
+     "blob": "2a6f45bdf36665f7658a4cd1d8d7cd36",
+     "size": 4755,
+     "type": "image/svg+xml"
+    },
+    "lockup-on-brand.svg": {
+     "name": "lockup-on-brand.svg",
+     "blob": "3699c33141e9d3c718b845d7e63c4924",
+     "size": 4865,
+     "type": "image/svg+xml"
+    },
+    "app-icon.svg": {
+     "name": "app-icon.svg",
+     "blob": "e0a393014906f6fb1771aad252d40c47",
+     "size": 872,
+     "type": "image/svg+xml"
+    },
+    "app-icon-maskable.svg": {
+     "name": "app-icon-maskable.svg",
+     "blob": "7f28351194cc69645acca9d4ec0d4d79",
+     "size": 881,
+     "type": "image/svg+xml"
+    },
+    "favicon.svg": {
+     "name": "favicon.svg",
+     "blob": "68ea7d8016816fb24485ef940ea9d7cf",
+     "size": 854,
+     "type": "image/svg+xml"
+    },
+    "og-frame.svg": {
+     "name": "og-frame.svg",
+     "blob": "b7ae4c7e4546fba65344b796c5c603a5",
+     "size": 4510,
+     "type": "image/svg+xml"
+    }
+   }
+  },
+  "Illustrations": {
+   "name": "Illustrations",
+   "tile": "m",
+   "order": [
+    "empty-itinerary.svg",
+    "empty-checklist.svg",
+    "empty-search.svg",
+    "empty-share.svg",
+    "offline.svg",
+    "hero-route.svg"
+   ],
+   "files": {
+    "empty-itinerary.svg": {
+     "name": "empty-itinerary.svg",
+     "blob": "049a6f5f8d7af53c51c016ba208ec4fa",
+     "size": 727,
+     "type": "image/svg+xml"
+    },
+    "empty-checklist.svg": {
+     "name": "empty-checklist.svg",
+     "blob": "b7c9a1f89cb27103788412760b469c16",
+     "size": 1214,
+     "type": "image/svg+xml"
+    },
+    "empty-search.svg": {
+     "name": "empty-search.svg",
+     "blob": "ae37a2db163a22f7011e45323674ef27",
+     "size": 594,
+     "type": "image/svg+xml"
+    },
+    "empty-share.svg": {
+     "name": "empty-share.svg",
+     "blob": "c70b955361f39b022be42832babe1b63",
+     "size": 563,
+     "type": "image/svg+xml"
+    },
+    "offline.svg": {
+     "name": "offline.svg",
+     "blob": "3d823c47ba519a7ccfa408b8df530d4a",
+     "size": 870,
+     "type": "image/svg+xml"
+    },
+    "hero-route.svg": {
+     "name": "hero-route.svg",
+     "blob": "36ed0d269368dbdd4c7b022a09a11361",
+     "size": 3760,
+     "type": "image/svg+xml"
+    }
+   }
+  },
+  "Icons": {
+   "name": "Icons",
+   "tile": "xs",
+   "order": [
+    "type-airport.svg",
+    "type-flight.svg",
+    "type-train.svg",
+    "type-bus.svg",
+    "type-walk.svg",
+    "type-boat.svg",
+    "type-taxi.svg",
+    "type-hotel.svg",
+    "type-meal.svg",
+    "type-sight.svg",
+    "type-shopping.svg",
+    "type-free.svg",
+    "check.svg",
+    "check-circle.svg",
+    "plus.svg",
+    "minus.svg",
+    "close.svg",
+    "edit.svg",
+    "trash.svg",
+    "share.svg",
+    "link.svg",
+    "copy.svg",
+    "more-horizontal.svg",
+    "drag-handle.svg",
+    "chevron-down.svg",
+    "chevron-right.svg",
+    "chevron-left.svg",
+    "arrow-up.svg",
+    "search.svg",
+    "filter.svg",
+    "map.svg",
+    "map-pin.svg",
+    "route.svg",
+    "clock.svg",
+    "calendar.svg",
+    "timer.svg",
+    "ticket.svg",
+    "wallet.svg",
+    "passport.svg",
+    "luggage.svg",
+    "users.svg",
+    "note.svg",
+    "weather-sun.svg",
+    "weather-cloud.svg",
+    "weather-rain.svg",
+    "weather-snow.svg",
+    "weather-partly.svg",
+    "weather-wind.svg",
+    "nav-itinerary.svg",
+    "nav-food.svg",
+    "nav-shopping.svg",
+    "nav-links.svg",
+    "nav-prep.svg"
+   ],
+   "files": {
+    "type-airport.svg": {
+     "name": "type-airport.svg",
+     "blob": "5bafed926f5072bbc92bc79099305f6c",
+     "size": 309,
+     "type": "image/svg+xml"
+    },
+    "type-flight.svg": {
+     "name": "type-flight.svg",
+     "blob": "aa9b2ece53579696954029efcb5ba294",
+     "size": 326,
+     "type": "image/svg+xml"
+    },
+    "type-train.svg": {
+     "name": "type-train.svg",
+     "blob": "ed0ccda16af07a9e8846fc8a384b7860",
+     "size": 490,
+     "type": "image/svg+xml"
+    },
+    "type-bus.svg": {
+     "name": "type-bus.svg",
+     "blob": "7b5674a08cc7782dc9dde2365a11c954",
+     "size": 484,
+     "type": "image/svg+xml"
+    },
+    "type-walk.svg": {
+     "name": "type-walk.svg",
+     "blob": "ebace7306878fbbb08936a3d87e2eab0",
+     "size": 321,
+     "type": "image/svg+xml"
+    },
+    "type-boat.svg": {
+     "name": "type-boat.svg",
+     "blob": "e8cba47aae094f6198c36523efe17703",
+     "size": 351,
+     "type": "image/svg+xml"
+    },
+    "type-taxi.svg": {
+     "name": "type-taxi.svg",
+     "blob": "278021740b02716a80c2466d7171e58d",
+     "size": 495,
+     "type": "image/svg+xml"
+    },
+    "type-hotel.svg": {
+     "name": "type-hotel.svg",
+     "blob": "2c1ef43fb008c3cd87d4a7ce4bd9f6a6",
+     "size": 336,
+     "type": "image/svg+xml"
+    },
+    "type-meal.svg": {
+     "name": "type-meal.svg",
+     "blob": "ba72ff2bcd6f0136659596ff71bfc5c6",
+     "size": 330,
+     "type": "image/svg+xml"
+    },
+    "type-sight.svg": {
+     "name": "type-sight.svg",
+     "blob": "71958d06a4bcdb95ec58f24ba25a4f69",
+     "size": 355,
+     "type": "image/svg+xml"
+    },
+    "type-shopping.svg": {
+     "name": "type-shopping.svg",
+     "blob": "4224e49d157ec6f6d240e56cc2713acc",
+     "size": 277,
+     "type": "image/svg+xml"
+    },
+    "type-free.svg": {
+     "name": "type-free.svg",
+     "blob": "ea29a297a78efd6720080bcb64c2b8a3",
+     "size": 320,
+     "type": "image/svg+xml"
+    },
+    "check.svg": {
+     "name": "check.svg",
+     "blob": "ca9c5eaf0f239fd5452695be8735d49f",
+     "size": 247,
+     "type": "image/svg+xml"
+    },
+    "check-circle.svg": {
+     "name": "check-circle.svg",
+     "blob": "892ba682c94d38033543a94f8e0751b3",
+     "size": 292,
+     "type": "image/svg+xml"
+    },
+    "plus.svg": {
+     "name": "plus.svg",
+     "blob": "e01797cd2d8de7da5ccc54543cfa8f24",
+     "size": 247,
+     "type": "image/svg+xml"
+    },
+    "minus.svg": {
+     "name": "minus.svg",
+     "blob": "25e5fc124e9d404ac80c05eaf55dd3d5",
+     "size": 239,
+     "type": "image/svg+xml"
+    },
+    "close.svg": {
+     "name": "close.svg",
+     "blob": "3a00ab8bedb9fca3da3ba02a0f049690",
+     "size": 251,
+     "type": "image/svg+xml"
+    },
+    "edit.svg": {
+     "name": "edit.svg",
+     "blob": "25b1da41783645eaca48a22aedd81b83",
+     "size": 339,
+     "type": "image/svg+xml"
+    },
+    "trash.svg": {
+     "name": "trash.svg",
+     "blob": "480ebf5c014f072691059f68a7614387",
+     "size": 284,
+     "type": "image/svg+xml"
+    },
+    "share.svg": {
+     "name": "share.svg",
+     "blob": "ce711f5957a937730b70d9a6648053b0",
+     "size": 369,
+     "type": "image/svg+xml"
+    },
+    "link.svg": {
+     "name": "link.svg",
+     "blob": "e96d044f06a3f039e851955fd94bb3c8",
+     "size": 317,
+     "type": "image/svg+xml"
+    },
+    "copy.svg": {
+     "name": "copy.svg",
+     "blob": "deda4bd45320b83cc541e4285ba40580",
+     "size": 338,
+     "type": "image/svg+xml"
+    },
+    "more-horizontal.svg": {
+     "name": "more-horizontal.svg",
+     "blob": "096637665983372b1cae66ee71e0edf0",
+     "size": 468,
+     "type": "image/svg+xml"
+    },
+    "drag-handle.svg": {
+     "name": "drag-handle.svg",
+     "blob": "e1770673278a73916aa55a7387322881",
+     "size": 723,
+     "type": "image/svg+xml"
+    },
+    "chevron-down.svg": {
+     "name": "chevron-down.svg",
+     "blob": "dbddcd8bf89f7cb230fb85326e8d469c",
+     "size": 259,
+     "type": "image/svg+xml"
+    },
+    "chevron-right.svg": {
+     "name": "chevron-right.svg",
+     "blob": "79190869453d146c1d6d1ef24682e59f",
+     "size": 262,
+     "type": "image/svg+xml"
+    },
+    "chevron-left.svg": {
+     "name": "chevron-left.svg",
+     "blob": "5b5f020bb34731c3ab9a23c686103087",
+     "size": 260,
+     "type": "image/svg+xml"
+    },
+    "arrow-up.svg": {
+     "name": "arrow-up.svg",
+     "blob": "9dcd610de31ee21944f4764ddb84c1f2",
+     "size": 262,
+     "type": "image/svg+xml"
+    },
+    "search.svg": {
+     "name": "search.svg",
+     "blob": "4b756403dd22235311a8eb583aca5f3a",
+     "size": 284,
+     "type": "image/svg+xml"
+    },
+    "filter.svg": {
+     "name": "filter.svg",
+     "blob": "49acc475ddf06132f728aa36d0a86d78",
+     "size": 369,
+     "type": "image/svg+xml"
+    },
+    "map.svg": {
+     "name": "map.svg",
+     "blob": "774a79ec2a235313a0d83f3e9927110f",
+     "size": 284,
+     "type": "image/svg+xml"
+    },
+    "map-pin.svg": {
+     "name": "map-pin.svg",
+     "blob": "655030a8d8612c03538163f905f4d3d3",
+     "size": 326,
+     "type": "image/svg+xml"
+    },
+    "route.svg": {
+     "name": "route.svg",
+     "blob": "8322cbef9654dd493aa65ec7d1e0d2f1",
+     "size": 334,
+     "type": "image/svg+xml"
+    },
+    "clock.svg": {
+     "name": "clock.svg",
+     "blob": "d038902f5f0a8bc03bbebc63caa5e77a",
+     "size": 276,
+     "type": "image/svg+xml"
+    },
+    "calendar.svg": {
+     "name": "calendar.svg",
+     "blob": "d8ae4a4a28bc61d1ba22e459507b9f9e",
+     "size": 709,
+     "type": "image/svg+xml"
+    },
+    "timer.svg": {
+     "name": "timer.svg",
+     "blob": "6a3daa97af2110091f25d2150c6eb596",
+     "size": 324,
+     "type": "image/svg+xml"
+    },
+    "ticket.svg": {
+     "name": "ticket.svg",
+     "blob": "f0047f7a19c530865107334439d28d89",
+     "size": 309,
+     "type": "image/svg+xml"
+    },
+    "wallet.svg": {
+     "name": "wallet.svg",
+     "blob": "6f325a31b6f456522ee808a75bd8b852",
+     "size": 420,
+     "type": "image/svg+xml"
+    },
+    "passport.svg": {
+     "name": "passport.svg",
+     "blob": "98302facf5c246db03f30127aa719690",
+     "size": 371,
+     "type": "image/svg+xml"
+    },
+    "luggage.svg": {
+     "name": "luggage.svg",
+     "blob": "fa6cdb5236979b94dd25df6c96fc2f32",
+     "size": 336,
+     "type": "image/svg+xml"
+    },
+    "users.svg": {
+     "name": "users.svg",
+     "blob": "bd7cfd8650e5befdeacf09ec233f11f1",
+     "size": 341,
+     "type": "image/svg+xml"
+    },
+    "note.svg": {
+     "name": "note.svg",
+     "blob": "86d55d0db8aaa90864d00f58e3534a36",
+     "size": 336,
+     "type": "image/svg+xml"
+    },
+    "weather-sun.svg": {
+     "name": "weather-sun.svg",
+     "blob": "50255ad48f6e2127e6d8d90981274aae",
+     "size": 350,
+     "type": "image/svg+xml"
+    },
+    "weather-cloud.svg": {
+     "name": "weather-cloud.svg",
+     "blob": "aa386872dacf382193febb0d8dfebde3",
+     "size": 302,
+     "type": "image/svg+xml"
+    },
+    "weather-rain.svg": {
+     "name": "weather-rain.svg",
+     "blob": "7764597fa0eea0b2b21e11b2d3305916",
+     "size": 329,
+     "type": "image/svg+xml"
+    },
+    "weather-snow.svg": {
+     "name": "weather-snow.svg",
+     "blob": "13ffd98d428b118ff66c3441af072d44",
+     "size": 383,
+     "type": "image/svg+xml"
+    },
+    "weather-partly.svg": {
+     "name": "weather-partly.svg",
+     "blob": "8daaa233f4f126e6c8b8b9bfcb6686de",
+     "size": 388,
+     "type": "image/svg+xml"
+    },
+    "weather-wind.svg": {
+     "name": "weather-wind.svg",
+     "blob": "7a580e4370372ad0126ce99b0bd43d46",
+     "size": 316,
+     "type": "image/svg+xml"
+    },
+    "nav-itinerary.svg": {
+     "name": "nav-itinerary.svg",
+     "blob": "b648cf12189cb4b07fde32ce5ecc75b9",
+     "size": 659,
+     "type": "image/svg+xml"
+    },
+    "nav-food.svg": {
+     "name": "nav-food.svg",
+     "blob": "3eeb751bf1e80f27348177ebdbe017bb",
+     "size": 298,
+     "type": "image/svg+xml"
+    },
+    "nav-shopping.svg": {
+     "name": "nav-shopping.svg",
+     "blob": "54f1caaf803192e77cd8676da427f2ca",
+     "size": 300,
+     "type": "image/svg+xml"
+    },
+    "nav-links.svg": {
+     "name": "nav-links.svg",
+     "blob": "9d5914d39805ab5f37b9410641773011",
+     "size": 314,
+     "type": "image/svg+xml"
+    },
+    "nav-prep.svg": {
+     "name": "nav-prep.svg",
+     "blob": "90b8033e37eca811d710f1e45f43b085",
+     "size": 352,
+     "type": "image/svg+xml"
+    }
+   }
+  }
+ },
+ "blobs": {},
+ "docs": {
+  "readme": "project/README.md",
+  "sections": []
+ },
+ "lastChange": {
+  "by": "hh.jang",
+  "at": "2026-10-15T11:45:28Z",
+  "via": "Claude Code",
+  "note": "로고 세트 교체: Codex로 그린 심볼·워드마크 '여행노트'·조합 14종 (3차 다듬기 결과)"
+ }
+}

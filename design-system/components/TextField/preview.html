@@ -1,0 +1,22 @@
+<!-- @dsCard group="Forms" height=360 subtitle="기본·오류·비활성, 텍스트 영역" -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<div class="tn-canvas tn-stack" style="gap:20px">
+  <div class="tn-field">
+    <label class="tn-field__label" for="f1">제목 <b>*</b></label>
+    <input class="tn-field__input" id="f1" value="간사이공항 도착·입국">
+    <span class="tn-field__help">목록과 지도에 보이는 이름이에요.</span>
+  </div>
+  <div class="tn-field tn-field--error">
+    <label class="tn-field__label" for="f2">시각</label>
+    <input class="tn-field__input tn-mono" id="f2" value="9:5" placeholder="09:50">
+    <span class="tn-field__help">24시간 형식으로 입력해 주세요. 예: 09:50</span>
+  </div>
+  <div class="tn-field">
+    <label class="tn-field__label" for="f3">메모</label>
+    <textarea class="tn-field__input" id="f3" placeholder="가족에게 보여줄 안내를 적어요. 예약번호는 적지 않아요.">검역·입국심사 → 수하물 수취 → 세관. 가족 QR을 미리 준비하세요.</textarea>
+  </div>
+  <div class="tn-field">
+    <label class="tn-field__label" for="f4">날짜</label>
+    <input class="tn-field__input tn-mono" id="f4" value="2026-10-21" disabled>
+  </div>
+</div>

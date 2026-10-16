@@ -1,0 +1,34 @@
+<!-- @dsCard height=300 -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=IBM+Plex+Sans+KR:wght@400&display=swap">
+<style>
+  .cv{position:relative;width:960px;height:300px;font-family:var(--font-sans,"IBM Plex Sans KR",sans-serif)}
+  .cv svg{position:absolute;inset:0;width:960px;height:300px}
+  .cv .name{position:absolute;left:40px;bottom:64px;margin:0;font-family:var(--font-display,"Gowun Batang",serif);font-weight:700;font-size:96px;line-height:.95;letter-spacing:-.02em;color:var(--ink,#171b22);max-width:440px}
+  .cv .tag{position:absolute;left:42px;bottom:40px;margin:0;font-size:14px;line-height:18px;color:var(--ink-muted,#5b6472);max-width:440px}
+  .brand{fill:var(--brand,#2456d6)}.tint{fill:var(--surface-brand,#e7edfb)}.deep{fill:var(--ink,#171b22)}.warm{fill:var(--transit-bus,#a3570a)}
+  .ground{fill:var(--canvas,#f7f8fa)}.route{fill:none;stroke:var(--on-brand,#ffffff);stroke-width:4;stroke-linecap:round;stroke-dasharray:0 12}
+  .dot{fill:var(--on-brand,#ffffff)}.pin{fill:var(--canvas,#f7f8fa)}.pinhole{fill:var(--ink,#171b22)}
+  .r-lg{rx:var(--radius-lg,16px)}.r-md{rx:var(--radius-md,10px)}.r-sm{rx:var(--radius-sm,6px)}
+</style>
+<div class="cv">
+  <!--
+    blocks: brand 256×176 (space-16×4 × space-12×~3.7) · surface-brand 156×96 · ink 156×124 · transit-bus 96×44 (warm stamp, small: it only ever means "확인·버퍼")
+    arrangement: one tall note slab with a folded corner (the product's object) and two satellites stacked to its right, a small stamp under the slab; everything right of x=480
+    pattern: literal motif — the dotted route (stroke-dasharray 0 12 = space-3 pitch, 4px dots) from a start disc to a pin, because the whole product is "a route drawn on a note"; ~40 dots
+    scales: radius-lg on the note, radius-md on satellites, radius-sm on the stamp; gaps are space-4 (16px); the corner fold is a 40px (space-10) triangle of ground
+  -->
+  <svg viewBox="0 0 960 300" aria-hidden="true">
+    <rect class="brand r-lg" x="500" y="32" width="256" height="176"/>
+    <path class="ground" d="M716 32h40v40z"/>
+    <path class="tint" d="M716 32v40h40z"/>
+    <rect class="tint r-md" x="772" y="32" width="156" height="96"/>
+    <rect class="deep r-md" x="772" y="144" width="156" height="124"/>
+    <rect class="warm r-sm" x="500" y="224" width="96" height="44"/>
+    <path class="route" d="M540 176C560 120 620 96 672 92S760 120 800 160S860 216 892 212"/>
+    <circle class="dot" cx="540" cy="176" r="7"/>
+    <circle class="pin" cx="892" cy="212" r="12"/>
+    <circle class="pinhole" cx="892" cy="212" r="4.5"/>
+  </svg>
+  <h1 class="name">여행노트</h1>
+  <p class="tag">예약은 어디서든, 일정은 여기서.</p>
+</div>

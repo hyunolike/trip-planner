@@ -1,0 +1,21 @@
+<!-- @dsCard group="Map" height=320 subtitle="이동 수단 색과 지도 경로선" -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<div class="tn-canvas">
+  <div class="tn-transit" aria-label="이동 수단">
+    <span class="tn-transit__chip tn-transit__chip--flight"><span class="tn-transit__line"></span>항공</span>
+    <span class="tn-transit__chip tn-transit__chip--train"><span class="tn-transit__line"></span>철도·지하철</span>
+    <span class="tn-transit__chip tn-transit__chip--bus"><span class="tn-transit__line"></span>버스·리무진</span>
+    <span class="tn-transit__chip tn-transit__chip--walk"><span class="tn-transit__line tn-transit__line--dashed"></span>도보</span>
+    <span class="tn-transit__chip tn-transit__chip--boat"><span class="tn-transit__line"></span>선박</span>
+  </div>
+  <svg class="tn-transit__map" viewBox="0 0 420 200" aria-label="경로선 예시">
+    <g stroke="var(--line, #e2e6ec)" stroke-width="1"><path d="M0 50h420M0 100h420M0 150h420M70 0v200M140 0v200M210 0v200M280 0v200M350 0v200"/></g>
+    <path d="M30 160C90 140 120 80 170 70" fill="none" stroke="var(--transit-bus,#a3570a)" stroke-width="4" stroke-linecap="round"/>
+    <path d="M170 70C210 60 240 90 270 95" fill="none" stroke="var(--transit-train,#2456d6)" stroke-width="4" stroke-linecap="round"/>
+    <path d="M270 95C300 100 320 60 350 45" fill="none" stroke="var(--transit-walk,#177a44)" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 9"/>
+    <path d="M350 45C375 35 390 60 395 70" fill="none" stroke="var(--transit-boat,#0a7a8c)" stroke-width="4" stroke-linecap="round"/>
+    <g fill="var(--surface,#fff)" stroke="var(--ink,#171b22)" stroke-width="2"><circle cx="30" cy="160" r="7"/><circle cx="170" cy="70" r="7"/><circle cx="270" cy="95" r="7"/><circle cx="350" cy="45" r="7"/></g>
+    <circle cx="395" cy="70" r="9" fill="var(--brand,#2456d6)" stroke="var(--surface,#fff)" stroke-width="3"/>
+    <g font-family="IBM Plex Mono, monospace" font-size="11" font-weight="500" fill="var(--ink-muted,#5b6472)"><text x="22" y="185">09:50</text><text x="160" y="58">12:55</text><text x="262" y="118">14:50</text><text x="342" y="33">19:40</text></g>
+  </svg>
+</div>
