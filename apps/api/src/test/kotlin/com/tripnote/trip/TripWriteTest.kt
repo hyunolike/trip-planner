@@ -167,4 +167,122 @@ class TripWriteTest : IntegrationTest() {
         val (_, dayId) = createTrip()
         send("POST", "/api/v1/days/$dayId/stops", """{"title":"A","time":"9:00"}""").andExpect { status { isBadRequest() } }
     }
+
+    private fun tripVersion(slug: String) =
+        jdbc.sql("SELECT version FROM trips WHERE slug = ?").param(slug).query(Int::class.java).single()
+
+    private fun asViewerOf(slug: String) {
+        val viewer = createVerifiedUser("viewer@example.com")
+        jdbc.sql("INSERT INTO trip_members (trip_id, user_id, role) SELECT id, ?, 'viewer' FROM trips WHERE slug = ?").params(viewer, slug).update()
+        sessionCookie = login("viewer@example.com")
+    }
+
+    @Test
+    fun `every kind of stop write bumps the trip version`() {
+        val (slug, dayId) = createTrip()
+        var last = tripVersion(slug)
+        fun expectBump() { val now = tripVersion(slug); assertThat(now).isGreaterThan(last); last = now }
+
+        val a = addStop(dayId, "A", "09:00"); expectBump()
+        val b = addStop(dayId, "B", "10:00"); expectBump()
+        send("PATCH", "/api/v1/stops/${a["id"]}", """{"version":0,"title":"A2"}""").andExpect { status { isOk() } }; expectBump()
+        send("PUT", "/api/v1/days/$dayId/stops/order", """{"stopIds":["${b["id"]}","${a["id"]}"]}""").andExpect { status { isOk() } }; expectBump()
+        val version = jdbc.sql("SELECT version FROM stops WHERE id = ?").param(UUID.fromString(b["id"] as String)).query(Int::class.java).single()
+        send("DELETE", "/api/v1/stops/${b["id"]}?version=$version").andExpect { status { isNoContent() } }; expectBump()
+    }
+
+    @Test
+    fun `a viewer cannot add or edit stops`() {
+        val (slug, dayId) = createTrip()
+        val id = addStop(dayId, "A", "09:00")["id"]
+        asViewerOf(slug)
+
+        send("POST", "/api/v1/days/$dayId/stops", """{"title":"X","time":"09:00"}""").andExpect { status { isForbidden() } }
+        send("PATCH", "/api/v1/stops/$id", """{"version":0,"title":"X"}""").andExpect { status { isForbidden() } }
+    }
+
+    @Test
+    fun `a non-member gets 404 when patching or deleting a private trip's stop`() {
+        val (_, dayId) = createTrip()
+        val id = addStop(dayId, "A", "09:00")["id"]
+        createVerifiedUser("other@example.com")
+        sessionCookie = login("other@example.com")
+
+        send("PATCH", "/api/v1/stops/$id", """{"version":0,"title":"X"}""").andExpect { status { isNotFound() } }
+        send("DELETE", "/api/v1/stops/$id?version=0").andExpect { status { isNotFound() } }
+    }
+
+    @Test
+    fun `afterStopId from another day is refused with its own message`() {
+        val (slug, dayOne) = createTrip()
+        val dayTwo = jdbc.sql("SELECT d.id FROM trip_days d JOIN trips t ON t.id = d.trip_id WHERE t.slug = ? AND d.number = 2").param(slug).query(UUID::class.java).single()
+        val other = addStop(dayTwo, "다른 날", "09:00")["id"]
+
+        send("POST", "/api/v1/days/$dayOne/stops", """{"title":"A","time":"09:00","afterStopId":"$other"}""").andExpect {
+            status { isBadRequest() }
+            jsonPath("$.detail") { value("이 날짜에 없는 일정 뒤에는 추가할 수 없어요.") }
+        }
+    }
+
+    @Test
+    fun `a trip longer than 30 days is refused`() {
+        send("POST", "/api/v1/trips", """{"title":"길다","startDate":"2027-04-01","endDate":"2027-05-15"}""").andExpect { status { isBadRequest() } }
+    }
+
+    @Test
+    fun `invalid timezone and oversized timezone are refused`() {
+        send("POST", "/api/v1/trips", """{"title":"A","startDate":"2027-04-01","endDate":"2027-04-02","timezone":"Mars/Base"}""").andExpect { status { isBadRequest() } }
+        send("POST", "/api/v1/trips", """{"title":"A","startDate":"2027-04-01","endDate":"2027-04-02","timezone":"${"x".repeat(65)}"}""").andExpect { status { isBadRequest() } }
+    }
+
+    @Test
+    fun `bad coordinates are refused`() {
+        val (_, dayId) = createTrip()
+        val id = addStop(dayId, "A", "09:00")["id"]
+        send("POST", "/api/v1/days/$dayId/stops", """{"title":"A","time":"09:00","coordinates":[91.0,10.0]}""").andExpect { status { isBadRequest() } }
+        send("POST", "/api/v1/days/$dayId/stops", """{"title":"A","time":"09:00","coordinates":[null,10.0]}""").andExpect { status { isBadRequest() } }
+        send("PATCH", "/api/v1/stops/$id", """{"version":0,"coordinates":[10.0,null]}""").andExpect { status { isBadRequest() } }
+        send("PATCH", "/api/v1/stops/$id", """{"version":0,"coordinates":[10.0,20.0],"clearCoordinates":true}""").andExpect { status { isBadRequest() } }
+    }
+
+    @Test
+    fun `whitespace-only title and oversized details are refused on patch`() {
+        val (_, dayId) = createTrip()
+        val id = addStop(dayId, "A", "09:00")["id"]
+        send("PATCH", "/api/v1/stops/$id", """{"version":0,"title":"   "}""").andExpect { status { isBadRequest() } }
+        send("PATCH", "/api/v1/stops/$id", """{"version":0,"details":"${"x".repeat(4001)}"}""").andExpect { status { isBadRequest() } }
+        send("POST", "/api/v1/days/$dayId/stops", """{"title":"B","time":"09:00","details":"${"x".repeat(4001)}"}""").andExpect { status { isBadRequest() } }
+    }
+
+    @Test
+    fun `an empty string clears duration and buffer while null leaves them`() {
+        val (_, dayId) = createTrip()
+        val id = addStop(dayId, "A", "09:00")["id"]
+        send("PATCH", "/api/v1/stops/$id", """{"version":0,"duration":"2시간","buffer":"30분"}""").andExpect { status { isOk() } }
+        send("PATCH", "/api/v1/stops/$id", """{"version":1,"title":"A2"}""").andExpect {
+            status { isOk() }
+            jsonPath("$.duration") { value("2시간") }
+        }
+        send("PATCH", "/api/v1/stops/$id", """{"version":2,"duration":"","buffer":""}""").andExpect {
+            status { isOk() }
+            jsonPath("$.duration") { doesNotExist() }
+            jsonPath("$.buffer") { doesNotExist() }
+        }
+    }
+
+    @Test
+    fun `concurrent appends to one day both succeed with distinct positions`() {
+        val (_, dayId) = createTrip()
+        addStop(dayId, "첫째", "09:00")
+        val pool = java.util.concurrent.Executors.newFixedThreadPool(6)
+        val results = (1..6).map { n ->
+            pool.submit<Int> {
+                send("POST", "/api/v1/days/$dayId/stops", """{"title":"동시 $n","time":"10:00"}""").andReturn().response.status
+            }
+        }.map { it.get() }
+        pool.shutdown()
+
+        assertThat(results).containsOnly(201)
+        assertThat(titlesOf(dayId)).hasSize(7)
+    }
 }

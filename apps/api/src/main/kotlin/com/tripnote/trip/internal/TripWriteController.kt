@@ -29,7 +29,7 @@ data class CreateTripRequest(
     @field:NotBlank @field:Size(max = 60) val title: String,
     val startDate: LocalDate,
     val endDate: LocalDate,
-    val timezone: String? = null,
+    @field:Size(max = 64) val timezone: String? = null,
     @field:Size(max = 40) val city: String? = null,
 )
 
@@ -37,9 +37,9 @@ data class CreateStopRequest(
     @field:NotBlank @field:Size(max = 80) val title: String,
     @field:Pattern(regexp = HHMM) val time: String,
     @field:Pattern(regexp = STOP_TYPES) val type: String? = null,
-    val details: String? = null,
+    @field:Size(max = 4000) val details: String? = null,
     @field:Size(max = 40) val duration: String? = null,
-    @field:Size(min = 2, max = 2) val coordinates: List<Double>? = null,
+    @field:Size(min = 2, max = 2) val coordinates: List<Double?>? = null,
     val afterStopId: UUID? = null,
 )
 
@@ -48,10 +48,10 @@ data class UpdateStopRequest(
     @field:Size(min = 1, max = 80) @field:Pattern(regexp = ".*\\S.*") val title: String? = null,
     @field:Pattern(regexp = HHMM) val time: String? = null,
     @field:Pattern(regexp = STOP_TYPES) val type: String? = null,
-    val details: String? = null,
+    @field:Size(max = 4000) val details: String? = null,
     @field:Size(max = 40) val duration: String? = null,
     @field:Size(max = 80) val buffer: String? = null,
-    @field:Size(min = 2, max = 2) val coordinates: List<Double>? = null,
+    @field:Size(min = 2, max = 2) val coordinates: List<Double?>? = null,
     val clearCoordinates: Boolean = false,
 )
 
