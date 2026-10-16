@@ -24,6 +24,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
       - run: pnpm sample:validate
+      - name: design tokens are built from tokens.json
+        run: |
+          pnpm --filter @tripnote/design-tokens build
+          git diff --exit-code -- packages/design-tokens/dist
+          pnpm --filter @tripnote/design-tokens test
 
   api:
     runs-on: ubuntu-24.04
