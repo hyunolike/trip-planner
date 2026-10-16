@@ -6,7 +6,7 @@ import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.modulith.events.ApplicationModuleListener
 import java.util.UUID
 import org.slf4j.LoggerFactory
-import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Component
 
 data class VerificationMailRequested(val userId: UUID, val email: String)
@@ -19,7 +19,7 @@ class AuthMailer(
     private val sender: JavaMailSender,
     private val props: TripnoteProperties,
     private val tokens: EmailTokenService,
-    private val users: UserRepository,
+    private val jdbc: JdbcClient,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -76,17 +76,20 @@ class AuthMailer(
         """.trimIndent(),
     )
 
-    /** 그 사이 계정이 지워졌으면(예: 구글 로그인이 미인증 계정을 대체) 메일을 보내지 않고 정상 종료한다. 실패하면 이벤트가 영원히 다시 발행된다. */
+    /**
+     * 그 사이 계정이 지워졌으면(예: 구글 로그인이 미인증 계정을 대체) 메일을 보내지 않고 정상 종료한다.
+     * 사용자 행을 FOR KEY SHARE로 잡아 두어 리스너 트랜잭션이 끝날 때까지 삭제가 기다리게 한다.
+     * 토큰 INSERT는 커밋 시점에 flush되므로, 잠그지 않으면 삭제와 겹쳤을 때 커밋이 FK 위반으로 실패하고
+     * 이벤트 발행 기록이 미완료로 남아 재시작마다 다시 발행된다.
+     */
     private fun ifUserExists(userId: UUID, action: () -> Unit) {
-        if (!users.existsById(userId)) {
+        val locked = jdbc.sql("SELECT 1 FROM users WHERE id = ? FOR KEY SHARE")
+            .param(userId).query(Int::class.java).optional().isPresent
+        if (!locked) {
             log.info("skipping mail for deleted user {}", userId)
             return
         }
-        try {
-            action()
-        } catch (e: DataIntegrityViolationException) {
-            log.info("skipping mail for user {} deleted while issuing a token", userId)
-        }
+        action()
     }
 
     private fun send(to: String, subject: String, text: String) {

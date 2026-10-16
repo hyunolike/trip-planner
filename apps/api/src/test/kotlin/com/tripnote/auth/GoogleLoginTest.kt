@@ -7,6 +7,17 @@ import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import com.tripnote.auth.internal.TokenPurpose
+import java.time.Duration
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
+import org.awaitility.kotlin.atMost
+import org.awaitility.kotlin.await
+import org.awaitility.kotlin.until
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.eq
+import org.mockito.Mockito.doAnswer
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException
 import org.springframework.security.oauth2.core.OAuth2Error
@@ -160,6 +171,28 @@ class GoogleLoginTest : IntegrationTest() {
 
         verifyNoInteractions(tokens)
         assertThat(mail.sent).isEmpty()
+    }
+
+    @Test
+    fun `a user deleted while the verification mail is being issued does not strand the event`() {
+        // 구글 로그인이 미인증 계정을 지우는 순간과 인증 메일 리스너가 겹치는 경우를 그대로 만든다.
+        var deletion: CompletableFuture<Int>? = null
+        doAnswer { invocation ->
+            deletion = CompletableFuture.supplyAsync {
+                jdbc.sql("DELETE FROM users WHERE email = 'mina@example.com'").update()
+            }
+            try { deletion!!.get(1, TimeUnit.SECONDS) } catch (_: TimeoutException) {}
+            invocation.callRealMethod()
+        }.`when`(tokens).issue(any() ?: UUID(0, 0), eq(TokenPurpose.VERIFY) ?: TokenPurpose.VERIFY)
+
+        signup("mina@example.com")
+
+        await atMost Duration.ofSeconds(10) until {
+            count("SELECT count(*) FROM event_publication") == 0
+        }
+        await atMost Duration.ofSeconds(10) until { deletion?.isDone == true }
+        assertThat(count("SELECT count(*) FROM users")).isZero()
+        assertThat(count("SELECT count(*) FROM email_tokens")).isZero()
     }
 
     @Test
