@@ -1,0 +1,101 @@
+.blocks {
+  display: grid;
+  gap: var(--space-4);
+  font: var(--text-body);
+}
+
+.blocks p {
+  margin: 0;
+}
+
+.heading {
+  margin: 0 0 var(--space-2);
+  font: var(--text-title-sm);
+}
+
+.steps,
+.tips,
+.links {
+  margin: 0;
+  padding-left: var(--space-5);
+  display: grid;
+  gap: var(--space-2);
+}
+
+.tips {
+  list-style: disc;
+}
+
+.links {
+  list-style: none;
+  padding-left: 0;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+}
+
+.facts > div {
+  display: contents;
+}
+
+.facts dt {
+  color: var(--ink-muted);
+}
+
+.facts dd {
+  margin: 0;
+}
+
+/* 이관 HTML은 클래스가 지워진 채 들어온다. 태그만 보고 산문처럼 읽히게 한다. */
+.legacy {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.legacy :is(h2, h3, h4, h5) {
+  margin: var(--space-2) 0 0;
+  font: var(--text-title-sm);
+}
+
+.legacy :is(p, ul, ol, dl, figure, table, blockquote) {
+  margin: 0;
+}
+
+.legacy :is(ul, ol) {
+  padding-left: var(--space-5);
+}
+
+.legacy img {
+  border-radius: var(--radius-md);
+}
+
+.legacy figcaption,
+.legacy small {
+  font: var(--text-caption);
+  color: var(--ink-muted);
+}
+
+.legacy table {
+  border-collapse: collapse;
+  width: 100%;
+  font: var(--text-body-sm);
+}
+
+.legacy :is(th, td) {
+  border-top: 1px solid var(--line);
+  padding: var(--space-2);
+  text-align: left;
+  vertical-align: top;
+}
+
+.legacy details > summary {
+  cursor: pointer;
+  color: var(--brand);
+  min-height: var(--control-md);
+  display: flex;
+  align-items: center;
+}

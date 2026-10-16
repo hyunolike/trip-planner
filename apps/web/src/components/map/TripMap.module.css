@@ -1,0 +1,89 @@
+.frame {
+  position: relative;
+  width: 100%;
+  height: var(--map-mobile);
+  min-height: 280px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface-sunken);
+}
+
+@media (min-width: 600px) {
+  .frame {
+    height: 360px;
+  }
+}
+
+.placeholder {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  font: var(--text-body-sm);
+  color: var(--ink-muted);
+}
+
+.pin {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--surface);
+  background: var(--ink);
+  color: var(--surface);
+  font: 600 13px / 1 var(--font-mono);
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+}
+
+/* 32px 핀의 터치 영역을 44px로 넓힌다. */
+.pin::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+}
+
+.pinSelected {
+  background: var(--brand);
+  color: var(--on-brand);
+  transform: scale(1.15);
+}
+
+.approximate {
+  border-style: dashed;
+}
+
+.playhead {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  background: var(--brand);
+  border: 3px solid var(--surface);
+  box-shadow: var(--shadow-md);
+}
+
+.controls {
+  position: absolute;
+  left: var(--space-2);
+  bottom: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  font: var(--text-body-sm);
+  max-width: calc(100% - var(--space-4));
+}
+
+.status {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* MapLibre 확대·축소 버튼(기본 29px)을 터치 최소 크기 44px로 키운다. */
+.frame :global(.maplibregl-ctrl-group button) {
+  width: 44px;
+  height: 44px;
+}

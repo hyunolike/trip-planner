@@ -1,0 +1,23 @@
+.disclosure > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: var(--control-md);
+  cursor: pointer;
+  list-style: none;
+  font: 500 14px / 22px var(--font-sans);
+  color: var(--brand);
+}
+
+.disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+.chevron {
+  transition: transform 220ms var(--ease);
+}
+
+.disclosure[open] .chevron {
+  transform: rotate(180deg);
+}

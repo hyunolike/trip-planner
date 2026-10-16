@@ -47,7 +47,7 @@ class SecurityConfig {
             it.requestMatchers("/actuator/health/**").permitAll()
                 .requestMatchers("/v3/api-docs/**").permitAll()
                 .requestMatchers("/api/v1/auth/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v1/trips/*", "/api/v1/samples").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/trips/*", "/api/v1/samples", "/api/v1/weather").permitAll()
                 .anyRequest().authenticated()
         }
         .oauth2Login {

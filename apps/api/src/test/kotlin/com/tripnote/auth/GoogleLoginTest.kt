@@ -61,6 +61,14 @@ class GoogleLoginTest : IntegrationTest() {
     }
 
     @Test
+    fun `the google redirect uri points at the web origin, not the api host`() {
+        val expected = "${props.webBaseUrl}/login/oauth2/code/google"
+        mvc.get("/oauth2/authorization/google").andExpect {
+            header { string("Location", org.hamcrest.Matchers.containsString("redirect_uri=$expected")) }
+        }
+    }
+
+    @Test
     fun `a first google login creates a verified user`() {
         val user = identities.resolveExternal(google())
 

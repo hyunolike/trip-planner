@@ -1,0 +1,148 @@
+.row {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) var(--control-md);
+  gap: 0 var(--space-3);
+  padding: var(--space-4);
+  border-top: 1px solid var(--line);
+  scroll-margin-top: 80px;
+}
+
+.row:first-child {
+  border-top: 0;
+}
+
+.time {
+  font: var(--text-data-lg);
+  font-variant-numeric: tabular-nums;
+}
+
+.timing {
+  display: block;
+  margin-top: 2px;
+  font: var(--text-caption);
+  color: var(--ink-muted);
+}
+
+.main {
+  min-width: 0;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.type {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font: var(--text-label);
+  color: var(--ink-muted);
+}
+
+.title {
+  margin: 0;
+  font: var(--text-title-md);
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  font: var(--text-body-sm);
+  color: var(--ink-muted);
+}
+
+.meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.locate {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--control-md);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--brand);
+  font: inherit;
+  cursor: pointer;
+}
+
+.buffer {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: var(--space-1) 0 0;
+  padding: 2px 10px;
+  border-radius: var(--radius-xs);
+  background: var(--warning-soft);
+  color: var(--warning);
+  font: var(--text-label);
+}
+
+.detail {
+  margin-top: var(--space-1);
+}
+
+.detailBody {
+  display: grid;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+}
+
+.details {
+  margin: 0;
+  font: var(--text-body-lg);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  font: 500 14px / 22px var(--font-sans);
+}
+
+.guide {
+  border-top: 1px solid var(--line);
+  padding-top: var(--space-2);
+}
+
+.check {
+  width: var(--control-md);
+  height: var(--control-md);
+  margin-top: -4px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--line-strong);
+  background: var(--surface);
+  color: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background-color 140ms var(--ease),
+    border-color 140ms var(--ease),
+    color 140ms var(--ease);
+}
+
+.check:hover {
+  border-color: var(--brand);
+}
+
+.done .check {
+  background: var(--success);
+  border-color: var(--success);
+  color: var(--on-brand);
+}
+
+.done .title {
+  color: var(--ink-muted);
+  text-decoration: line-through;
+  text-decoration-color: var(--line-strong);
+}

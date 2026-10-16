@@ -1,0 +1,3 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160" width="240" height="160" role="img" aria-label="아직 비어 있는 여행 일정">
+<rect x="60" y="26" width="112" height="112" rx="12" fill="#EEF1F5"/><path d="M150 26L172 48H156A6 6 0 0 1 150 42Z" fill="#E7EDFB"/><rect x="74" y="40" width="24" height="5" rx="2.5" fill="#8A93A2"/><path d="M86 112C91 78 121 120 139 87" fill="none" stroke="#8A93A2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2 7"/><circle cx="86" cy="112" r="4" fill="#8A93A2"/><path d="M144 55A14 14 0 0 0 130 69C130 79 144 94 144 94S158 79 158 69A14 14 0 0 0 144 55ZM144 63A6 6 0 1 1 144 75A6 6 0 1 1 144 63Z" fill="#2456D6" fill-rule="evenodd"/>
+</svg>

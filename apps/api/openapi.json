@@ -9,6 +9,17 @@
     "url" : "/"
   } ],
   "paths" : {
+    "/api/v1/auth/csrf" : {
+      "get" : {
+        "operationId" : "csrf",
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "tags" : [ "csrf-controller" ]
+      }
+    },
     "/api/v1/auth/login" : {
       "post" : {
         "operationId" : "login",
@@ -25,7 +36,7 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/MeResponse"
                 }
@@ -65,7 +76,7 @@
         "responses" : {
           "202" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/MessageResponse"
                 }
@@ -93,7 +104,7 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/MessageResponse"
                 }
@@ -121,7 +132,7 @@
         "responses" : {
           "202" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/MessageResponse"
                 }
@@ -149,7 +160,7 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/MessageResponse"
                 }
@@ -177,7 +188,7 @@
         "responses" : {
           "202" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/MessageResponse"
                 }
@@ -214,7 +225,7 @@
         "responses" : {
           "201" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/StopDocument"
                 }
@@ -251,7 +262,7 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "type" : "array",
                   "items" : {
@@ -281,7 +292,7 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/MeResponse"
                 }
@@ -299,7 +310,7 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "type" : "array",
                   "items" : {
@@ -365,7 +376,7 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/StopDocument"
                 }
@@ -383,7 +394,7 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "type" : "array",
                   "items" : {
@@ -412,7 +423,7 @@
         "responses" : {
           "201" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/CreatedTrip"
                 }
@@ -438,7 +449,7 @@
         "responses" : {
           "200" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/TripDocument"
                 }
@@ -464,7 +475,7 @@
         "responses" : {
           "201" : {
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/CreatedTrip"
                 }
@@ -474,6 +485,57 @@
           }
         },
         "tags" : [ "trip-write-controller" ]
+      }
+    },
+    "/api/v1/weather" : {
+      "get" : {
+        "operationId" : "weather",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "lat",
+          "required" : true,
+          "schema" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }, {
+          "in" : "query",
+          "name" : "lng",
+          "required" : true,
+          "schema" : {
+            "type" : "number",
+            "format" : "double"
+          }
+        }, {
+          "in" : "query",
+          "name" : "date",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "timezone",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : "Asia/Seoul"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/WeatherResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "weather-controller" ]
       }
     }
   },
@@ -963,6 +1025,43 @@
           }
         },
         "required" : [ "password", "token" ]
+      },
+      "WeatherResponse" : {
+        "type" : "object",
+        "properties" : {
+          "checkedAt" : {
+            "type" : [ "string", "null" ],
+            "format" : "date-time"
+          },
+          "condition" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          },
+          "date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "high" : {
+            "type" : [ "number", "null" ],
+            "format" : "double"
+          },
+          "low" : {
+            "type" : [ "number", "null" ],
+            "format" : "double"
+          },
+          "rainChance" : {
+            "type" : [ "integer", "null" ],
+            "format" : "int32"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "windSpeed" : {
+            "type" : [ "number", "null" ],
+            "format" : "double"
+          }
+        },
+        "required" : [ "date", "status" ]
       }
     }
   }

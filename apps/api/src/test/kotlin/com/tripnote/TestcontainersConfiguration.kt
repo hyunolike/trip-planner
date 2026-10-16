@@ -37,4 +37,8 @@ class TestcontainersConfiguration {
     @Bean
     @Primary
     fun recordingRevoker() = com.tripnote.support.RecordingRevoker()
+
+    @Bean
+    @Primary
+    fun fakeForecastSource() = com.tripnote.support.FakeForecastSource()
 }

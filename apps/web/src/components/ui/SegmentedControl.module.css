@@ -1,0 +1,38 @@
+.track {
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 2px;
+  min-height: var(--control-sm);
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+}
+
+.option {
+  position: relative;
+  border: 0;
+  border-radius: var(--radius-xs);
+  padding: 0 var(--space-4);
+  background: transparent;
+  font: 500 14px / 20px var(--font-sans);
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition:
+    color 140ms var(--ease),
+    background-color 220ms var(--ease);
+}
+
+/* 터치 영역 44px */
+.option::after {
+  content: "";
+  position: absolute;
+  inset: -7px 0;
+}
+
+.option[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+  font-weight: 600;
+}
