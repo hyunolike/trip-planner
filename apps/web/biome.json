@@ -6,6 +6,7 @@
       "!src/lib/api/schema.d.ts",
       "!src/components/ui/icons.generated.ts",
       "!.next",
+      "!next-env.d.ts",
       "!public/brand",
       "!public/images",
       "!public/illustrations",
