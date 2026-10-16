@@ -40,5 +40,5 @@ export async function mapCenter(page: Page): Promise<[number, number]> {
 
 /** React가 폼에 붙은 뒤(하이드레이션 끝)에야 입력하고 보낸다. 그 전 제출은 일반 POST가 된다. */
 export async function formReady(page: Page) {
-  await expect(page.locator('form[data-hydrated="true"]')).toBeVisible();
+  await expect(page.locator('form[data-hydrated="true"]:visible')).toBeVisible();
 }

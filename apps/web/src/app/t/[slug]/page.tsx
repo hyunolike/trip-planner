@@ -17,11 +17,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const result = await loadTrip(slug);
   if (result.kind !== 'ok') return { title: '일정을 찾을 수 없어요', robots: { index: false } };
   const trip = result.trip;
+  const cover = readTrip(trip).content.coverPhoto;
   return {
     title: trip.title,
     description: trip.subtitle ?? `${trip.days.length}일 여행 일정`,
     // 검색 엔진에는 public 여행만 보인다(설계 3.7).
     robots: { index: trip.visibility === 'public', follow: trip.visibility === 'public' },
+    ...(trip.visibility === 'public'
+      ? {
+          openGraph: {
+            title: trip.title,
+            description: trip.subtitle ?? `${trip.days.length}일 여행 일정`,
+            type: 'website' as const,
+            images: cover ? [{ url: cover.src, alt: cover.alt }] : [],
+          },
+        }
+      : {}),
   };
 }
 

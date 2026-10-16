@@ -36,10 +36,10 @@ class TripQueries(private val dsl: DSLContext, private val json: JsonMapper) {
             .fetchOne(TRIP_MEMBERS.ROLE)
     }
 
-    fun find(slug: String, viewer: UUID?): TripDocument? {
+    fun find(slug: String, viewer: UUID?, shareGrant: Boolean = false): TripDocument? {
         val trip = dsl.selectFrom(TRIPS).where(TRIPS.SLUG.eq(slug)).fetchOne() ?: return null
         val role = role(trip.id, viewer)
-        if (trip.visibility == "private" && role == null) return null
+        if (trip.visibility == "private" && role == null && !shareGrant) return null
 
         val stopsByDay = dsl.select(stopColumns).from(STOPS).where(STOPS.TRIP_ID.eq(trip.id)).orderBy(STOPS.POSITION).fetchInto(STOPS).groupBy { it.dayId }
         val days = dsl.selectFrom(TRIP_DAYS).where(TRIP_DAYS.TRIP_ID.eq(trip.id)).orderBy(TRIP_DAYS.NUMBER).fetch().map { day ->
@@ -49,8 +49,8 @@ class TripQueries(private val dsl: DSLContext, private val json: JsonMapper) {
             PlaceDocument(place.id, place.key, place.kind, place.name, place.area, place.details.node()!!)
         }
         val permissions = Permissions(
-            canEdit = role in setOf("owner", "editor") && !trip.isSample,
-            canClone = viewer != null && trip.visibility != "private",
+            canEdit = !shareGrant && role in setOf("owner", "editor") && !trip.isSample,
+            canClone = viewer != null && (trip.visibility != "private" || shareGrant),
         )
         return trip.toDocument(days, places, permissions)
     }

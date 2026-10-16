@@ -1,0 +1,25 @@
+.actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-top: var(--space-4);
+}
+.form {
+  display: grid;
+  gap: var(--space-4);
+}
+.form p {
+  margin: 0;
+  font: var(--text-body-sm);
+}
+.ack {
+  display: flex;
+  gap: var(--space-3);
+  min-height: 44px;
+  align-items: center;
+}
+.ack input {
+  width: 24px;
+  height: 24px;
+  accent-color: var(--brand);
+}

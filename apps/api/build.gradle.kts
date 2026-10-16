@@ -40,7 +40,7 @@ jooq {
             database {
                 name = "org.jooq.meta.postgres.PostgresDatabase"
                 inputSchema = "public"
-                excludes = "flyway_schema_history|event_publication.*|spatial_ref_sys|geography_columns|geometry_columns|postgis_.*|regexp_.*|st_.*|geometry_dump|valid_detail"
+                excludes = "share_links|stop_completions|stop_create_mutations|flyway_schema_history|event_publication.*|spatial_ref_sys|geography_columns|geometry_columns|postgis_.*|regexp_.*|st_.*|geometry_dump|valid_detail"
             }
             generate {
                 isJavaTimeTypes = true

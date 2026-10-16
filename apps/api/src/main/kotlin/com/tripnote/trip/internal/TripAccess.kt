@@ -16,5 +16,11 @@ class TripAccess(private val trips: TripRepository, private val queries: TripQue
         return trip
     }
 
+    fun requireOwner(tripId: UUID, userId: UUID): TripEntity {
+        val trip = requireEdit(tripId, userId)
+        if (trip.ownerId != userId) throw ApiException(HttpStatus.FORBIDDEN, "여행 소유자만 할 수 있어요.")
+        return trip
+    }
+
     fun notFound() = ApiException(HttpStatus.NOT_FOUND, "일정을 찾을 수 없어요. 링크를 다시 확인해 주세요.")
 }

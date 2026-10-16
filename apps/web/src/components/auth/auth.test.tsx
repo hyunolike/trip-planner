@@ -29,6 +29,22 @@ beforeEach(() => {
 });
 
 describe('LoginForm', () => {
+  it('returns to the shared trip after email login', async () => {
+    POST.mockResolvedValue(reply(200, { id: 'u1', email: 'mina@example.com', nickname: '미나' }));
+    render(<LoginForm googleError={false} next="/s/shared-token" />);
+    await userEvent.type(screen.getByLabelText('이메일'), 'mina@example.com');
+    await userEvent.type(screen.getByLabelText('비밀번호'), 'trip-note-2027');
+    await userEvent.click(screen.getByRole('button', { name: '로그인하기' }));
+    expect(router.replace).toHaveBeenCalledWith('/s/shared-token');
+  });
+  it('rejects protocol-relative next URLs', async () => {
+    POST.mockResolvedValue(reply(200, { id: 'u1', email: 'mina@example.com', nickname: '미나' }));
+    render(<LoginForm googleError={false} next="//attacker.example" />);
+    await userEvent.type(screen.getByLabelText('이메일'), 'mina@example.com');
+    await userEvent.type(screen.getByLabelText('비밀번호'), 'trip-note-2027');
+    await userEvent.click(screen.getByRole('button', { name: '로그인하기' }));
+    expect(router.replace).toHaveBeenCalledWith('/');
+  });
   it('validates before calling the api', async () => {
     render(<LoginForm googleError={false} />);
     await userEvent.click(screen.getByRole('button', { name: '로그인하기' }));

@@ -16,6 +16,7 @@ type Props = {
   onLocate?: (key: string) => void;
   before?: ReactNode;
   resources?: ReactNode;
+  completionReady?: boolean;
 };
 
 export function DayView({
@@ -29,6 +30,7 @@ export function DayView({
   onLocate,
   before,
   resources,
+  completionReady = true,
 }: Props) {
   const completed = day.stops.filter((s) => done.has(s.key)).length;
   const visible = hideDone ? day.stops.filter((s) => !done.has(s.key)) : day.stops;
@@ -45,39 +47,44 @@ export function DayView({
           {completed} / {day.stops.length} 완료
         </p>
       </header>
-      {before}
-      <div className={styles.toolbar}>
-        <SegmentedControl
-          label="일정 보기 방식"
-          value={mode}
-          onChange={onModeChange}
-          options={[
-            { value: 'summary', label: '간략 일정' },
-            { value: 'detail', label: '상세 일정' },
-          ]}
-        />
-        <Button
-          size="sm"
-          variant="ghost"
-          icon="check"
-          aria-pressed={hideDone}
-          onClick={() => onHideDoneChange(!hideDone)}
-        >
-          완료한 일정 숨기기
-        </Button>
+      <div className={styles.layout}>
+        <div className={styles.map}>{before}</div>
+        <div className={styles.schedule}>
+          <div className={styles.toolbar}>
+            <SegmentedControl
+              label="일정 보기 방식"
+              value={mode}
+              onChange={onModeChange}
+              options={[
+                { value: 'summary', label: '간략 일정' },
+                { value: 'detail', label: '상세 일정' },
+              ]}
+            />
+            <Button
+              size="sm"
+              variant="ghost"
+              icon="check"
+              aria-pressed={hideDone}
+              onClick={() => onHideDoneChange(!hideDone)}
+            >
+              완료한 일정 숨기기
+            </Button>
+          </div>
+          <ol className={styles.stops} aria-label={`${day.number}일차 일정`}>
+            {visible.map((stop) => (
+              <StopRow
+                key={stop.id}
+                stop={stop}
+                done={done.has(stop.key)}
+                mode={mode}
+                onToggle={onToggleStop}
+                onLocate={onLocate}
+                disabled={!completionReady}
+              />
+            ))}
+          </ol>
+        </div>
       </div>
-      <ol className={styles.stops} aria-label={`${day.number}일차 일정`}>
-        {visible.map((stop) => (
-          <StopRow
-            key={stop.id}
-            stop={stop}
-            done={done.has(stop.key)}
-            mode={mode}
-            onToggle={onToggleStop}
-            onLocate={onLocate}
-          />
-        ))}
-      </ol>
       <div className={styles.resources}>
         {day.note ? <p className={styles.note}>{day.note}</p> : null}
         {resources}

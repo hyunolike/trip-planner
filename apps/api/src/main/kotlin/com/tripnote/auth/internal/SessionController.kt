@@ -2,6 +2,7 @@ package com.tripnote.auth.internal
 
 import com.tripnote.auth.SessionUser
 import com.tripnote.common.ApiException
+import com.tripnote.common.ClientIp
 import com.tripnote.common.RateLimiter
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -32,13 +33,14 @@ class SessionController(
     private val loginService: PasswordLoginService,
     private val signIn: SessionSignIn,
     private val rateLimiter: RateLimiter,
+    private val clientIp: ClientIp,
     private val deletion: AccountDeletionService,
 ) {
     @PostMapping("/api/v1/auth/login")
     fun login(@Valid @RequestBody body: LoginRequest, request: HttpServletRequest, response: HttpServletResponse): MeResponse {
         val email = normalizeEmail(body.email)
-        val client = "$email|${request.remoteAddr}"
-        rateLimiter.check("login-ip", request.remoteAddr, limit = 50, window = WINDOW)
+        val client = "$email|${clientIp.resolve(request)}"
+        rateLimiter.check("login-ip", clientIp.resolve(request), limit = 50, window = WINDOW)
         // 실패만 센다. 시도 횟수로 막으면 남이 피해자의 로그인을 막을 수 있다.
         rateLimiter.ensureNotExceeded("login-fail-client", client, limit = 10, window = WINDOW)
         rateLimiter.ensureNotExceeded("login-fail-email", email, limit = 100, window = WINDOW)

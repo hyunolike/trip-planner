@@ -1,6 +1,7 @@
 package com.tripnote.auth.internal
 
 import com.tripnote.common.ApiException
+import com.tripnote.common.ClientIp
 import com.tripnote.common.RateLimiter
 import com.tripnote.common.sha256Hex
 import jakarta.servlet.http.HttpServletRequest
@@ -37,11 +38,12 @@ class EmailAuthController(
     private val signupService: SignupService,
     private val resetService: PasswordResetService,
     private val rateLimiter: RateLimiter,
+    private val clientIp: ClientIp,
 ) {
     @PostMapping("/signup")
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun signup(@Valid @RequestBody body: SignupRequest, request: HttpServletRequest): MessageResponse {
-        rateLimiter.check("signup-ip", request.remoteAddr, limit = 10, window = HOUR)
+        rateLimiter.check("signup-ip", clientIp.resolve(request), limit = 10, window = HOUR)
         signupService.signup(body.email, body.password, body.nickname)
         return MessageResponse("인증 메일을 보냈어요. 메일함을 확인해 주세요.")
     }
@@ -63,7 +65,7 @@ class EmailAuthController(
     @PostMapping("/verify-email/resend")
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun resend(@Valid @RequestBody body: EmailRequest, request: HttpServletRequest): MessageResponse {
-        rateLimiter.check("resend-ip", request.remoteAddr, limit = 20, window = HOUR)
+        rateLimiter.check("resend-ip", clientIp.resolve(request), limit = 20, window = HOUR)
         rateLimiter.check("resend-email", normalizeEmail(body.email), limit = 5, window = HOUR)
         signupService.resendVerification(body.email)
         return MessageResponse("가입된 이메일이면 인증 메일을 다시 보냈어요.")
@@ -72,7 +74,7 @@ class EmailAuthController(
     @PostMapping("/password-reset")
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun requestReset(@Valid @RequestBody body: EmailRequest, request: HttpServletRequest): MessageResponse {
-        rateLimiter.check("reset-ip", request.remoteAddr, limit = 20, window = HOUR)
+        rateLimiter.check("reset-ip", clientIp.resolve(request), limit = 20, window = HOUR)
         rateLimiter.check("reset-email", normalizeEmail(body.email), limit = 5, window = HOUR)
         resetService.request(body.email)
         return MessageResponse("가입된 이메일이면 재설정 메일을 보냈어요.")
@@ -80,7 +82,7 @@ class EmailAuthController(
 
     @PostMapping("/password-reset/confirm")
     fun confirmReset(@Valid @RequestBody body: ResetConfirmRequest, request: HttpServletRequest): MessageResponse {
-        rateLimiter.check("reset-confirm-ip", request.remoteAddr, limit = 20, window = HOUR)
+        rateLimiter.check("reset-confirm-ip", clientIp.resolve(request), limit = 20, window = HOUR)
         resetService.confirm(body.token, body.password)
         return MessageResponse("비밀번호를 바꿨어요. 새 비밀번호로 로그인해 주세요.")
     }

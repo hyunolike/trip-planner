@@ -9,4 +9,5 @@ data class TripnoteProperties(
     val samplesDir: String,
     val systemUserEmail: String,
     val seedSamples: Boolean = false,
+    val trustedProxyCidrs: List<String> = emptyList(),
 )

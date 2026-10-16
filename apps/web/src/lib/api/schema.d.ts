@@ -133,6 +133,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/days/{dayId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateDay"];
+        trace?: never;
+    };
     "/api/v1/days/{dayId}/stops": {
         parameters: {
             query?: never;
@@ -191,6 +207,38 @@ export interface paths {
         get: operations["samples"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/share/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["read"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/share/{token}/clone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["clone_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -261,6 +309,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/trips/{tripId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["deleteTrip"];
+        options?: never;
+        head?: never;
+        patch: operations["updateTrip"];
+        trace?: never;
+    };
+    "/api/v1/trips/{tripId}/completions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/trips/{tripId}/completions/stops/{stopId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["complete"];
+        post?: never;
+        delete: operations["clear"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/trips/{tripId}/share-links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list"];
+        put?: never;
+        post: operations["create_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/trips/{tripId}/share-links/{linkId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["revoke"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/weather": {
         parameters: {
             query?: never;
@@ -284,9 +412,13 @@ export interface components {
         CreateStopRequest: {
             /** Format: uuid */
             afterStopId?: string | null;
+            buffer?: string | null;
+            /** Format: uuid */
+            clientMutationId?: string | null;
             coordinates?: number[] | null;
             details?: string | null;
             duration?: string | null;
+            links?: components["schemas"]["StopLinkRequest"][] | null;
             time: string;
             title: string;
             type?: string | null;
@@ -299,6 +431,12 @@ export interface components {
             startDate: string;
             timezone?: string | null;
             title: string;
+            travelers?: components["schemas"]["TravelerRequest"][] | null;
+        };
+        CreatedShareLink: {
+            /** Format: uuid */
+            id: string;
+            token: string;
         };
         CreatedTrip: {
             /** Format: uuid */
@@ -355,6 +493,12 @@ export interface components {
             password: string;
             token: string;
         };
+        ShareLinkSummary: {
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: uuid */
+            id: string;
+        };
         SignupRequest: {
             /** Format: email */
             email: string;
@@ -385,6 +529,15 @@ export interface components {
             type: string;
             /** Format: int32 */
             version: number;
+        };
+        StopLinkRequest: {
+            label: string;
+            note?: string | null;
+            url: string;
+        };
+        TravelerRequest: {
+            emoji?: string | null;
+            label: string;
         };
         TripDocument: {
             content: unknown;
@@ -423,17 +576,35 @@ export interface components {
             title: string;
             visibility: string;
         };
+        UpdateDayRequest: {
+            city?: string | null;
+            note?: string | null;
+            theme?: string | null;
+            /** Format: int32 */
+            version: number;
+        };
         UpdateStopRequest: {
             buffer?: string | null;
             clearCoordinates?: boolean;
             coordinates?: number[] | null;
             details?: string | null;
             duration?: string | null;
+            links?: components["schemas"]["StopLinkRequest"][] | null;
             time?: string | null;
             title?: string | null;
             type?: string | null;
             /** Format: int32 */
             version: number;
+        };
+        UpdateTripRequest: {
+            /** Format: date */
+            endDate?: string | null;
+            /** Format: date */
+            startDate?: string | null;
+            title?: string | null;
+            /** Format: int32 */
+            version: number;
+            visibility?: string | null;
         };
         VerifyEmailRequest: {
             password: string;
@@ -645,6 +816,32 @@ export interface operations {
             };
         };
     };
+    updateDay: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dayId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateDayRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripDocument"];
+                };
+            };
+        };
+    };
     addStop: {
         parameters: {
             query?: never;
@@ -751,6 +948,50 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TripSummary"][];
+                };
+            };
+        };
+    };
+    read: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripDocument"];
+                };
+            };
+        };
+    };
+    clone_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatedTrip"];
                 };
             };
         };
@@ -888,6 +1129,183 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["CreatedTrip"];
                 };
+            };
+        };
+    };
+    deleteTrip: {
+        parameters: {
+            query: {
+                version: number;
+            };
+            header?: never;
+            path: {
+                tripId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateTrip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tripId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTripRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripDocument"];
+                };
+            };
+        };
+    };
+    list_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tripId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+        };
+    };
+    complete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tripId: string;
+                stopId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    clear: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tripId: string;
+                stopId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tripId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShareLinkSummary"][];
+                };
+            };
+        };
+    };
+    create_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tripId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatedShareLink"];
+                };
+            };
+        };
+    };
+    revoke: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                tripId: string;
+                linkId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

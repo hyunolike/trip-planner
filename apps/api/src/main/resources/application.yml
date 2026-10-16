@@ -58,7 +58,8 @@ spring:
         schema-initialization:
           enabled: true
 server:
-  forward-headers-strategy: native
+  # Keep the socket peer intact for explicit trusted-hop client IP resolution.
+  forward-headers-strategy: none
   shutdown: graceful
 management:
   endpoint:
@@ -81,6 +82,7 @@ tripnote:
   samples-dir: ${TRIPNOTE_SAMPLES_DIR:../../sample}
   system-user-email: ${TRIPNOTE_SYSTEM_USER_EMAIL:ops@tripnote.local}
   seed-samples: ${TRIPNOTE_SEED_SAMPLES:false}
+  trusted-proxy-cidrs: ${TRIPNOTE_TRUSTED_PROXY_CIDRS:}
 
 # 계약 파일이 실행마다 같도록 키를 정렬한다.
 springdoc:

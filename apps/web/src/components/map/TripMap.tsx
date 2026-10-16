@@ -58,9 +58,10 @@ type Props = {
   selectedKey?: string;
   selectionNonce?: number;
   onSelect: (key: string) => void;
+  onPick?: (coordinates: LatLng) => void;
 };
 
-export default function TripMap({ points, segments, selectedKey, selectionNonce, onSelect }: Props) {
+export default function TripMap({ points, segments, selectedKey, selectionNonce, onSelect, onPick }: Props) {
   const mapRef = useRef<MapRef>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const [style, setStyle] = useState<StyleSpecification | string>();
@@ -175,6 +176,7 @@ export default function TripMap({ points, segments, selectedKey, selectionNonce,
             recordCenter();
           }}
           onMoveEnd={recordCenter}
+          onClick={onPick ? (event) => onPick([event.lngLat.lat, event.lngLat.lng]) : undefined}
         >
           <NavigationControl showCompass={false} position="top-right" />
           <Source id="route" type="geojson" data={routes}>

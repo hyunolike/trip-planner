@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { type Ref, useImperativeHandle } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -35,6 +35,20 @@ describe('TripMap', () => {
     vi.unstubAllGlobals();
     mapProps.length = 0;
     fitBounds.mockClear();
+  });
+
+  it('returns clicked map coordinates in API latitude longitude order', async () => {
+    vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: true, json: async () => ({ version: 8, sources: {}, layers: [] }) })),
+    );
+    const onPick = vi.fn();
+    render(<TripMap points={[]} segments={[]} onSelect={() => {}} onPick={onPick} />);
+    await screen.findByTestId('maplibre');
+    const onClick = mapProps.at(-1)?.onClick as (event: unknown) => void;
+    act(() => onClick({ lngLat: { lat: 15.88, lng: 108.33 } }));
+    expect(onPick).toHaveBeenCalledWith([15.88, 108.33]);
   });
 
   it('shows a Korean message instead of a blank map when the style request fails', async () => {
