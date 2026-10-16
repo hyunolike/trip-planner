@@ -1,0 +1,31 @@
+.figure {
+  margin: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.figure img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+}
+
+.top img {
+  object-position: top;
+}
+
+.hotel img {
+  aspect-ratio: 4 / 3;
+}
+
+.caption {
+  font: var(--text-caption);
+  color: var(--ink-muted);
+}
+
+.caption a {
+  color: inherit;
+}
