@@ -9,6 +9,11 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import java.time.Duration
 import org.springframework.http.HttpStatus
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient
+import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizedClientRepository
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -27,6 +32,7 @@ class SessionController(
     private val loginService: PasswordLoginService,
     private val signIn: SessionSignIn,
     private val rateLimiter: RateLimiter,
+    private val deletion: AccountDeletionService,
 ) {
     @PostMapping("/api/v1/auth/login")
     fun login(@Valid @RequestBody body: LoginRequest, request: HttpServletRequest, response: HttpServletResponse): MeResponse {
@@ -51,4 +57,17 @@ class SessionController(
 
     @GetMapping("/api/v1/me")
     fun me(@AuthenticationPrincipal user: SessionUser): MeResponse = user.toMe()
+
+    private val authorizedClients = HttpSessionOAuth2AuthorizedClientRepository()
+
+    @DeleteMapping("/api/v1/me")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun deleteMe(@AuthenticationPrincipal user: SessionUser, request: HttpServletRequest) {
+        val token = authorizedClients.loadAuthorizedClient<OAuth2AuthorizedClient>(
+            "google", SecurityContextHolder.getContext().authentication!!, request,
+        )?.accessToken?.tokenValue
+        deletion.delete(user.userId, token)
+        SecurityContextHolder.clearContext()
+        request.getSession(false)?.invalidate()
+    }
 }

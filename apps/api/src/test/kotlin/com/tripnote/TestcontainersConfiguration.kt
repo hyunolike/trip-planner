@@ -33,4 +33,8 @@ class TestcontainersConfiguration {
     @Bean
     @Primary
     fun fakeBreachedPasswordChecker() = BreachedPasswordChecker { it == "password1234" }
+
+    @Bean
+    @Primary
+    fun recordingRevoker() = com.tripnote.support.RecordingRevoker()
 }

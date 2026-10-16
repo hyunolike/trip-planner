@@ -58,11 +58,15 @@ data class UpdateStopRequest(
 data class ReorderRequest(@field:NotEmpty val stopIds: List<UUID>)
 
 @RestController
-class TripWriteController(private val tripsCommands: TripCommandService, private val stopCommands: StopCommandService) {
+class TripWriteController(private val tripsCommands: TripCommandService, private val stopCommands: StopCommandService, private val cloneService: TripCloneService) {
     @PostMapping("/api/v1/trips")
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@Valid @RequestBody body: CreateTripRequest, @AuthenticationPrincipal user: SessionUser): CreatedTrip =
         tripsCommands.create(user.userId, body.title, body.startDate, body.endDate, body.timezone, body.city)
+
+    @PostMapping("/api/v1/trips/{slug}/clone")
+    @ResponseStatus(HttpStatus.CREATED)
+    fun clone(@PathVariable slug: String, @AuthenticationPrincipal user: SessionUser): CreatedTrip = cloneService.clone(slug, user.userId)
 
     @PostMapping("/api/v1/days/{dayId}/stops")
     @ResponseStatus(HttpStatus.CREATED)
