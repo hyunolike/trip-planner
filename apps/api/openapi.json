@@ -519,7 +519,7 @@
             "pattern" : "^(airport|flight|transport|hotel|meal|sight|shopping|free|breakfast|bath|tour)$"
           }
         },
-        "required" : [ "title" ]
+        "required" : [ "time", "title" ]
       },
       "CreateTripRequest" : {
         "type" : "object",
@@ -548,7 +548,7 @@
             "minLength" : 0
           }
         },
-        "required" : [ "title" ]
+        "required" : [ "endDate", "startDate", "title" ]
       },
       "CreatedTrip" : {
         "type" : "object",
@@ -560,7 +560,8 @@
           "slug" : {
             "type" : "string"
           }
-        }
+        },
+        "required" : [ "id", "slug" ]
       },
       "DayDocument" : {
         "type" : "object",
@@ -596,7 +597,8 @@
             "type" : "string"
           },
           "tour" : { }
-        }
+        },
+        "required" : [ "city", "date", "id", "number", "stops", "theme" ]
       },
       "EmailRequest" : {
         "type" : "object",
@@ -636,7 +638,8 @@
           "nickname" : {
             "type" : "string"
           }
-        }
+        },
+        "required" : [ "email", "id", "nickname" ]
       },
       "MessageResponse" : {
         "type" : "object",
@@ -644,7 +647,8 @@
           "message" : {
             "type" : "string"
           }
-        }
+        },
+        "required" : [ "message" ]
       },
       "Permissions" : {
         "type" : "object",
@@ -655,7 +659,8 @@
           "canEdit" : {
             "type" : "boolean"
           }
-        }
+        },
+        "required" : [ "canClone", "canEdit" ]
       },
       "PlaceDocument" : {
         "type" : "object",
@@ -677,7 +682,8 @@
           "name" : {
             "type" : "string"
           }
-        }
+        },
+        "required" : [ "area", "details", "id", "key", "kind", "name" ]
       },
       "ReorderRequest" : {
         "type" : "object",
@@ -790,7 +796,8 @@
             "type" : "integer",
             "format" : "int32"
           }
-        }
+        },
+        "required" : [ "approximate", "details", "id", "key", "optional", "position", "time", "title", "type", "version" ]
       },
       "TripDocument" : {
         "type" : "object",
@@ -810,6 +817,9 @@
             "type" : "string",
             "format" : "uuid"
           },
+          "isSample" : {
+            "type" : "boolean"
+          },
           "permissions" : {
             "$ref" : "#/components/schemas/Permissions"
           },
@@ -818,9 +828,6 @@
             "items" : {
               "$ref" : "#/components/schemas/PlaceDocument"
             }
-          },
-          "sample" : {
-            "type" : "boolean"
           },
           "slug" : {
             "type" : "string"
@@ -849,7 +856,8 @@
           "visibility" : {
             "type" : "string"
           }
-        }
+        },
+        "required" : [ "content", "days", "endDate", "id", "isSample", "permissions", "places", "slug", "startDate", "timezone", "title", "version", "visibility" ]
       },
       "TripSummary" : {
         "type" : "object",
@@ -865,7 +873,7 @@
             "type" : "string",
             "format" : "date"
           },
-          "sample" : {
+          "isSample" : {
             "type" : "boolean"
           },
           "slug" : {
@@ -888,7 +896,8 @@
           "visibility" : {
             "type" : "string"
           }
-        }
+        },
+        "required" : [ "cities", "endDate", "isSample", "slug", "startDate", "stopCount", "title", "visibility" ]
       },
       "UpdateStopRequest" : {
         "type" : "object",
@@ -938,7 +947,8 @@
             "type" : "integer",
             "format" : "int32"
           }
-        }
+        },
+        "required" : [ "version" ]
       },
       "VerifyEmailRequest" : {
         "type" : "object",

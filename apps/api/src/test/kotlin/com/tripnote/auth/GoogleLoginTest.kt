@@ -20,6 +20,10 @@ import com.tripnote.auth.internal.TripnoteOidcUser
 import com.tripnote.auth.internal.VerificationMailRequested
 import com.tripnote.common.TripnoteProperties
 import java.time.Instant
+import com.tripnote.auth.internal.EmailTokenService
+import org.mockito.Mockito.verifyNoInteractions
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
+import org.springframework.test.util.AopTestUtils
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
@@ -95,6 +99,7 @@ class GoogleLoginTest : IntegrationTest() {
     @Autowired lateinit var successHandler: GoogleLoginSuccessHandler
     @Autowired lateinit var failureHandler: GoogleLoginFailureHandler
     @Autowired lateinit var mailer: AuthMailer
+    @MockitoSpyBean lateinit var tokens: EmailTokenService
     @Autowired lateinit var props: TripnoteProperties
 
     @Test
@@ -148,8 +153,12 @@ class GoogleLoginTest : IntegrationTest() {
 
     @Test
     fun `the mailer skips a verification mail for a deleted user`() {
-        mailer.on(VerificationMailRequested(UUID.randomUUID(), "gone@example.com"))
+        // @Async 프록시를 거치면 호출이 바로 돌아와 아무것도 검증하지 못한다. 대상 객체를 직접 불러 동기로 실행한다.
+        val target = AopTestUtils.getUltimateTargetObject<AuthMailer>(mailer)
 
+        target.on(VerificationMailRequested(UUID.randomUUID(), "gone@example.com"))
+
+        verifyNoInteractions(tokens)
         assertThat(mail.sent).isEmpty()
     }
 

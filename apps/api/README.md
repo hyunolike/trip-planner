@@ -30,6 +30,9 @@ TRIPNOTE_SEED_SAMPLES=true ./gradlew bootRun
 - compose의 `db` 볼륨은 `/var/lib/postgresql`에 마운트한다(PostGIS 18 이미지의 디렉터리 구조). 이전 볼륨을 가진 개발자는 `docker compose down -v`로 지우고 다시 띄워야 한다.
 - 메일 헬스 인디케이터는 끈다. 메일 서버가 잠시 죽어도 인스턴스가 비정상으로 판정되지 않게 하려는 것이다.
 - 세션은 `spring.session.data.redis.*`로 Valkey에 저장한다. 인덱스를 켰고 네임스페이스는 `tripnote:session`이다.
+- 세션 저장소가 CONFIG 명령을 막는 관리형 Valkey라면 `spring.session.data.redis.configure-action: none`을 지정하고, 키스페이스 알림(`notify-keyspace-events`)은 제공자 설정에서 켠다.
+- 헬스 프로브: `/actuator/health/liveness`(프로세스 생존)와 `/actuator/health/readiness`(db, redis 포함, mail 제외)를 인증 없이 열어 둔다. 블루/그린 배포는 readiness가 UP이 된 뒤에 트래픽을 넘긴다. `server.shutdown: graceful`이라 종료 때 진행 중인 요청을 마무리한다.
+- SMTP 연결, 읽기, 쓰기 타임아웃은 5초다. 메일 리스너가 트랜잭션 안에서 돌기 때문에 SMTP가 멈추면 DB 커넥션이 묶인다.
 - `server.forward-headers-strategy: native`는 사설 주소와 루프백 프록시만 신뢰한다. 앞단 프록시가 공인 주소라면 `server.tomcat.remoteip.internal-proxies`를 지정한다.
 - 이메일 인증은 가입할 때 쓴 비밀번호가 필요하다: `POST /api/v1/auth/verify-email` 본문은 `{token, password}`다. 웹의 인증 화면이 비밀번호를 물어야 한다.
 

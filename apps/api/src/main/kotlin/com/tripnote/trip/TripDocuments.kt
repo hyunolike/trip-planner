@@ -1,5 +1,6 @@
 package com.tripnote.trip
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import java.time.LocalDate
 import java.util.UUID
 import tools.jackson.databind.JsonNode
@@ -53,7 +54,7 @@ data class TripDocument(
     val endDate: LocalDate,
     val timezone: String,
     val visibility: String,
-    val isSample: Boolean,
+    @JsonProperty("isSample") @get:JsonProperty("isSample") val isSample: Boolean,
     val sourceTripId: UUID?,
     val version: Int,
     val content: JsonNode,
@@ -69,7 +70,7 @@ data class TripSummary(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val visibility: String,
-    val isSample: Boolean,
+    @JsonProperty("isSample") @get:JsonProperty("isSample") val isSample: Boolean,
     val coverPhoto: JsonNode?,
     val cities: List<String>,
     val stopCount: Int,

@@ -40,6 +40,8 @@ abstract class IntegrationTest {
     @BeforeEach
     fun cleanDatabase() {
         awaitNoInFlightEvents()
+        // 실패한 리스너가 남긴 행이 다음 테스트의 대기를 timeout으로 번지게 하지 않는다.
+        jdbc.sql("TRUNCATE event_publication").update()
         jdbc.sql("TRUNCATE users, trips CASCADE").update()
         mail.sent.clear()
         clock.reset()

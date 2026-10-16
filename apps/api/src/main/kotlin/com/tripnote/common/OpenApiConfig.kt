@@ -1,5 +1,11 @@
 package com.tripnote.common
 
+import com.fasterxml.jackson.annotation.JsonProperty
+import kotlin.reflect.KClass
+import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.primaryConstructor
+import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.Operation
 import io.swagger.v3.oas.models.PathItem
@@ -37,6 +43,38 @@ class OpenApiConfig {
                 if (freeObject) schema.properties[name] = Schema<Any>()
             }
         }
+    }
+
+    /**
+     * springdoc은 Kotlin의 null 여부를 required로 옮기지 않아 생성된 TS 타입이 전부 optional이 된다.
+     * 스키마 이름이 com.tripnote의 클래스 이름과 같으면, 기본값 없는 non-null 주 생성자 매개변수를 required로 표시한다.
+     */
+    @Bean
+    fun requiredFieldsContract(): OpenApiCustomizer {
+        val classes = tripnoteClasses()
+        return OpenApiCustomizer { api ->
+            api.components?.schemas?.forEach { (name, schema) ->
+                val type = classes[name] ?: return@forEach
+                val constructor = type.primaryConstructor ?: return@forEach
+                val required = constructor.parameters
+                    .filter { !it.type.isMarkedNullable && !it.isOptional }
+                    .map { it.findAnnotation<JsonProperty>()?.value?.takeIf(String::isNotEmpty) ?: it.name!! }
+                    .filter { schema.properties?.containsKey(it) == true }
+                if (required.isNotEmpty()) schema.required = required
+            }
+        }
+    }
+
+    private fun tripnoteClasses(): Map<String, KClass<*>> {
+        val scanner = object : ClassPathScanningCandidateComponentProvider(false) {
+            override fun isCandidateComponent(definition: AnnotatedBeanDefinition) = true
+        }
+        scanner.addIncludeFilter { _, _ -> true }
+        return scanner.findCandidateComponents("com.tripnote")
+            .mapNotNull { it.beanClassName }
+            .mapNotNull { runCatching { Class.forName(it).kotlin }.getOrNull() }
+            .filter { !it.java.isAnonymousClass && it.java.simpleName.isNotEmpty() }
+            .associateBy { it.java.simpleName }
     }
 
     /** 로그아웃은 컨트롤러가 아니라 보안 필터가 처리하므로 계약에 직접 넣는다. */

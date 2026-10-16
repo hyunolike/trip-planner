@@ -4,6 +4,9 @@ spring:
   threads:
     virtual:
       enabled: true
+  mvc:
+    problemdetails:
+      enabled: true
   security:
     oauth2:
       client:
@@ -23,6 +26,11 @@ spring:
     port: ${MAIL_PORT:1025}
     username: ${MAIL_USERNAME:}
     password: ${MAIL_PASSWORD:}
+    properties:
+      # 메일 리스너는 트랜잭션 안에서 돌므로 SMTP가 멈추면 DB 커넥션이 묶인다.
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
   data:
     redis:
       host: ${VALKEY_HOST:localhost}
@@ -49,7 +57,15 @@ spring:
           enabled: true
 server:
   forward-headers-strategy: native
+  shutdown: graceful
 management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: readinessState,db,redis
   health:
     mail:
       enabled: false

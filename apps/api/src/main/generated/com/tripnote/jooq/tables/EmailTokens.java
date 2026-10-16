@@ -4,6 +4,7 @@
 package com.tripnote.jooq.tables;
 
 
+import com.tripnote.jooq.Indexes;
 import com.tripnote.jooq.Keys;
 import com.tripnote.jooq.Public;
 import com.tripnote.jooq.tables.Users.UsersPath;
@@ -19,6 +20,7 @@ import org.jooq.Check;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.ForeignKey;
+import org.jooq.Index;
 import org.jooq.Name;
 import org.jooq.PlainSQL;
 import org.jooq.QueryPart;
@@ -124,6 +126,11 @@ public class EmailTokens extends TableImpl<EmailTokensRecord> {
     @Override
     public Schema getSchema() {
         return aliased() ? null : Public.PUBLIC;
+    }
+
+    @Override
+    public List<Index> getIndexes() {
+        return Arrays.asList(Indexes.EMAIL_TOKENS_USER_IDX);
     }
 
     @Override

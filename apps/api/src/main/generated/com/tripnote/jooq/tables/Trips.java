@@ -208,7 +208,7 @@ public class Trips extends TableImpl<TripsRecord> {
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.asList(Indexes.TRIPS_PUBLIC_SAMPLES_IDX);
+        return Arrays.asList(Indexes.TRIPS_OWNER_IDX, Indexes.TRIPS_PUBLIC_SAMPLES_IDX, Indexes.TRIPS_SOURCE_TRIP_IDX);
     }
 
     @Override

@@ -24,6 +24,14 @@ class OpenApiContractTest : IntegrationTest() {
         assertThat(pretty).doesNotContain("bigDecimal", "\"JsonNode\"")
         assertThat(json.readTree(raw).get("servers").size()).isEqualTo(1)
         assertThat(json.readTree(raw).get("servers").get(0).get("url").asString()).isEqualTo("/")
+        val schemas = json.readTree(raw).get("components").get("schemas")
+        for (name in listOf("TripDocument", "TripSummary")) {
+            assertThat(schemas.get(name).get("properties").propertyNames().toList()).contains("isSample").doesNotContain("sample")
+        }
+        assertThat(pretty).contains("\"isSample\"")
+        val required = schemas.get("TripDocument").get("required").values().map { it.asString() }
+        assertThat(required).contains("id", "slug", "title", "isSample", "days", "permissions").doesNotContain("subtitle", "sourceTripId")
+
         assertThat(Files.readString(file))
             .withFailMessage("openapi.json is stale. Run: ./gradlew test --tests com.tripnote.OpenApiContractTest -Dopenapi.write=true")
             .isEqualTo(pretty)
