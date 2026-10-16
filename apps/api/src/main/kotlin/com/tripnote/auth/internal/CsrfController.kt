@@ -14,7 +14,7 @@ class CsrfController {
      */
     @GetMapping("/api/v1/auth/csrf")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun csrf(token: CsrfToken) {
+    fun csrf(@io.swagger.v3.oas.annotations.Parameter(hidden = true) token: CsrfToken) {
         token.token
     }
 }

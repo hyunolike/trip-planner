@@ -40,7 +40,7 @@ class OpenApiContractTest : IntegrationTest() {
     @Test
     fun `every response is declared as application json and weather is published`() {
         val text = java.nio.file.Files.readString(file)
-        org.assertj.core.api.Assertions.assertThat(text).doesNotContain("\"*/*\"")
+        org.assertj.core.api.Assertions.assertThat(text).doesNotContain("\"*/*\"", "CsrfToken")
         org.assertj.core.api.Assertions.assertThat(text).contains("\"/api/v1/weather\"", "\"/api/v1/auth/csrf\"", "\"WeatherResponse\"")
     }
 }

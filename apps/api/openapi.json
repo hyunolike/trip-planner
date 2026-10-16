@@ -12,14 +12,6 @@
     "/api/v1/auth/csrf" : {
       "get" : {
         "operationId" : "csrf",
-        "parameters" : [ {
-          "in" : "query",
-          "name" : "token",
-          "required" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/CsrfToken"
-          }
-        } ],
         "responses" : {
           "204" : {
             "description" : "No Content"
@@ -632,20 +624,6 @@
           }
         },
         "required" : [ "id", "slug" ]
-      },
-      "CsrfToken" : {
-        "type" : "object",
-        "properties" : {
-          "headerName" : {
-            "type" : "string"
-          },
-          "parameterName" : {
-            "type" : "string"
-          },
-          "token" : {
-            "type" : "string"
-          }
-        }
       },
       "DayDocument" : {
         "type" : "object",
