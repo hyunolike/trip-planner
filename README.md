@@ -86,6 +86,14 @@ API를 변경하면 `apps/api/openapi.json`을 기존 계약 테스트로 갱신
 
 ## 배포 전에 할 일
 
+### API가 없는 화면 미리보기
+
+프론트만 배포해 화면을 확인할 때는 빌드와 런타임에 모두 `TRIPNOTE_UI_PREVIEW=1`을 지정합니다. 모든 앱 경로는 백엔드 미연결 안내로 바뀌며 로그인, 샘플 조회, 여행 만들기 버튼을 비활성화합니다. API 요청과 서버 액션은 503 안내를 반환하고 API rewrite를 만들지 않습니다. 개인 일정이나 로컬 API를 대신 공개하지 않습니다. 이 배포는 동작하는 여행 서비스가 아닙니다.
+
+스위치를 생략하면 기존 앱과 인증 경계가 그대로 동작합니다. 실제 API를 연결할 때는 이 스위치를 빌드와 런타임에서 함께 제거한 새 배포를 검증해야 합니다. `.vercelignore`는 웹 배포 입력에서 개인 일정 JSON, API 소스, 테스트 fixture, 환경 파일과 로컬 설정을 제외합니다. Vercel의 Root Directory는 `apps/web`로 지정하고 workspace의 토큰 빌드와 이미지/MapLibre worker 복사가 완료되는지 확인합니다. 루트 `build`는 기존 Vite 앱이므로 새 Next.js 배포 명령으로 사용하지 않습니다.
+
+### 운영 연결
+
 웹과 API는 별도로 배포합니다. 아래 운영 설정과 실제 환경 검증을 마친 뒤 배포합니다.
 
 - 실제 웹·API 주소에 맞춰 `API_ORIGIN`, `SITE_ORIGIN`, `TRIPNOTE_WEB_BASE_URL`과 Google 리다이렉트 URI 설정
