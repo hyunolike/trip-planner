@@ -36,4 +36,11 @@ class OpenApiContractTest : IntegrationTest() {
             .withFailMessage("openapi.json is stale. Run: ./gradlew test --tests com.tripnote.OpenApiContractTest -Dopenapi.write=true")
             .isEqualTo(pretty)
     }
+
+    @Test
+    fun `every response is declared as application json and weather is published`() {
+        val text = java.nio.file.Files.readString(file)
+        org.assertj.core.api.Assertions.assertThat(text).doesNotContain("\"*/*\"")
+        org.assertj.core.api.Assertions.assertThat(text).contains("\"/api/v1/weather\"", "\"/api/v1/auth/csrf\"", "\"WeatherResponse\"")
+    }
 }
