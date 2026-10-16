@@ -33,3 +33,10 @@ describe('legacySectionsFor', () => {
     expect(legacySectionsFor(readTrip(danangTrip()), 'info')).toEqual([]);
   });
 });
+
+describe('module boundary', () => {
+  it('keeps the pure helpers free of the client directive', async () => {
+    const { readFileSync } = await import('node:fs');
+    expect(readFileSync('src/lib/trip/sections.ts', 'utf8')).not.toMatch(/['"]use client['"]/);
+  });
+});

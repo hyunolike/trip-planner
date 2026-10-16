@@ -122,3 +122,16 @@ describe('trip sections', () => {
     expect(within(info).getByText('항공편과 이동 경로')).toBeInTheDocument();
   });
 });
+
+describe('scroll on section change', () => {
+  it('scrolls the main area into view when returning to the itinerary', async () => {
+    const spy = vi.fn();
+    Element.prototype.scrollIntoView = spy;
+    window.history.replaceState(null, '', '/t/osaka-kyoto-family-2026#food');
+    renderScreen(<TripScreen trip={osaka} initialDay={0} />);
+    spy.mockClear();
+    await goTo('#');
+    expect(screen.getByRole('link', { name: '일정' })).toHaveAttribute('aria-current', 'page');
+    expect(spy).toHaveBeenCalledWith({ block: 'start' });
+  });
+});

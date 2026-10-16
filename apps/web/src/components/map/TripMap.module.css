@@ -81,3 +81,9 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* MapLibre 확대·축소 버튼(기본 29px)을 터치 최소 크기 44px로 키운다. */
+.frame :global(.maplibregl-ctrl-group button) {
+  width: 44px;
+  height: 44px;
+}

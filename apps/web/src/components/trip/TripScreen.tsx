@@ -5,7 +5,7 @@ import { DayRoute } from '@/components/map/DayRoute';
 import { WeatherCard } from '@/components/weather/WeatherCard';
 import { useCompletion } from '@/lib/trip/completion';
 import type { TripView } from '@/lib/trip/content';
-import { useHashSection } from '@/lib/trip/sections';
+import { useHashSection } from '@/lib/trip/useHashSection';
 import { ChecklistSection } from './ChecklistSection';
 import { DayBar } from './DayBar';
 import { DayView } from './DayView';
@@ -30,8 +30,9 @@ export function TripScreen({ trip, initialDay, onLocate }: Props) {
   const section = useHashSection();
   const day = trip.days[dayIndex] ?? trip.days[0];
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 섹션이 바뀔 때마다 본문 위로 스크롤하려고 section을 의존성에 둔다.
   useEffect(() => {
-    if (section !== 'itinerary') document.getElementById('main')?.scrollIntoView?.({ block: 'start' });
+    document.getElementById('main')?.scrollIntoView?.({ block: 'start' });
   }, [section]);
 
   function selectDay(index: number) {

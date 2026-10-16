@@ -13,7 +13,7 @@ async function WithToken({ searchParams }: Props) {
 
 export default function ResetPasswordPage(props: Props) {
   return (
-    <Suspense fallback={<ResetRequestForm />}>
+    <Suspense fallback={null}>
       <WithToken {...props} />
     </Suspense>
   );

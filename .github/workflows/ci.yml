@@ -112,3 +112,12 @@ jobs:
       - name: api log on failure
         if: failure()
         run: tail -n 200 apps/api/api.log
+      - name: upload playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: playwright-report
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+          if-no-files-found: ignore

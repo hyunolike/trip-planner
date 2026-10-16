@@ -15,6 +15,26 @@ import styles from './TripMap.module.css';
 const STYLE_URL = process.env.NEXT_PUBLIC_MAP_STYLE_URL ?? 'https://tiles.openfreemap.org/styles/liberty';
 const SEGMENT_MS = 2500;
 
+// MapLibre 기본 문구는 영어라서 화면에 보이는 것을 모두 한국어로 바꾼다.
+const MAP_LOCALE = {
+  'AttributionControl.ToggleAttribution': '지도 출처 보기',
+  'AttributionControl.MapFeedback': '지도 오류 신고',
+  'FullscreenControl.Enter': '전체 화면으로 보기',
+  'FullscreenControl.Exit': '전체 화면 닫기',
+  'GeolocateControl.FindMyLocation': '내 위치 찾기',
+  'GeolocateControl.LocationNotAvailable': '내 위치를 알 수 없어요',
+  'LogoControl.Title': 'MapLibre 로고',
+  'Map.Title': '지도',
+  'Marker.Title': '표시',
+  'NavigationControl.ResetBearing': '북쪽을 위로 맞추기',
+  'NavigationControl.ZoomIn': '지도 확대',
+  'NavigationControl.ZoomOut': '지도 축소',
+  'Popup.Close': '닫기',
+  'CooperativeGesturesHandler.WindowsHelpText': 'Ctrl 키를 누른 채 스크롤하면 지도를 확대해요.',
+  'CooperativeGesturesHandler.MacHelpText': '⌘ 키를 누른 채 스크롤하면 지도를 확대해요.',
+  'CooperativeGesturesHandler.MobileHelpText': '두 손가락으로 지도를 움직여요.',
+};
+
 // 운영 빌드에서는 번들러가 import.meta.url을 바꿔 MapLibre가 워커 파일을 못 찾는다. sync:images가 public/maplibre에 복사한 워커를 쓴다.
 setWorkerUrl('/maplibre/maplibre-gl-worker.mjs');
 
@@ -30,6 +50,8 @@ function useMedia(query: string): boolean {
   );
 }
 
+class StyleUnavailable extends Error {}
+
 type Props = {
   points: MapPoint[];
   segments: RouteSegment[];
@@ -42,6 +64,7 @@ export default function TripMap({ points, segments, selectedKey, selectionNonce,
   const mapRef = useRef<MapRef>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const [style, setStyle] = useState<StyleSpecification | string>();
+  const [failed, setFailed] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [playhead, setPlayhead] = useState<{ at: LatLng; label: string }>();
   const [visible, setVisible] = useState(true);
@@ -52,9 +75,16 @@ export default function TripMap({ points, segments, selectedKey, selectionNonce,
   useEffect(() => {
     let alive = true;
     fetch(STYLE_URL)
-      .then((response) => response.json() as Promise<StyleSpecification>)
+      .then((response) => {
+        if (!response.ok) throw new StyleUnavailable();
+        return response.json() as Promise<StyleSpecification>;
+      })
       .then((json) => alive && setStyle(localizeLabels(json)))
-      .catch(() => alive && setStyle(STYLE_URL));
+      .catch((error) => {
+        if (!alive) return;
+        if (error instanceof StyleUnavailable) setFailed(true);
+        else setStyle(STYLE_URL);
+      });
     return () => {
       alive = false;
     };
@@ -112,7 +142,11 @@ export default function TripMap({ points, segments, selectedKey, selectionNonce,
 
   return (
     <div ref={frameRef} className={styles.frame}>
-      {!style ? (
+      {failed ? (
+        <div className={styles.placeholder} role="status">
+          지도를 불러오지 못했어요. 잠시 후 다시 열어 주세요.
+        </div>
+      ) : !style ? (
         <div className={styles.placeholder}>지도를 불러오는 중이에요.</div>
       ) : (
         <MapView
@@ -123,6 +157,7 @@ export default function TripMap({ points, segments, selectedKey, selectionNonce,
           }
           style={{ width: '100%', height: '100%' }}
           cooperativeGestures
+          locale={MAP_LOCALE}
           dragRotate={false}
           attributionControl={{ compact: true }}
           onLoad={recordCenter}

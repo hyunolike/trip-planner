@@ -1,6 +1,3 @@
-'use client';
-
-import { useSyncExternalStore } from 'react';
 import type { LegacySection, TripView } from './content';
 
 export const SECTIONS = ['itinerary', 'food', 'shopping', 'links', 'preparation'] as const;
@@ -9,19 +6,6 @@ export type SectionId = (typeof SECTIONS)[number];
 export function sectionFromHash(hash: string): SectionId {
   const id = hash.replace(/^#/, '');
   return (SECTIONS as readonly string[]).includes(id) ? (id as SectionId) : 'itinerary';
-}
-
-function subscribe(onChange: () => void) {
-  window.addEventListener('hashchange', onChange);
-  return () => window.removeEventListener('hashchange', onChange);
-}
-
-export function useHashSection(): SectionId {
-  return useSyncExternalStore(
-    subscribe,
-    () => sectionFromHash(window.location.hash),
-    () => 'itinerary',
-  );
 }
 
 const TABBED = new Set(['food', 'shopping', 'links', 'preparation']);

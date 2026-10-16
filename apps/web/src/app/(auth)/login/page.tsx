@@ -13,7 +13,7 @@ async function WithParams({ searchParams }: Props) {
 
 export default function LoginPage(props: Props) {
   return (
-    <Suspense fallback={<LoginForm googleError={false} />}>
+    <Suspense fallback={null}>
       <WithParams {...props} />
     </Suspense>
   );
