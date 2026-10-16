@@ -6,8 +6,12 @@ import { getDayMapPoints, getDayRouteSegments } from '@/lib/map/route';
 import { readTrip } from '@/lib/trip/content';
 import { DayRoute } from './DayRoute';
 
+const seen = vi.hoisted(() => [] as unknown[]);
 vi.mock('./LazyTripMap', () => ({
-  LazyTripMap: (props: { selectedKey?: string }) => <div data-testid="map" data-selected={props.selectedKey ?? ''} />,
+  LazyTripMap: (props: { selectedKey?: string; points: unknown }) => {
+    seen.push(props.points);
+    return <div data-testid="map" data-selected={props.selectedKey ?? ''} />;
+  },
 }));
 
 const day = readTrip(osakaTrip()).days[0]!;
@@ -63,5 +67,15 @@ describe('DayRoute', () => {
       />,
     );
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it('hands the map the same points and segments while the day is unchanged', () => {
+    mockReducedMotion(false);
+    seen.length = 0;
+    const { rerender } = render(<DayRoute day={day} onSelect={() => {}} />);
+    rerender(<DayRoute day={day} selectedKey="x" selectionNonce={2} onSelect={() => {}} />);
+
+    expect(seen.length).toBeGreaterThan(1);
+    expect(new Set(seen).size).toBe(1);
   });
 });

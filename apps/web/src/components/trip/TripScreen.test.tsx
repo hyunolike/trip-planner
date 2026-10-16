@@ -5,7 +5,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { readTrip } from '@/lib/trip/content';
 import { TripScreen } from './TripScreen';
 
-vi.mock('@/components/map/LazyTripMap', () => ({ LazyTripMap: () => <div data-testid="map" /> }));
+vi.mock('@/components/map/LazyTripMap', () => ({
+  LazyTripMap: (props: { selectedKey?: string; selectionNonce?: number }) => (
+    <div data-testid="map" data-selected={props.selectedKey ?? ''} data-nonce={props.selectionNonce ?? ''} />
+  ),
+}));
 
 const osaka = readTrip(osakaTrip());
 const day1 = osaka.days[0]!;
@@ -108,5 +112,18 @@ describe('TripScreen', () => {
     await userEvent.click(screen.getByRole('button', { name: `${kix.title} 지도에서 보기` }));
 
     expect(onLocate).toHaveBeenCalledWith('d1-kix');
+  });
+
+  it('sends a new map request each time the same stop is located', async () => {
+    render(<TripScreen trip={osaka} initialDay={0} />);
+    const button = screen.getByRole('button', { name: `${day1.stops[0]!.title} 지도에서 보기` });
+
+    await userEvent.click(button);
+    const first = screen.getByTestId('map').dataset.nonce;
+    await userEvent.click(button);
+    const second = screen.getByTestId('map').dataset.nonce;
+
+    expect(screen.getByTestId('map').dataset.selected).not.toBe('');
+    expect(second).not.toBe(first);
   });
 });

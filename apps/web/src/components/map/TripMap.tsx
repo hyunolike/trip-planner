@@ -27,9 +27,15 @@ function useMedia(query: string): boolean {
   );
 }
 
-type Props = { points: MapPoint[]; segments: RouteSegment[]; selectedKey?: string; onSelect: (key: string) => void };
+type Props = {
+  points: MapPoint[];
+  segments: RouteSegment[];
+  selectedKey?: string;
+  selectionNonce?: number;
+  onSelect: (key: string) => void;
+};
 
-export default function TripMap({ points, segments, selectedKey, onSelect }: Props) {
+export default function TripMap({ points, segments, selectedKey, selectionNonce, onSelect }: Props) {
   const mapRef = useRef<MapRef>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const [style, setStyle] = useState<StyleSpecification | string>();
@@ -67,11 +73,12 @@ export default function TripMap({ points, segments, selectedKey, onSelect }: Pro
   );
   const routes = useMemo(() => routeFeatures(segments, palette), [segments, palette]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: selectionNonce는 같은 핀을 다시 눌러도 이동하게 하는 요청 번호라 일부러 의존성에 둔다.
   useEffect(() => {
     const point = points.find((p) => p.key === selectedKey);
     if (!point) return;
     mapRef.current?.flyTo({ center: toLngLat(point.coordinates), zoom: 15, duration: reduceMotion ? 0 : 800 });
-  }, [selectedKey, points, reduceMotion]);
+  }, [selectedKey, selectionNonce, points, reduceMotion]);
 
   // 경로 재생: 구간마다 SEGMENT_MS 동안 점이 선을 따라가고 카메라가 따라간다. 보이지 않거나 움직임 줄이기면 멈춘다.
   useEffect(() => {

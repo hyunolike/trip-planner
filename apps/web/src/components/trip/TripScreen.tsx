@@ -24,6 +24,7 @@ export function TripScreen({ trip, initialDay, onLocate }: Props) {
   const [mode, setMode] = useState<'summary' | 'detail'>('summary');
   const [hideDone, setHideDone] = useState(false);
   const [selected, setSelected] = useState<string>();
+  const [selectionNonce, setSelectionNonce] = useState(0);
   const completion = useCompletion(trip.slug);
   const section = useHashSection();
   const day = trip.days[dayIndex] ?? trip.days[0];
@@ -40,10 +41,16 @@ export function TripScreen({ trip, initialDay, onLocate }: Props) {
     window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
   }
 
+  // 같은 핀을 다시 눌러도 지도가 다시 그 핀으로 가도록 요청마다 번호를 올린다.
+  function select(key: string) {
+    setSelected(key);
+    setSelectionNonce((n) => n + 1);
+  }
+
   const locate =
     onLocate ??
     ((key: string) => {
-      setSelected(key);
+      select(key);
       document.getElementById('day-map')?.scrollIntoView?.({ block: 'center' });
     });
 
@@ -65,7 +72,7 @@ export function TripScreen({ trip, initialDay, onLocate }: Props) {
               hideDone={hideDone}
               onHideDoneChange={setHideDone}
               onLocate={locate}
-              before={<DayRoute day={day} selectedKey={selected} onSelect={setSelected} />}
+              before={<DayRoute day={day} selectedKey={selected} selectionNonce={selectionNonce} onSelect={select} />}
               resources={
                 <>
                   {/* Task 10: 날씨 카드 */}

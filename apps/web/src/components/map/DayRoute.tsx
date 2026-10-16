@@ -1,6 +1,6 @@
 'use client';
 
-import type { CSSProperties } from 'react';
+import { type CSSProperties, useMemo } from 'react';
 import { Disclosure } from '@/components/ui';
 import { createGoogleDirectionsUrl, createGoogleMapsUrl, getDayMapPoints, getDayRouteSegments } from '@/lib/map/route';
 import { isDashed, transitColor } from '@/lib/map/style';
@@ -21,11 +21,11 @@ const MODE_LABELS: Record<string, string> = {
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
-type Props = { day: DayView; selectedKey?: string; onSelect: (key: string) => void };
+type Props = { day: DayView; selectedKey?: string; selectionNonce?: number; onSelect: (key: string) => void };
 
-export function DayRoute({ day, selectedKey, onSelect }: Props) {
-  const points = getDayMapPoints(day);
-  const segments = getDayRouteSegments(day);
+export function DayRoute({ day, selectedKey, selectionNonce, onSelect }: Props) {
+  const points = useMemo(() => getDayMapPoints(day), [day]);
+  const segments = useMemo(() => getDayRouteSegments(day), [day]);
   if (!points.length) return null;
   const byKey = new Map(points.map((p) => [p.key, p]));
   const modes = [...new Set(segments.map((s) => s.mode))];
@@ -36,7 +36,13 @@ export function DayRoute({ day, selectedKey, onSelect }: Props) {
         오늘의 이동 경로
       </h3>
       <section id="day-map" aria-label={`${day.number}일차 이동 지도`}>
-        <LazyTripMap points={points} segments={segments} selectedKey={selectedKey} onSelect={onSelect} />
+        <LazyTripMap
+          points={points}
+          segments={segments}
+          selectedKey={selectedKey}
+          selectionNonce={selectionNonce}
+          onSelect={onSelect}
+        />
       </section>
       <ol className={styles.order} aria-label="이날의 이동 순서">
         {points.map((point, index) => (
