@@ -4,6 +4,7 @@
     "includes": [
       "**",
       "!src/lib/api/schema.d.ts",
+      "!src/components/ui/icons.generated.ts",
       "!.next",
       "!public/brand",
       "!public/images",

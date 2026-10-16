@@ -1,0 +1,3 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160" width="240" height="160" role="img" aria-label="접힌 지도 위 검색 돋보기">
+<path d="M39 43L88 29L137 43L185 29V117L137 131L88 117L39 131Z" fill="#EEF1F5"/><path d="M88 29L137 43V131L88 117Z" fill="#E7EDFB"/><path d="M50 63L76 55V63L50 71ZM50 86L76 78V86L50 94ZM147 52L174 44V52L147 60Z" fill="#8A93A2"/><path d="M155 61A30 30 0 1 0 155 121A30 30 0 1 0 155 61ZM155 71A20 20 0 1 1 155 111A20 20 0 1 1 155 71Z" fill="#2456D6" fill-rule="evenodd"/><path d="M174 115L181 108L204 131A5 5 0 0 1 197 138Z" fill="#2456D6"/>
+</svg>

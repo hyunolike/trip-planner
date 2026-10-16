@@ -1,0 +1,89 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-md);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font: 600 15px / 1 var(--font-sans);
+  color: var(--ink);
+  background: transparent;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 140ms var(--ease),
+    transform 140ms var(--ease);
+}
+
+.button:active {
+  transform: scale(0.98);
+}
+
+.button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.primary {
+  background: var(--brand);
+  color: var(--on-brand);
+}
+
+.primary:hover {
+  background: var(--brand-hover);
+}
+
+.secondary {
+  background: var(--surface);
+  border-color: var(--line-strong);
+}
+
+.secondary:hover {
+  background: var(--surface-sunken);
+}
+
+.ghost {
+  color: var(--brand);
+}
+
+.ghost:hover {
+  background: var(--surface-brand);
+}
+
+.danger {
+  color: var(--danger);
+}
+
+.danger:hover {
+  background: var(--danger-soft);
+}
+
+/* 시각 높이는 36px이지만 터치 영역은 44px로 넓힌다. */
+.sm {
+  position: relative;
+  min-height: var(--control-sm);
+  padding: 0 var(--space-3);
+  font-size: 14px;
+}
+
+.sm::after {
+  content: "";
+  position: absolute;
+  inset: calc((var(--control-md) - var(--control-sm)) / -2) 0;
+}
+
+.lg {
+  min-height: var(--control-lg);
+  padding: 0 var(--space-6);
+  font-size: 16px;
+  width: 100%;
+}
+
+.iconOnly {
+  width: var(--control-md);
+  padding: 0;
+}

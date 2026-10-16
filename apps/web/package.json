@@ -10,6 +10,7 @@
     "test": "vitest run",
     "lint": "biome check .",
     "typecheck": "tsc --noEmit",
+    "gen:icons": "node scripts/build-icons.mjs",
     "gen:api": "openapi-typescript ../api/openapi.json -o src/lib/api/schema.d.ts",
     "sync:images": "node scripts/sync-images.mjs",
     "e2e": "playwright test"
