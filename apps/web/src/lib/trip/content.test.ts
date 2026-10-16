@@ -91,11 +91,16 @@ describe('safeHref and readPhoto', () => {
     expect(safeHref('//evil.example/x')).toBeUndefined();
     expect(safeHref(' JavaScript:alert(1)')).toBeUndefined();
     expect(safeHref(42)).toBeUndefined();
+    expect(safeHref('/\\evil.example')).toBeUndefined();
+    expect(safeHref('/\t/evil.example')).toBeUndefined();
+    expect(safeHref('\\\\evil.example')).toBeUndefined();
   });
 
   it('needs a safe image source and alt text', () => {
     expect(readPhoto({ src: '/images/a.jpg', alt: '오사카성' })).toEqual({ src: '/images/a.jpg', alt: '오사카성' });
     expect(readPhoto({ src: 'mailto:a@b.c', alt: 'x' })).toBeUndefined();
     expect(readPhoto({ src: '/images/a.jpg' })).toBeUndefined();
+    expect(readPhoto({ src: 'data:image/svg+xml,<svg/>', alt: 'x' })).toBeUndefined();
+    expect(readPhoto({ src: '//evil/x.png', alt: 'x' })).toBeUndefined();
   });
 });

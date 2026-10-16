@@ -161,11 +161,20 @@ function defined<T>(items: (T | undefined)[]): T[] {
   return items.filter((item): item is T => item !== undefined);
 }
 
+/** 브라우저는 '/\\x'나 '/\t/x'를 '//x'로 읽는다. 실제로 파싱해서 같은 사이트에 남는 경로만 받는다. */
+function isSameSitePath(value: string): boolean {
+  try {
+    return new URL(value, 'http://x.invalid').origin === 'http://x.invalid';
+  } catch {
+    return false;
+  }
+}
+
 export function safeHref(url: unknown): string | undefined {
   if (typeof url !== 'string') return undefined;
   const value = url.trim();
   if (value.startsWith('#')) return value;
-  if (value.startsWith('/') && !value.startsWith('//')) return value;
+  if (value.startsWith('/')) return isSameSitePath(value) ? value : undefined;
   try {
     const parsed = new URL(value);
     return ['http:', 'https:', 'mailto:', 'tel:'].includes(parsed.protocol) ? value : undefined;

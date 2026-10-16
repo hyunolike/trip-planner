@@ -8,7 +8,16 @@ const PREFIX = 'tripnote:completion:v1:';
 
 const strings = (v: unknown) => (Array.isArray(v) ? v.filter((s): s is string => typeof s === 'string') : []);
 
-export function createCompletionStore(slug: string, storage: Storage | undefined = globalThis.localStorage) {
+/** 사이트 데이터를 막은 브라우저에서는 localStorage 접근 자체가 SecurityError를 던진다. */
+function defaultStorage(): Storage | undefined {
+  try {
+    return globalThis.localStorage;
+  } catch {
+    return undefined;
+  }
+}
+
+export function createCompletionStore(slug: string, storage: Storage | undefined = defaultStorage()) {
   const key = `${PREFIX}${slug}`;
   const listeners = new Set<() => void>();
   let snapshot: Snapshot = load();

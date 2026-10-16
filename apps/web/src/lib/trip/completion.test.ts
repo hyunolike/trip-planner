@@ -48,4 +48,17 @@ describe('createCompletionStore', () => {
     expect(store.getSnapshot().stops).toEqual(['d1-kix']);
     expect(listener).toHaveBeenCalledTimes(1);
   });
+
+  it('keeps working in memory when reading localStorage itself throws', () => {
+    const spy = vi.spyOn(globalThis, 'localStorage', 'get').mockImplementation(() => {
+      throw new Error('SecurityError');
+    });
+    try {
+      const store = createCompletionStore('no-storage');
+      store.toggleItem('passports');
+      expect(store.getSnapshot()).toEqual({ stops: [], items: ['passports'] });
+    } finally {
+      spy.mockRestore();
+    }
+  });
 });
