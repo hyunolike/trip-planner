@@ -9,9 +9,11 @@ import { Button, TextField } from '@/components/ui';
 import { api } from '@/lib/api/client';
 import { problemMessage } from '@/lib/api/errors';
 import { type LoginValues, loginSchema } from '@/lib/auth/schemas';
+import { useHydrated } from '@/lib/hydration';
 import styles from './Auth.module.css';
 
 export function LoginForm({ googleError }: { googleError: boolean }) {
+  const hydrated = useHydrated();
   const router = useRouter();
   const [serverError, setServerError] = useState<string>();
   const { register, handleSubmit, formState } = useForm<LoginValues>({ resolver: zodResolver(loginSchema) });
@@ -32,7 +34,13 @@ export function LoginForm({ googleError }: { googleError: boolean }) {
   }
 
   return (
-    <form method="post" className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
+    <form
+      method="post"
+      data-hydrated={hydrated ? 'true' : undefined}
+      className={styles.form}
+      onSubmit={handleSubmit(onSubmit)}
+      noValidate
+    >
       <h1 className={styles.title}>로그인</h1>
       {googleError ? (
         <p role="alert" className={styles.error}>

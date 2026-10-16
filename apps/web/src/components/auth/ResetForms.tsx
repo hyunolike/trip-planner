@@ -7,9 +7,11 @@ import { Button, TextField } from '@/components/ui';
 import { api } from '@/lib/api/client';
 import { problemMessage } from '@/lib/api/errors';
 import { type EmailValues, emailSchema, type ResetValues, resetSchema } from '@/lib/auth/schemas';
+import { useHydrated } from '@/lib/hydration';
 import styles from './Auth.module.css';
 
 export function ResetRequestForm() {
+  const hydrated = useHydrated();
   const [sent, setSent] = useState<string>();
   const [serverError, setServerError] = useState<string>();
   const { register, handleSubmit, formState } = useForm<EmailValues>({ resolver: zodResolver(emailSchema) });
@@ -26,7 +28,13 @@ export function ResetRequestForm() {
   }
 
   return (
-    <form method="post" className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
+    <form
+      method="post"
+      data-hydrated={hydrated ? 'true' : undefined}
+      className={styles.form}
+      onSubmit={handleSubmit(onSubmit)}
+      noValidate
+    >
       <h1 className={styles.title}>비밀번호 찾기</h1>
       <p className={styles.lead}>가입한 이메일로 재설정 링크를 보내 드려요. 링크는 30분 동안 한 번만 쓸 수 있어요.</p>
       <TextField
@@ -54,6 +62,7 @@ export function ResetRequestForm() {
 }
 
 export function ResetConfirmForm({ token }: { token: string }) {
+  const hydrated = useHydrated();
   const [done, setDone] = useState<string>();
   const [serverError, setServerError] = useState<string>();
   const { register, handleSubmit, formState } = useForm<ResetValues>({ resolver: zodResolver(resetSchema) });
@@ -86,7 +95,13 @@ export function ResetConfirmForm({ token }: { token: string }) {
   }
 
   return (
-    <form method="post" className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
+    <form
+      method="post"
+      data-hydrated={hydrated ? 'true' : undefined}
+      className={styles.form}
+      onSubmit={handleSubmit(onSubmit)}
+      noValidate
+    >
       <h1 className={styles.title}>새 비밀번호 정하기</h1>
       <TextField
         label="새 비밀번호"

@@ -197,3 +197,10 @@ describe('forms posted before hydration', () => {
     expect(signup.querySelector('form')).toHaveAttribute('method', 'post');
   });
 });
+
+describe('hydration marker', () => {
+  it('marks a mounted login form as hydrated', () => {
+    const { container } = render(<LoginForm googleError={false} />);
+    expect(container.querySelector('form')).toHaveAttribute('data-hydrated', 'true');
+  });
+});

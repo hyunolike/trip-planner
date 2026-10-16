@@ -8,9 +8,11 @@ import { Button, TextField } from '@/components/ui';
 import { api } from '@/lib/api/client';
 import { problemMessage } from '@/lib/api/errors';
 import { type SignupValues, signupSchema } from '@/lib/auth/schemas';
+import { useHydrated } from '@/lib/hydration';
 import styles from './Auth.module.css';
 
 export function SignupForm() {
+  const hydrated = useHydrated();
   const [sent, setSent] = useState<string>();
   const [serverError, setServerError] = useState<string>();
   const { register, handleSubmit, formState } = useForm<SignupValues>({ resolver: zodResolver(signupSchema) });
@@ -39,7 +41,13 @@ export function SignupForm() {
   }
 
   return (
-    <form method="post" className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
+    <form
+      method="post"
+      data-hydrated={hydrated ? 'true' : undefined}
+      className={styles.form}
+      onSubmit={handleSubmit(onSubmit)}
+      noValidate
+    >
       <h1 className={styles.title}>이메일로 가입</h1>
       <TextField
         label="닉네임"

@@ -7,9 +7,11 @@ import { Button, TextField } from '@/components/ui';
 import { api } from '@/lib/api/client';
 import { problemMessage } from '@/lib/api/errors';
 import { type EmailValues, emailSchema, type VerifyValues, verifySchema } from '@/lib/auth/schemas';
+import { useHydrated } from '@/lib/hydration';
 import styles from './Auth.module.css';
 
 export function VerifyEmailForm({ token }: { token: string }) {
+  const hydrated = useHydrated();
   const [done, setDone] = useState<string>();
   const [serverError, setServerError] = useState<string>();
   const { register, handleSubmit, formState } = useForm<VerifyValues>({ resolver: zodResolver(verifySchema) });
@@ -42,7 +44,13 @@ export function VerifyEmailForm({ token }: { token: string }) {
   }
 
   return (
-    <form method="post" className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
+    <form
+      method="post"
+      data-hydrated={hydrated ? 'true' : undefined}
+      className={styles.form}
+      onSubmit={handleSubmit(onSubmit)}
+      noValidate
+    >
       <h1 className={styles.title}>이메일 인증</h1>
       <p className={styles.lead}>본인 확인을 위해 가입할 때 정한 비밀번호를 한 번 더 입력해 주세요.</p>
       <TextField
@@ -65,6 +73,7 @@ export function VerifyEmailForm({ token }: { token: string }) {
 }
 
 export function ResendVerificationForm() {
+  const hydrated = useHydrated();
   const [sent, setSent] = useState<string>();
   const [serverError, setServerError] = useState<string>();
   const { register, handleSubmit, formState } = useForm<EmailValues>({ resolver: zodResolver(emailSchema) });
@@ -81,7 +90,13 @@ export function ResendVerificationForm() {
   }
 
   return (
-    <form method="post" className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
+    <form
+      method="post"
+      data-hydrated={hydrated ? 'true' : undefined}
+      className={styles.form}
+      onSubmit={handleSubmit(onSubmit)}
+      noValidate
+    >
       <h2 className={styles.title}>인증 메일 다시 받기</h2>
       <TextField
         label="이메일"

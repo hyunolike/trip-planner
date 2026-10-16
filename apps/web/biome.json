@@ -10,6 +10,7 @@
       "!public/brand",
       "!public/images",
       "!public/illustrations",
+      "!public/maplibre",
       "!playwright-report",
       "!test-results"
     ]

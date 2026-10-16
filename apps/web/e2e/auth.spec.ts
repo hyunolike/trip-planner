@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { latestMailText, tokenFrom } from './support';
+import { formReady, latestMailText, tokenFrom } from './support';
 
 test('email signup, verification, login, account and logout', async ({ page }, info) => {
   const email = `e2e-${info.project.name}-${Date.now()}@example.com`;
@@ -7,7 +7,7 @@ test('email signup, verification, login, account and logout', async ({ page }, i
 
   // 새 브라우저 컨텍스트라 XSRF-TOKEN 쿠키가 없다. 첫 POST가 통과해야 한다.
   await page.goto('/signup');
-  await page.waitForLoadState('networkidle');
+  await formReady(page);
   await page.getByLabel(/닉네임/).fill('미나');
   await page.getByLabel(/이메일/).fill(email);
   await page.getByLabel(/비밀번호/).fill(password);
@@ -16,12 +16,13 @@ test('email signup, verification, login, account and logout', async ({ page }, i
 
   const token = tokenFrom(await latestMailText(email));
   await page.goto(`/verify-email?token=${token}`);
+  await formReady(page);
   await page.getByLabel('가입할 때 정한 비밀번호').fill(password);
   await page.getByRole('button', { name: '가입 마치기' }).click();
   await expect(page.getByRole('heading', { name: '가입이 끝났어요' })).toBeVisible();
 
   await page.getByRole('link', { name: '로그인하기' }).click();
-  await page.waitForLoadState('networkidle');
+  await formReady(page);
   await page.getByLabel('이메일').fill(email);
   await page.getByLabel('비밀번호').fill(password);
   await page.getByRole('button', { name: '로그인하기' }).click();
@@ -39,7 +40,7 @@ test('email signup, verification, login, account and logout', async ({ page }, i
 
   // 로그아웃 뒤 같은 브라우저로 다시 로그인해도 CSRF 토큰이 맞아야 한다.
   await page.goto('/login');
-  await page.waitForLoadState('networkidle');
+  await formReady(page);
   await page.getByLabel('이메일').fill(email);
   await page.getByLabel('비밀번호').fill(password);
   await page.getByRole('button', { name: '로그인하기' }).click();
@@ -48,7 +49,7 @@ test('email signup, verification, login, account and logout', async ({ page }, i
 
 test('a wrong password is explained without saying whether the account exists', async ({ page }) => {
   await page.goto('/login');
-  await page.waitForLoadState('networkidle');
+  await formReady(page);
   await page.getByLabel('이메일').fill('nobody@example.com');
   await page.getByLabel('비밀번호').fill('not-the-password');
   await page.getByRole('button', { name: '로그인하기' }).click();
