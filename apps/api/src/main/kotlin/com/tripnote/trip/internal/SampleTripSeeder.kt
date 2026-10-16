@@ -95,10 +95,15 @@ class SampleTripSeeder(
             TRIPS.CONTENT to JSONB.jsonb(content.toString()),
             TRIPS.OWNER_ID to owner,
         )
-        val existing = dsl.select(TRIPS.ID).from(TRIPS).where(TRIPS.SLUG.eq(slug)).fetchOne(TRIPS.ID)
+        val existing = dsl.select(TRIPS.ID, TRIPS.OWNER_ID).from(TRIPS).where(TRIPS.SLUG.eq(slug)).forUpdate().fetchOne()
         if (existing != null) {
-            dsl.update(TRIPS).set(values).where(TRIPS.ID.eq(existing)).execute()
-            return existing
+            check(existing.get(TRIPS.OWNER_ID) == owner) { "trip '$slug' already exists and is not owned by the system user" }
+            val tripId = existing.get(TRIPS.ID)!!
+            dsl.update(TRIPS).set(values)
+                .set(TRIPS.VERSION, TRIPS.VERSION.plus(1))
+                .set(TRIPS.UPDATED_AT, java.time.OffsetDateTime.now())
+                .where(TRIPS.ID.eq(tripId)).execute()
+            return tripId
         }
         return dsl.insertInto(TRIPS).set(values).set(TRIPS.SLUG, slug).returning(TRIPS.ID).fetchOne()!!.id
     }

@@ -40,4 +40,16 @@ class FractionalIndexTest {
     fun `wrong order is rejected`() {
         assertThatThrownBy { FractionalIndex.between("B", "A") }.isInstanceOf(IllegalArgumentException::class.java)
     }
+
+    @Test
+    fun `bounds with no key between them are rejected`() {
+        assertThatThrownBy { FractionalIndex.between(null, "0") }.isInstanceOf(IllegalArgumentException::class.java)
+        assertThatThrownBy { FractionalIndex.between("A", "A0") }.isInstanceOf(IllegalArgumentException::class.java)
+    }
+
+    @Test
+    fun `characters outside the alphabet are rejected`() {
+        assertThatThrownBy { FractionalIndex.between("A-", null) }.isInstanceOf(IllegalArgumentException::class.java)
+        assertThatThrownBy { FractionalIndex.between(null, "B!") }.isInstanceOf(IllegalArgumentException::class.java)
+    }
 }

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class SampleTripSeederTest : IntegrationTest() {
     @Autowired lateinit var seeder: SampleTripSeeder
+    @Autowired lateinit var props: com.tripnote.common.TripnoteProperties
 
     private fun one(sql: String) = jdbc.sql(sql).query(Int::class.java).single()
 
@@ -74,6 +75,33 @@ class SampleTripSeederTest : IntegrationTest() {
                 .query(String::class.java).single().let { mapper.readTree(it) }
             assertThat(content.propertyNames().toList()).containsAll(expected)
         }
+    }
+
+    @Test
+    fun `refuses a system email that belongs to a regular account`() {
+        createVerifiedUser(props.systemUserEmail)
+
+        assertThatThrownBy { seeder.seedAll() }.isInstanceOf(IllegalStateException::class.java).hasMessageContaining("non-system")
+        assertThat(one("SELECT count(*) FROM trips")).isZero()
+    }
+
+    @Test
+    fun `refuses to overwrite a user trip that uses a sample slug`() {
+        val user = createVerifiedUser("someone@example.com")
+        jdbc.sql("INSERT INTO trips (slug, owner_id, title, start_date, end_date) VALUES ('danang-hoian-family-2027', ?, '내 여행', '2027-01-01', '2027-01-02')")
+            .param(user).update()
+
+        assertThatThrownBy { seeder.seedAll() }.isInstanceOf(IllegalStateException::class.java).hasMessageContaining("danang-hoian-family-2027")
+        assertThat(jdbc.sql("SELECT title FROM trips WHERE slug = 'danang-hoian-family-2027'").query(String::class.java).single()).isEqualTo("내 여행")
+        assertThat(one("SELECT count(*) FROM trips")).isEqualTo(1)
+    }
+
+    @Test
+    fun `reseeding bumps the trip version`() {
+        seeder.seedAll()
+        val before = one("SELECT version FROM trips WHERE slug = 'danang-hoian-family-2027'")
+        seeder.seedAll()
+        assertThat(one("SELECT version FROM trips WHERE slug = 'danang-hoian-family-2027'")).isEqualTo(before + 1)
     }
 
     @Test
