@@ -1,0 +1,88 @@
+/* next/font가 불러온 서체를 토큰의 가족 스택 앞에 붙인다. 토큰 파일보다 뒤에 import되어 같은 이름을 덮는다. */
+:root {
+  --font-display: var(--font-display-web), "Gowun Batang", "Apple SD Gothic Neo", "Noto Serif KR", serif;
+  --font-sans: var(--font-sans-web), "IBM Plex Sans KR", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+  --font-mono: var(--font-mono-web), "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --gutter: max(var(--space-5), env(safe-area-inset-left), env(safe-area-inset-right));
+}
+
+@media (max-width: 359px) {
+  :root {
+    --gutter: max(var(--space-4), env(safe-area-inset-left), env(safe-area-inset-right));
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--canvas);
+  color: var(--ink);
+  font: var(--text-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: var(--brand);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--space-4);
+  top: calc(-1 * var(--control-md));
+  z-index: 100;
+  padding: var(--space-2) var(--space-4);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: var(--radius-sm);
+}
+
+.skip-link:focus {
+  top: var(--space-2);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.page {
+  width: 100%;
+  max-width: var(--container-sm);
+  margin: 0 auto;
+  padding: 0 var(--gutter) var(--space-16);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

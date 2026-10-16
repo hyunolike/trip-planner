@@ -1,0 +1,7 @@
+.next/
+next-env.d.ts
+public/images/
+public/illustrations/
+test-results/
+playwright-report/
+e2e/.auth/

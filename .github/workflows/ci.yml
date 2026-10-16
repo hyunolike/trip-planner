@@ -52,3 +52,24 @@ jobs:
           ./gradlew flywayClean flywayMigrate jooqCodegen
           git diff --exit-code -- src/main/generated
           test -z "$(git status --porcelain -- src/main/generated)"
+
+  web:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: 10
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: api types match openapi.json
+        working-directory: apps/web
+        run: |
+          pnpm gen:api
+          git diff --exit-code -- src/lib/api/schema.d.ts
+      - working-directory: apps/web
+        run: pnpm lint && pnpm typecheck && pnpm test && pnpm build
