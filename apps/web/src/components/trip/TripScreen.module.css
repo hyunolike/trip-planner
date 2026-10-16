@@ -25,3 +25,9 @@
   margin-top: var(--space-5);
   border-radius: var(--radius-md);
 }
+
+@media (max-width: 599px) {
+  .main {
+    padding-bottom: calc(var(--nav-height) + var(--space-8) + env(safe-area-inset-bottom));
+  }
+}

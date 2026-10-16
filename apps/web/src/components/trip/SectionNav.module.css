@@ -1,0 +1,55 @@
+.nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  max-width: var(--container-sm);
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: var(--nav-height);
+  color: var(--ink-muted);
+  font: 500 11px / 14px var(--font-sans);
+  text-decoration: none;
+}
+
+.item[aria-current="page"] {
+  color: var(--brand);
+}
+
+/* 태블릿부터 하단 탭이 위로 올라간다. */
+@media (min-width: 600px) {
+  .nav {
+    position: static;
+    border-top: 0;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0;
+  }
+
+  .item {
+    flex-direction: row;
+    gap: var(--space-2);
+    font: var(--text-label);
+  }
+
+  .item[aria-current="page"] {
+    box-shadow: inset 0 -3px 0 var(--brand);
+  }
+}
