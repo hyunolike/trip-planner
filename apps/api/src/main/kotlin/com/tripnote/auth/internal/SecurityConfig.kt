@@ -32,6 +32,7 @@ class SecurityConfig {
         .securityContext { it.securityContextRepository(contextRepository) }
         .authorizeHttpRequests {
             it.requestMatchers("/actuator/health/**").permitAll()
+                .requestMatchers("/v3/api-docs/**").permitAll()
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/trips/*", "/api/v1/samples").permitAll()
                 .anyRequest().authenticated()

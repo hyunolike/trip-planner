@@ -103,6 +103,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-mail")
     implementation("org.springframework.boot:spring-boot-starter-restclient")
     implementation(libs.bouncycastle)
+    implementation(libs.springdoc.webmvc)
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
@@ -118,4 +119,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-tasks.withType<Test> { useJUnitPlatform() }
+tasks.withType<Test> {
+    useJUnitPlatform()
+    systemProperty("openapi.write", System.getProperty("openapi.write") ?: "false")
+}

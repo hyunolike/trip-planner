@@ -63,3 +63,9 @@ tripnote:
   samples-dir: ${TRIPNOTE_SAMPLES_DIR:../../sample}
   system-user-email: ${TRIPNOTE_SYSTEM_USER_EMAIL:ops@tripnote.local}
   seed-samples: ${TRIPNOTE_SEED_SAMPLES:false}
+
+# 계약 파일이 실행마다 같도록 키를 정렬한다.
+springdoc:
+  writer-with-order-by-keys: true
+  api-docs:
+    version: openapi_3_1
