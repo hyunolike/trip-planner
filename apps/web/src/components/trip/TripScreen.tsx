@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DayRoute } from '@/components/map/DayRoute';
 import { WeatherCard } from '@/components/weather/WeatherCard';
 import { useCompletion } from '@/lib/trip/completion';
@@ -30,8 +30,11 @@ export function TripScreen({ trip, initialDay, onLocate }: Props) {
   const section = useHashSection();
   const day = trip.days[dayIndex] ?? trip.days[0];
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: 섹션이 바뀔 때마다 본문 위로 스크롤하려고 section을 의존성에 둔다.
+  // 첫 렌더에서는 스크롤하지 않는다(헤더가 main 위에 있다). 섹션이 바뀐 뒤에만 본문 위로 올린다.
+  const previousSection = useRef(section);
   useEffect(() => {
+    if (previousSection.current === section) return;
+    previousSection.current = section;
     document.getElementById('main')?.scrollIntoView?.({ block: 'start' });
   }, [section]);
 

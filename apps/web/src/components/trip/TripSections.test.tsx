@@ -134,4 +134,15 @@ describe('scroll on section change', () => {
     expect(screen.getByRole('link', { name: '일정' })).toHaveAttribute('aria-current', 'page');
     expect(spy).toHaveBeenCalledWith({ block: 'start' });
   });
+
+  it('does not scroll on first mount, on the itinerary or on a deep-linked section', () => {
+    const spy = vi.fn();
+    Element.prototype.scrollIntoView = spy;
+    window.history.replaceState(null, '', '/t/osaka-kyoto-family-2026');
+    const first = renderScreen(<TripScreen trip={osaka} initialDay={0} />);
+    first.unmount();
+    window.history.replaceState(null, '', '/t/osaka-kyoto-family-2026#food');
+    renderScreen(<TripScreen trip={osaka} initialDay={0} />);
+    expect(spy).not.toHaveBeenCalled();
+  });
 });
