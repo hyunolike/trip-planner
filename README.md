@@ -96,6 +96,8 @@ API를 변경하면 `apps/api/openapi.json`을 기존 계약 테스트로 갱신
 
 웹과 API는 별도로 배포합니다. 아래 운영 설정과 실제 환경 검증을 마친 뒤 배포합니다.
 
+API·DB·Valkey의 공통 메모리, 부하와 백업·복원은 [로컬 검증 기록](docs/verification/2026-10-16-local-memory.md)과 [재현 도구](scripts/local-sizing/README.md)를 참고합니다. 이 합성 검증은 실제 2GB OS와 Caddy를 포함한 운영 적합 판정을 대신하지 않습니다.
+
 - 실제 웹·API 주소에 맞춰 `API_ORIGIN`, `SITE_ORIGIN`, `TRIPNOTE_WEB_BASE_URL`과 Google 리다이렉트 URI 설정
 - 운영 DB 마이그레이션, SMTP, Valkey, 백업과 복구 절차 검증
 - API ingress에서 전달 헤더를 정리하고 실제 소켓 피어인 프록시 CIDR만 `TRIPNOTE_TRUSTED_PROXY_CIDRS`에 명시. 기본은 아무 프록시도 신뢰하지 않으며 직접 받은 위조 `X-Forwarded-For`는 무시함. Vercel을 경유한다고 모든 주소를 신뢰하도록 설정하면 안 됨
