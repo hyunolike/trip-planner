@@ -7,9 +7,13 @@
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "sample:validate": "node scripts/sample/validate.mjs sample/*.json",
+    "sample:export": "node scripts/sample/export-osaka-kyoto.mjs"
   },
   "devDependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
     "jsdom": "^26.1.0",
     "vite": "^7.1.7",
     "vitest": "^3.2.4"
