@@ -28,6 +28,7 @@ jobs:
         run: |
           pnpm --filter @tripnote/design-tokens build
           git diff --exit-code -- packages/design-tokens/dist
+          test -z "$(git status --porcelain -- packages/design-tokens/dist)"
           pnpm --filter @tripnote/design-tokens test
 
   api:
