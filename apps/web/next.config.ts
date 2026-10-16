@@ -8,6 +8,7 @@ const config: NextConfig = {
   transpilePackages: ['@tripnote/design-tokens'],
   // 브라우저는 같은 출처로만 요청한다. 세션 쿠키(__Host-SESSION)와 CSRF 쿠키가 웹 출처에 붙는다.
   async rewrites() {
+    if (process.env.TRIPNOTE_UI_PREVIEW === '1') return [];
     return [
       { source: '/api/:path*', destination: `${apiOrigin}/api/:path*` },
       { source: '/oauth2/:path*', destination: `${apiOrigin}/oauth2/:path*` },

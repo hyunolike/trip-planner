@@ -1,0 +1,8 @@
+app.jar
+results/
+data/
+__pycache__/
+*.pyc
+*.dump
+*.sql
+*.log
