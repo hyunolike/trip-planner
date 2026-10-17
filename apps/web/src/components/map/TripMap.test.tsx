@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { type Ref, useImperativeHandle } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -32,6 +32,8 @@ function renderMap() {
 
 describe('TripMap', () => {
   afterEach(() => {
+    // Unmount while browser mocks still exist: cleanup may flush pending media subscriptions.
+    cleanup();
     vi.unstubAllGlobals();
     mapProps.length = 0;
     fitBounds.mockClear();
