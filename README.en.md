@@ -28,7 +28,9 @@ Recovery covers changes in an already-open editor. Offline first visits, a servi
 
 ## Architecture
 
-![Implemented system architecture showing browser, Next.js, API, PostgreSQL, Valkey and mail transport boundaries](docs/assets/system-architecture-en.svg)
+![3D implemented core flow: browser, Next.js, Java/Kotlin API and PostgreSQL requests/results, plus Valkey and mail boundaries](docs/assets/system-architecture-3d-en.png)
+
+*The implemented core flow was verified locally. Mint arrows show requests and blue arrows show results; mail shows the send direction only. Drafts stay on the device and HTTPS mail is pending. Map, weather and Google integration details remain in the text. This is not a live production topology.*
 
 The browser uses same-origin `/api/*`, `/oauth2/*` and `/login/oauth2/*` paths through Next.js. The API protects requests with `__Host-SESSION` cookies and CSRF, and validates access, versions and mutation IDs. PostgreSQL stores users, trips, token hashes and durable incomplete mail events. Valkey stores sessions, indexes for user-wide session revocation, rate limits and weather cache. Map tiles are fetched directly by the browser.
 
@@ -49,7 +51,9 @@ Exact versions come from [web package.json](apps/web/package.json), the [API ver
 
 **As of 2026-10-17, the new connected web/API service is not deployed to production.**
 
-![Current protected Vercel UI-only Preview separated from the proposed, unconnected free deployment](docs/assets/deployment-architecture-en.svg)
+![3D planned deployment: Vercel Next.js to Render API and Neon DB, with an Upstash validation candidate and unimplemented HTTPS mail](docs/assets/deployment-architecture-3d-en.png)
+
+*This is a planned proposal: dashed connections await integration and live validation. The current protected Preview has no API. Upstash is a validation candidate; the HTTPS mail provider is not selected or implemented, so the Free profile cannot start until an approved adapter exists.*
 
 | Item | Verified state |
 | --- | --- |
@@ -132,7 +136,9 @@ Playwright uses a production build to check samples, auth, editing, sharing and 
 ## Documentation
 
 - [B2C design](docs/superpowers/specs/2026-10-15-b2c-trip-planner-design.md), [implementation/verification record](docs/superpowers/plans/2026-10-16-codex-mvp-followup.md), [API guide](apps/api/README.md)
-- [README evidence and diagram regeneration](docs/verification/2026-10-17-readme.md), [reusable README skill](.agents/skills/evidence-readme/SKILL.md)
+- [README evidence and archived SVG record](docs/verification/2026-10-17-readme.md), [3D diagram sources, originals and prompts](docs/architecture/3d-diagrams.md), [reusable README skill](.agents/skills/evidence-readme/SKILL.md)
 - [Design system](design-system/README.md), [architecture decisions](docs/adr/README.md)
 
 Image, font and external-material terms follow their source data and credits. This repository does not grant additional redistribution rights to external materials.
+
+Technology marks identify the components and imply no partnership or endorsement. Vercel and Next.js names and logos belong to Vercel, Inc. or its affiliates. Other marks belong to their respective owners. See [official sources](docs/architecture/3d-diagrams.md#공식-로고-출처).

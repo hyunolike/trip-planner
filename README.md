@@ -28,7 +28,9 @@
 
 ## 시스템 구조
 
-![현재 코드의 시스템 구조: 브라우저와 Next.js, API, PostgreSQL, Valkey 및 메일 전송 경계](docs/assets/system-architecture-ko.svg)
+![현재 구현의 3D 핵심 구조도: 브라우저와 Next.js, Java·Kotlin API, PostgreSQL의 요청·결과 흐름과 Valkey·메일 경계](docs/assets/system-architecture-3d-ko.png)
+
+*현재 구현을 로컬에서 검증한 핵심 흐름입니다. 민트는 요청, 파랑은 결과이며 메일은 발송 방향만 표시합니다. 초안은 기기에 보관하고 HTTPS 메일은 구현 대기 상태입니다. 지도·날씨·Google 연동의 세부 경로는 본문을 참고하세요. 운영 배포 구성도는 아닙니다.*
 
 브라우저는 Next.js와 같은 출처의 `/api/*`, `/oauth2/*`, `/login/oauth2/*`를 사용합니다. API는 `__Host-SESSION` 쿠키와 CSRF로 요청을 보호하고 권한·버전·작업 ID를 검증합니다. PostgreSQL은 여행과 사용자 데이터, 토큰 해시와 미완료 메일 이벤트를 저장합니다. Valkey는 세션, 사용자별 세션 취소 인덱스, 요청 제한과 날씨 캐시를 맡습니다. 지도 타일은 브라우저가 직접 조회합니다.
 
@@ -49,7 +51,9 @@
 
 **2026-10-17 기준으로 새 웹·API 서비스의 운영 배포는 완료되지 않았습니다.**
 
-![현재의 보호된 Vercel 화면 미리보기와 아직 연결되지 않은 무료 배포 제안](docs/assets/deployment-architecture-ko.svg)
+![배포 예정 3D 제안도: Vercel Next.js에서 Render API와 Neon DB로 이어지는 경로, Upstash 검증 후보와 미구현 HTTPS 메일](docs/assets/deployment-architecture-3d-ko.png)
+
+*배포 예정인 제안도이며 점선 연결은 아직 연결·실환경 검증 전입니다. 현재는 보호된 API 미연결 Preview만 있습니다. Upstash는 검증 후보이고 HTTPS 메일 제공자는 미선정·미구현 상태라, 제공자 구현 전 Free profile은 시작되지 않습니다.*
 
 | 구분 | 확인된 상태 |
 | --- | --- |
@@ -132,7 +136,9 @@ pnpm --filter @tripnote/web e2e
 ## 문서
 
 - [B2C 설계](docs/superpowers/specs/2026-10-15-b2c-trip-planner-design.md), [구현·검증 기록](docs/superpowers/plans/2026-10-16-codex-mvp-followup.md), [API 안내](apps/api/README.md)
-- [README 작성 근거와 구성도 재생성](docs/verification/2026-10-17-readme.md), [재사용 README 스킬](.agents/skills/evidence-readme/SKILL.md)
+- [README 작성 근거와 이전 SVG 기록](docs/verification/2026-10-17-readme.md), [3D 구성도 근거·원본·생성 프롬프트](docs/architecture/3d-diagrams.md), [재사용 README 스킬](.agents/skills/evidence-readme/SKILL.md)
 - [디자인 시스템](design-system/README.md), [아키텍처 결정](docs/adr/README.md)
 
 이미지·폰트와 외부 자료의 출처·이용 조건은 각 데이터와 크레딧을 따릅니다. 이 저장소가 외부 자료의 별도 재배포 권리를 부여하지는 않습니다.
+
+구성도의 기술 마크는 해당 기술을 식별하기 위한 표기이며 제휴나 인증을 뜻하지 않습니다. Vercel과 Next.js 이름·로고는 Vercel 및 계열사의 상표이며, 다른 마크도 각 권리자에게 속합니다. [공식 출처](docs/architecture/3d-diagrams.md#공식-로고-출처)를 참고하세요.
