@@ -59,7 +59,7 @@ Exact versions come from [web package.json](apps/web/package.json), the [API ver
 | --- | --- |
 | Existing service | GET to [Osaka–Kyoto Sites](https://osaka-kyoto-family-2026.hyunolike.chatgpt.site/) returned HTTP 200. The legacy Vite site is deployed separately from the new Next.js web |
 | New web Preview | The [protected Vercel Preview](https://trip-planner-adkdt83ne-hyunho-jangs-projects.vercel.app) has a Ready deployment record. Page and read-only API requests both returned HTTP 302 with an authentication protection response; current app/API connections could not be verified |
-| Vercel Production | Of the two project deployment records, the single Production record is Canceled. No active Ready Production record was returned |
+| Vercel Production | **Not deployed: no active Ready Production record for this project.** Of the two records returned, the single Production record is Canceled |
 | Render API | **Deployment unverified.** No account tool or local credentials were available to read deployment records or confirm an API endpoint |
 | Neon DB / Upstash state store | **Deployment unverified.** Resource existence and connections cannot be inferred without account access |
 | Mail / Google | The repository has no real HTTPS mail provider adapter. Current credentials, callbacks and live behavior were not verified in this check |

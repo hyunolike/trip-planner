@@ -59,7 +59,7 @@
 | --- | --- |
 | 기존 서비스 | [오사카·교토 Sites](https://osaka-kyoto-family-2026.hyunolike.chatgpt.site/) GET에 HTTP 200. 기존 Vite 사이트이며 새 Next.js 웹과 별도 배포 |
 | 새 웹 Preview | [보호된 Vercel Preview](https://trip-planner-adkdt83ne-hyunho-jangs-projects.vercel.app)의 배포 기록은 Ready. 화면과 읽기 전용 API 요청은 모두 HTTP 302로 인증 보호 응답을 반환해 현재 앱·API 연결은 확인 불가 |
-| Vercel Production | 해당 프로젝트의 배포 기록 2건 중 Production 1건은 Canceled. 활성 Ready Production 기록 없음 |
+| Vercel Production | **미배포(해당 프로젝트의 활성 Ready Production 기록 없음)**. 조회된 전체 2건 중 Production 1건은 Canceled |
 | Render API | **배포 여부 미확인**. 계정 조회 도구·로컬 자격증명이 없어 배포 기록과 API 주소를 확인하지 못함 |
 | Neon DB / Upstash 상태 저장소 | **배포 여부 미확인**. 계정 접근 없이 생성·연결 상태를 판단하지 않음 |
 | 메일·Google | 저장소에는 실제 HTTPS 메일 어댑터가 없음. 실제 자격증명·callback과 운영 동작은 이번에 확인하지 못함 |
