@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgis/postgis:18-3.6@sha256:60f6ad1d21ea86a67d47780b9a0d1e1d200500f62b19293fa834d0dea80b8677
+    platform: linux/amd64
+    environment:
+      POSTGRES_DB: tripnote
+      POSTGRES_USER: tripnote
+      POSTGRES_PASSWORD: tripnote
+    volumes: [pgdata:/var/lib/postgresql]
+    networks: [isolated]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U tripnote -d tripnote"]
+      interval: 3s
+      retries: 30
+  valkey:
+    image: valkey/valkey:9.1@sha256:ac9c858b86dc81f3482d53a9d854547379a5f41e012500f839ab257c399063e0
+    platform: linux/amd64
+    command: [valkey-server, --appendonly, 'yes', --maxmemory-policy, noeviction]
+    volumes: [cachedata:/data]
+    networks: [isolated]
+  mail:
+    image: axllent/mailpit:v1.27
+    platform: linux/amd64
+    networks: [isolated]
+  api:
+    image: ${API_IMAGE:-tripnote-api:prep-20261017}
+    platform: ${API_PLATFORM:-linux/amd64}
+    mem_limit: 512m
+    memswap_limit: 512m
+    cpu_period: 100000
+    cpu_quota: 10000
+    environment:
+      JAVA_TOOL_OPTIONS: -Xms64m -Xmx192m -XX:+UseSerialGC -XX:ActiveProcessorCount=1 -XX:MaxMetaspaceSize=192m -XX:ReservedCodeCacheSize=32m -XX:MaxDirectMemorySize=16m -Xss512k -XX:+ExitOnOutOfMemoryError -XX:TieredStopAtLevel=1 ${API_EXTRA_JAVA_OPTIONS:-}
+      DATABASE_URL: jdbc:postgresql://db:5432/tripnote
+      DATABASE_USER: tripnote
+      DATABASE_PASSWORD: tripnote
+      VALKEY_HOST: valkey
+      MAIL_HOST: mail
+      TRIPNOTE_SEED_SAMPLES: 'false'
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: '3'
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: '0'
+    networks: [isolated]
+    depends_on:
+      db: {condition: service_healthy}
+networks:
+  isolated: {internal: true}
+volumes:
+  pgdata: {}
+  cachedata: {}

@@ -1,6 +1,7 @@
 'use client';
 
 import createClient, { type Middleware } from 'openapi-fetch';
+import { boundedFetch } from './bounded-fetch';
 import { CSRF_COOKIE, CSRF_HEADER, isUnsafe, readCookie } from './csrf';
 import type { paths } from './schema';
 
@@ -8,7 +9,9 @@ type Options = { baseUrl?: string; fetch?: typeof fetch; cookie?: () => string }
 
 export function createBrowserApi(options: Options = {}) {
   const baseUrl = options.baseUrl ?? globalThis.location?.origin ?? 'http://localhost';
-  const fetcher = options.fetch ?? ((input: RequestInfo | URL, init?: RequestInit) => globalThis.fetch(input, init));
+  const fetcher = boundedFetch(
+    options.fetch ?? ((input: RequestInfo | URL, init?: RequestInit) => globalThis.fetch(input, init)),
+  );
   const cookie = options.cookie ?? (() => document.cookie);
 
   let priming: Promise<void> | null = null;

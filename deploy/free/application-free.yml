@@ -1,0 +1,30 @@
+# Opt-in only. External connection strings and secrets must be entered in Render's UI.
+server:
+  port: ${PORT:8080}
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 3
+      minimum-idle: 0
+      connection-timeout: 15000
+      validation-timeout: 5000
+  flyway:
+    # Direct Neon endpoint: migrations must not use the transaction pooler.
+    url: ${MIGRATION_DATABASE_URL}
+    user: ${MIGRATION_DATABASE_USER}
+    password: ${MIGRATION_DATABASE_PASSWORD}
+  data:
+    redis:
+      username: ${VALKEY_USERNAME:default}
+      password: ${VALKEY_PASSWORD}
+      ssl:
+        enabled: true
+      connect-timeout: 5s
+      timeout: 5s
+  mail:
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
+tripnote:
+  seed-samples: false

@@ -1,4 +1,5 @@
 import createClient from 'openapi-fetch';
+import { boundedFetch } from './bounded-fetch';
 import type { paths } from './schema';
 
 export const API_ORIGIN = process.env.API_ORIGIN ?? 'http://localhost:8080';
@@ -7,7 +8,7 @@ export const API_ORIGIN = process.env.API_ORIGIN ?? 'http://localhost:8080';
 export function createServerApi(cookieHeader: string, options: { baseUrl?: string; fetch?: typeof fetch } = {}) {
   return createClient<paths>({
     baseUrl: options.baseUrl ?? API_ORIGIN,
-    fetch: options.fetch,
+    fetch: boundedFetch(options.fetch ?? globalThis.fetch),
     headers: cookieHeader ? { cookie: cookieHeader } : {},
     cache: 'no-store',
   });

@@ -1,0 +1,51 @@
+# Review-only: applying this creates a public service and requires separate account approval.
+services:
+  - type: web
+    name: tripnote-api-free
+    runtime: docker
+    plan: free
+    region: singapore
+    branch: codex/free-hosting-prep-20261017
+    dockerfilePath: ./deploy/free/Dockerfile
+    dockerContext: .
+    autoDeployTrigger: 'off'
+    healthCheckPath: /actuator/health/readiness
+    envVars:
+      - key: PORT
+        value: '10000'
+      - key: TRIPNOTE_WEB_BASE_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_USER
+        sync: false
+      - key: DATABASE_PASSWORD
+        sync: false
+      - key: MIGRATION_DATABASE_URL
+        sync: false
+      - key: MIGRATION_DATABASE_USER
+        sync: false
+      - key: MIGRATION_DATABASE_PASSWORD
+        sync: false
+      - key: VALKEY_HOST
+        sync: false
+      - key: VALKEY_PORT
+        sync: false
+      - key: VALKEY_USERNAME
+        value: default
+      - key: VALKEY_PASSWORD
+        sync: false
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        sync: false
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: TRIPNOTE_MAIL_FROM
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
