@@ -28,7 +28,9 @@
 
 ## 시스템 구조
 
-![현재 코드의 시스템 구조: 브라우저와 Next.js, API, PostgreSQL, Valkey 및 메일 전송 경계](docs/assets/system-architecture-ko.svg)
+![현재 구현의 3D 핵심 구조도: 브라우저와 Next.js, Java·Kotlin API, PostgreSQL의 요청·결과 흐름과 Valkey·메일 경계](docs/assets/system-architecture-3d-ko.png)
+
+*현재 구현을 로컬에서 검증한 핵심 흐름입니다. 민트는 요청, 파랑은 결과이며 메일은 발송 방향만 표시합니다. 초안은 기기에 보관하고 HTTPS 메일은 구현 대기 상태입니다. 지도·날씨·Google 연동의 세부 경로는 본문을 참고하세요. 운영 배포 구성도는 아닙니다.*
 
 브라우저는 Next.js와 같은 출처의 `/api/*`, `/oauth2/*`, `/login/oauth2/*`를 사용합니다. API는 `__Host-SESSION` 쿠키와 CSRF로 요청을 보호하고 권한·버전·작업 ID를 검증합니다. PostgreSQL은 여행과 사용자 데이터, 토큰 해시와 미완료 메일 이벤트를 저장합니다. Valkey는 세션, 사용자별 세션 취소 인덱스, 요청 제한과 날씨 캐시를 맡습니다. 지도 타일은 브라우저가 직접 조회합니다.
 
@@ -47,22 +49,26 @@
 
 ## 배포 상태
 
-**2026-10-17 기준으로 새 웹·API 서비스의 운영 배포는 완료되지 않았습니다.**
+**2026-10-17에 재확인한 배포 현황입니다. 기존 여행 사이트와 Vercel Preview가 확인됐고, 새 서비스의 운영 연결은 확인되지 않았습니다.**
 
-![현재의 보호된 Vercel 화면 미리보기와 아직 연결되지 않은 무료 배포 제안](docs/assets/deployment-architecture-ko.svg)
+![현재 확인된 3D 배포 구조: 기존 Sites의 HTTP 200 응답과 보호된 Vercel Preview의 302 인증 이동, 배포 여부 미확인인 Render·Neon·Upstash](docs/assets/deployment-architecture-3d-ko.png)
 
-| 구분 | 확인된 상태 |
+*실선은 이번 조회에서 확인한 HTTP 요청과 응답만 나타냅니다. 기존 사이트와 Preview는 별도 배포입니다. Preview의 Ready 상태는 앱·API 동작 검증을 뜻하지 않으며, 확인하지 못한 서비스에는 연결선을 그리지 않았습니다. [조회 근거와 제한](docs/verification/2026-10-17-deployment-status.md)을 함께 보세요.*
+
+| 구분 | 이번에 확인한 상태 |
 | --- | --- |
-| 기존 서비스 | [오사카·교토 Sites](https://osaka-kyoto-family-2026.hyunolike.chatgpt.site/). 기존 Vite 사이트이며 저장소와 자동 동기화·배포되지 않음 |
-| 새 웹 미리보기 | [보호된 Vercel Preview](https://trip-planner-adkdt83ne-hyunho-jangs-projects.vercel.app). `TRIPNOTE_UI_PREVIEW=1`, API 미연결 안내만 제공. 로그인·조회·편집이 가능한 서비스 배포가 아님 |
-| 준비된 제안 | Vercel Hobby 웹 + Render Free API + Neon Free DB + Upstash Free 후보. 계정 연결·리소스 생성·실제 호환성 검증·도메인 연결 전 |
-| 메일·Google | HTTPS 메일 제공자 미선정. Google 실제 로그인은 자격증명과 callback 설정 및 검증 필요 |
+| 기존 서비스 | [오사카·교토 Sites](https://osaka-kyoto-family-2026.hyunolike.chatgpt.site/) GET에 HTTP 200. 기존 Vite 사이트이며 새 Next.js 웹과 별도 배포 |
+| 새 웹 Preview | [보호된 Vercel Preview](https://trip-planner-adkdt83ne-hyunho-jangs-projects.vercel.app)의 배포 기록은 Ready. 화면과 읽기 전용 API 요청은 모두 HTTP 302로 인증 보호 응답을 반환해 현재 앱·API 연결은 확인 불가 |
+| Vercel Production | **미배포(해당 프로젝트의 활성 Ready Production 기록 없음)**. 조회된 전체 2건 중 Production 1건은 Canceled |
+| Render API | **배포 여부 미확인**. 계정 조회 도구·로컬 자격증명이 없어 배포 기록과 API 주소를 확인하지 못함 |
+| Neon DB / Upstash 상태 저장소 | **배포 여부 미확인**. 계정 접근 없이 생성·연결 상태를 판단하지 않음 |
+| 메일·Google | 저장소에는 실제 HTTPS 메일 어댑터가 없음. 실제 자격증명·callback과 운영 동작은 이번에 확인하지 못함 |
 
-[무료 배포 준비](deploy/free/README.md)에는 Free 한도, pooled runtime/direct Flyway 연결, TLS, 세션 호환성, 승인 후 확인할 절차가 있습니다. Render Free는 sleep/cold start와 SMTP 포트 제한이 있습니다. DB와 Redis를 포함한 readiness는 공통 3초 검사 예산을 쓰지만 실제 Render 환경의 HTTP 왕복과 외부 서비스 연결은 아직 검증하지 않았습니다.
+이전 기록의 `TRIPNOTE_UI_PREVIEW=1`과 API 미연결 안내를 현재 런타임의 재검증 결과로 사용하지 않았습니다. API·DB·캐시가 연결된 완성 배포 구조를 확정하려면 각 서비스의 읽기 전용 배포 기록과 보호된 Preview 접근이 필요합니다.
 
-[512MiB·0.1CPU 로컬 시험](docs/verification/2026-10-17-free-hosting.md)은 제한된 합성 검증입니다. 실제 Render 성능·운영 적합성이나 현재 변경 전체의 재시험 결과로 해석하지 않습니다. 별도의 [2GB 공통 메모리 검증](docs/verification/2026-10-16-local-memory.md)도 실제 OS·Caddy를 포함한 운영 판정을 대신하지 않습니다.
+[무료 배포 준비](deploy/free/README.md)와 `deploy/free/render.yaml`은 검토용 구성입니다. 현재 연결됐다는 근거가 아닙니다. 저장소의 Free profile은 HTTPS 메일을 선택하며 **승인된 제공자 구현 없이는 시작되지 않습니다**. DB와 Redis를 포함한 readiness는 공통 3초 검사 예산을 쓰지만 실제 외부 서비스 연결은 별도 확인이 필요합니다.
 
-게시 전에는 실제 HTTPS의 쿠키·CSRF·메일·여행 편집·공유 회수, 프록시 신뢰 경로와 사용자별 제한, DB 백업·복원, 관측성과 개인정보처리방침의 운영 정보를 확인해야 합니다. 프록시 CIDR은 실제 소켓 피어만 신뢰하며 광범위한 forwarded header 신뢰를 설정하지 않습니다. 운영 CI/CD와 관측성 연결은 미완료입니다.
+[512MiB·0.1CPU 로컬 시험](docs/verification/2026-10-17-free-hosting.md)과 [2GB 공통 메모리 검증](docs/verification/2026-10-16-local-memory.md)은 로컬 결과입니다. Docker 구성과 로컬 시험을 운영 배포로 표시하지 않습니다. 실제 운영 연결과 CI/CD·관측성 검증은 [후속 이슈 #7](https://github.com/hyunolike/trip-planner/issues/7)에서 추적합니다.
 
 ## 로컬 실행
 
@@ -132,7 +138,9 @@ pnpm --filter @tripnote/web e2e
 ## 문서
 
 - [B2C 설계](docs/superpowers/specs/2026-10-15-b2c-trip-planner-design.md), [구현·검증 기록](docs/superpowers/plans/2026-10-16-codex-mvp-followup.md), [API 안내](apps/api/README.md)
-- [README 작성 근거와 구성도 재생성](docs/verification/2026-10-17-readme.md), [재사용 README 스킬](.agents/skills/evidence-readme/SKILL.md)
+- [README 작성 근거와 이전 SVG 기록](docs/verification/2026-10-17-readme.md), [3D 구성도 근거·원본·생성 프롬프트](docs/architecture/3d-diagrams.md), [재사용 README 스킬](.agents/skills/evidence-readme/SKILL.md)
 - [디자인 시스템](design-system/README.md), [아키텍처 결정](docs/adr/README.md)
 
 이미지·폰트와 외부 자료의 출처·이용 조건은 각 데이터와 크레딧을 따릅니다. 이 저장소가 외부 자료의 별도 재배포 권리를 부여하지는 않습니다.
+
+구성도의 기술 마크는 해당 기술을 식별하기 위한 표기이며 제휴나 인증을 뜻하지 않습니다. Vercel과 Next.js 이름·로고는 Vercel 및 계열사의 상표이며, 다른 마크도 각 권리자에게 속합니다. [공식 출처](docs/architecture/3d-diagrams.md#공식-로고-출처)를 참고하세요.
