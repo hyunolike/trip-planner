@@ -49,24 +49,26 @@ Exact versions come from [web package.json](apps/web/package.json), the [API ver
 
 ## Deployment status
 
-**As of 2026-10-17, the new connected web/API service is not deployed to production.**
+**Deployment inventory rechecked on 2026-10-17: the existing travel site and a Vercel Preview are confirmed. Production connections for the new service remain unverified.**
 
-![3D planned deployment: Vercel Next.js to Render API and Neon DB, with an Upstash validation candidate and unimplemented HTTPS mail](docs/assets/deployment-architecture-3d-en.png)
+![Verified 3D deployment inventory: the existing Sites HTTP 200 response, protected Vercel Preview authentication redirect 302, and unverified Render, Neon and Upstash deployments](docs/assets/deployment-architecture-3d-en.png)
 
-*This is a planned proposal: dashed connections await integration and live validation. The current protected Preview has no API. Upstash is a validation candidate; the HTTPS mail provider is not selected or implemented, so the Free profile cannot start until an approved adapter exists.*
+*Solid arrows show only HTTP request/response paths observed during this check. The existing site and Preview are separate deployments. Ready does not verify the Preview app or API; unverified services have no connection lines. See the [evidence and limits](docs/verification/2026-10-17-deployment-status.md).*
 
-| Item | Verified state |
+| Item | State observed in this check |
 | --- | --- |
-| Original service | [Osaka–Kyoto Sites](https://osaka-kyoto-family-2026.hyunolike.chatgpt.site/), the legacy Vite site. No automatic repository synchronization/deployment |
-| New web preview | [Protected Vercel Preview](https://trip-planner-adkdt83ne-hyunho-jangs-projects.vercel.app), with `TRIPNOTE_UI_PREVIEW=1`. It shows an API-disconnected notice; login, reading and editing are unavailable |
-| Prepared proposal | Vercel Hobby web + Render Free API + Neon Free DB + Upstash Free candidate. Account linking, resource creation, actual compatibility tests and domain setup remain pending |
-| Mail/Google | No HTTPS mail provider selected. Real Google login requires credentials, callback configuration and verification |
+| Existing service | GET to [Osaka–Kyoto Sites](https://osaka-kyoto-family-2026.hyunolike.chatgpt.site/) returned HTTP 200. The legacy Vite site is deployed separately from the new Next.js web |
+| New web Preview | The [protected Vercel Preview](https://trip-planner-adkdt83ne-hyunho-jangs-projects.vercel.app) has a Ready deployment record. Page and read-only API requests both returned HTTP 302 with an authentication protection response; current app/API connections could not be verified |
+| Vercel Production | Of the two project deployment records, the single Production record is Canceled. No active Ready Production record was returned |
+| Render API | **Deployment unverified.** No account tool or local credentials were available to read deployment records or confirm an API endpoint |
+| Neon DB / Upstash state store | **Deployment unverified.** Resource existence and connections cannot be inferred without account access |
+| Mail / Google | The repository has no real HTTPS mail provider adapter. Current credentials, callbacks and live behavior were not verified in this check |
 
-[Free deployment preparation](deploy/free/README.md) documents limits, pooled runtime/direct Flyway connections, TLS, session compatibility and checks after approval. Render Free has sleep/cold starts and SMTP port restrictions. Readiness includes DB and Redis with one shared three-second check budget; actual Render HTTP round trips and external connections remain unverified.
+Earlier records of `TRIPNOTE_UI_PREVIEW=1` and the disconnected-API notice are historical evidence, not a fresh runtime verification. Establishing a connected API/DB/cache deployment requires read-only provider records and access to the protected Preview.
 
-The [512MiB/0.1CPU local trial](docs/verification/2026-10-17-free-hosting.md) is a constrained synthetic result, not proof of Render performance, production suitability or a rerun of every current change. The separate [2GB shared-memory trial](docs/verification/2026-10-16-local-memory.md) also excludes a full production OS/Caddy assessment.
+[Free deployment preparation](deploy/free/README.md) and `deploy/free/render.yaml` are review configuration, not proof of a current connection. The repository's Free profile selects HTTPS mail and **cannot start without an approved provider implementation**. Readiness has a shared three-second budget covering DB and Redis; actual external connections still require verification.
 
-Before publication, verify HTTPS cookies/CSRF/mail/editing/share revocation, proxy trust and per-user rate limits, database backup/restore, observability and actual privacy-policy operating details. Trust only the real socket peer’s proxy CIDRs; do not broadly trust forwarded headers. Production CI/CD and observability connections remain incomplete.
+The [512MiB/0.1CPU trial](docs/verification/2026-10-17-free-hosting.md) and [2GB shared-memory trial](docs/verification/2026-10-16-local-memory.md) are local results. Docker configuration and local tests are not production deployments. Live integration, CI/CD and observability validation are tracked in [issue #7](https://github.com/hyunolike/trip-planner/issues/7).
 
 ## Local development
 
