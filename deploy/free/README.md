@@ -36,10 +36,28 @@ Neon의 유료 snapshot/추가 제품과 Upstash의 PAYG/Prod Pack/auto-upgrade�
    namespace는 tripnote 전용. 기존 다른 앱 DB는 사용하지 않는다. eviction/auto-upgrade는 끈다.
 4. 비밀값은 채팅/PR/.env 커밋/터미널 인자로 보내지 않는다. Render Environment 화면에 직접 입력한다.
    로컬 검증에 필요하면 사용자 전용 안전 입력 경로를 먼저 정한다. DB/캐시 초기화와 테스트 쓰기도 해당 신규 자원 범위로 승인받는다.
-5. 메일: Render Free는 outbound 25/465/587을 차단한다. 기존 코드의 SMTP를 유지하려면
-   무료 발송 제공자의 허용된 STARTTLS 대체 포트(예: 제공자가 명시한 2525)와 무료량을 확인하거나,
-   별도로 승인한 HTTPS 메일 API 구현이 필요하다. 아직 제공자/자격증명이 없으므로 실제 가입/비밀번호 재설정은 미검증이다.
-   OAuth도 Google callback 등록과 실제 자격증명을 안전하게 입력하기 전에는 완료로 보지 않는다.
+5. 메일: Render Free의 outbound SMTP 25/465/587은 차단된다. Free profile은 HTTPS 전송을 선택한다.
+   `MailTransport` / `HttpsMailProvider` 경계만 구현했으며 실제 제공자 어댑터는 없다.
+   따라서 현재 Blueprint는 그대로 시작하면 승인된 HTTPS provider bean이 없어 **시작에 실패한다**.
+   임시 no-op, 로컬 SMTP 우회나 발송 성공으로 가장하는 fallback은 없다.
+   제공자 선택과 어댑터 구현, 발신 도메인 검증 및 실제 발송 승인이 선행되어야 한다.
+   무료 후보와 요구 사항은 [메일 연결 검토](mail.md)를 참고한다.
+   Google OAuth도 callback 등록과 실제 자격증명 입력 전에는 완료로 보지 않는다.
+
+## 제한 시간 안의 readiness
+
+Render는 HTTP health 응답을 5초 안에 받아야 한다. 시작 허용 시간 15분과는 별도 조건이다.
+Free profile은 `tripnote.readiness.bounded=true`로 DB와 Redis의 실제 Actuator contributor를
+동시에 조회하고, 두 검사에 **공통 3초 예산**을 적용한다. 둘 다 UP이고 앱이 요청 수신 상태일 때만
+200을 반환한다. 누락·예외·시간 초과·수신 중지 상태는 503이며 상세 정보나 UP 캐시는 노출하지 않는다.
+Spring Boot 4의 reactive Redis health도 같은 `HealthEndpoint` 경로로 조회한다.
+검사는 2 worker/2 queue로 제한하고 동시 probe는 진행 중인 검사 한 번을 공유한다.
+취소에 반응하지 않는 드라이버도 worker 수를 늘리지 않는다. 포화 상태에서는 503으로 실패한다.
+
+MockMvc의 전체 보안/filter 경로와 15초 지연, 동시 16요청, DB/Redis 장애·누락·복구를 테스트한다.
+이 테스트는 실제 Render의 0.1CPU 스케줄링과 외부 TLS/네트워크를 포함하지 않는다.
+로컬의 이전 232초 기동 기록은 현재 readiness 변경을 검증한 수치가 아니며,
+실제 Free 인스턴스에서 HTTP 왕복 5초와 cold start를 별도로 확인해야 한다.
 
 ## DB 연결과 마이그레이션
 

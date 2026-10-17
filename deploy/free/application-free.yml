@@ -28,3 +28,8 @@ spring:
       mail.smtp.starttls.required: true
 tripnote:
   seed-samples: false
+  readiness:
+    bounded: true
+  mail:
+    transport: ${TRIPNOTE_MAIL_TRANSPORT:https}
+    render-free: true

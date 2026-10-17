@@ -1,8 +1,6 @@
 package com.tripnote.auth.internal
 
 import com.tripnote.common.TripnoteProperties
-import org.springframework.mail.SimpleMailMessage
-import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.modulith.events.ApplicationModuleListener
 import java.util.UUID
 import org.slf4j.LoggerFactory
@@ -16,7 +14,7 @@ data class SocialOnlyAccountMailRequested(val email: String, val provider: Strin
 
 @Component
 class AuthMailer(
-    private val sender: JavaMailSender,
+    private val sender: MailTransport,
     private val props: TripnoteProperties,
     private val tokens: EmailTokenService,
     private val jdbc: JdbcClient,
@@ -93,11 +91,6 @@ class AuthMailer(
     }
 
     private fun send(to: String, subject: String, text: String) {
-        sender.send(SimpleMailMessage().apply {
-            from = props.mailFrom
-            setTo(to)
-            this.subject = subject
-            this.text = text
-        })
+        sender.send(TransactionalMail(props.mailFrom, to, subject, text))
     }
 }

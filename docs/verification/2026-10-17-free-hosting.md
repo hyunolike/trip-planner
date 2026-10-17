@@ -5,7 +5,8 @@
 ## 기준과 데이터
 
 기준 develop `63da5cd293fe606cca9f48391fb3a1d14f49d967`.
-API 소스와 인증 알고리즘은 변경하지 않았다. 별도 `codex/free-hosting-prep-20261017` 브랜치에서 작업했다.
+최초 준비 커밋 `9d69659`의 아래 제약 시험에서는 API 소스와 인증 알고리즘을 변경하지 않았다.
+별도 `codex/free-hosting-prep-20261017` 브랜치에서 작업했다. 이후 readiness/메일 경계 변경의 추가 검증은 마지막 절에 구분한다.
 기존 Claude checkout과 Lightsail 준비는 보존했다.
 
 기존 로컬 개발 DB의 집계 조회는 21,165,759 bytes(약 21.2MB), 여행14/사용자37/일정항목467이다.
@@ -89,3 +90,28 @@ primitive probe만으로 실제 Spring 인증 호환 완료를 선언하지 않�
 Render Free의 SMTP25/465/587 차단 때문에 메일 제공자의 허용된 무료 발송 경로 확인이 필요하다.
 외부 계정의 현재 무료량/결제 상태 확인과 계정 연결, 실제 HTTPS 로그인/여행/공유 확인,
 도메인 연결 및 운영 게시 승인이 남아 있다. 관련 절차와 출처는 `deploy/free/README.md`에 있다.
+
+## 추가 검증: readiness와 메일 경계
+
+위 512MiB/0.1CPU의 JAR·기동·메모리 수치는 `9d69659` 당시의 결과다.
+이후 API 변경을 같은 cgroup이나 실제 Render에서 다시 측정한 수치로 사용하지 않는다.
+
+추가 변경은 DB/Redis 검사를 제거하지 않고 HTTP readiness의 공통 3초 deadline과 bounded worker를
+도입하고, AuthMailer의 전송을 SMTP/HTTPS 확장점으로 분리한다. 인증 알고리즘·토큰 TTL·단회성·
+이벤트 트랜잭션·사용자 행 잠금은 유지한다. Free profile은 HTTPS 어댑터가 없으면 시작을 거부한다.
+
+JDK25, 격리된 Testcontainers PostGIS/Valkey에서 `./apps/api/gradlew -p apps/api check` 통과:
+**25 suites / 166 tests / failures 0 / errors 0 / skipped 0**.
+
+- `BoundedReadinessTest` 5개: DB/Redis와 수신 상태, 예외와 지연, 16 동시 요청, 취소에 응하지 않는
+  드라이버의 최대 worker2 유지 및 복구. 기본3초 예산의 전체 filter 응답을 4.5초 미만으로 검사.
+- `BoundedReadinessIntegrationTest` 2개: 실제 contributor와 보안/filter 경로, DB/Redis DOWN·누락·복구,
+  reactive Redis 15초 지연에도 503을 4.5초 안에 반환. 비인증 개인 경로는 계속401.
+- `MailTransportTest` 5개: SMTP 필드 보존, HTTPS 전달/거절 예외/무재시도, provider 미구현 startup 실패,
+  로컬 SMTP 유지, Free에서25/465/587 차단. 문맥에 실 SMTP나 HTTP를 연결하지 않음.
+- `HttpsAuthFlowTest` 2개: 가짜 HTTPS provider + 실제 auth/DB/Redis로 인증 토큰 해시·단회성,
+  재설정 후 세션 취소, 발송 거절 시 토큰 롤백/미완료 이벤트 유지/복구 후 재발행 확인.
+- 기존 이메일·Google·여행·공유·모듈 경계·OpenAPI 회귀 검사도 전체 check에 포함.
+
+HTTP 제한 테스트는 MockMvc와 synthetic delay/load이며 외부 네트워크·실제 Free CPU의 end-to-end
+성능 검증은 아니다. 실 제공자/계정/키/도메인/실제 메일 발송은 추가하지 않았다.
