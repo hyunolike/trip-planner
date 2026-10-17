@@ -45,6 +45,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <a className="skip-link" href="#main">
           본문으로 건너뛰기
         </a>
+        {process.env.TRIPNOTE_FREE_HOSTING === '1' && (
+          <p role="status" style={{ padding: '0.75rem 1rem', margin: 0, textAlign: 'center' }}>
+            무료 체험 서버는 쉬고 있을 수 있어요. 처음 연결할 때 몇 분 걸릴 수 있어요. 저장 중 연결이 끊기면 결과를
+            확인한 뒤 다시 시도해 주세요.
+          </p>
+        )}
         <Providers>{children}</Providers>
       </body>
     </html>

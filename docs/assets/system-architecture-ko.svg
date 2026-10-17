@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="930" viewBox="0 0 1200 930" role="img" aria-labelledby="title desc"><title id="title">여행노트 · 현재 코드의 시스템 구조</title><desc id="desc">Arrows reflect source code; local implementation is distinct from deployed infrastructure.</desc><defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10Z" fill="#53657c"/></marker></defs><rect width="1200" height="930" fill="#f8fafc"/>
+<text x="54" y="52" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="29" font-weight="700" fill="#152b46">여행노트 · 현재 코드의 시스템 구조</text>
+<text x="54" y="86" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="18" font-weight="400" fill="#42546a">구현된 로컬 흐름 · 외부 제공자 설정과 운영 검증은 별도</text>
+<rect x="90" y="140" width="300" height="110" rx="14" fill="#ffffff" stroke="#304d73" stroke-width="2"/>
+<text x="109" y="172" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="21" font-weight="700" fill="#304d73">브라우저</text>
+<text x="109" y="202" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">일정 읽기 · 편집 · 공유</text>
+<text x="109" y="228" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">세션 쿠키 + CSRF</text>
+<rect x="470" y="140" width="300" height="110" rx="14" fill="#ffffff" stroke="#304d73" stroke-width="2"/>
+<text x="489" y="172" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="21" font-weight="700" fill="#304d73">Next.js 웹</text>
+<text x="489" y="202" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">서버 렌더링 · API client</text>
+<text x="489" y="228" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">동일 출처 rewrite</text>
+<path d="M390 195 H470" fill="none" stroke="#53657c" stroke-width="2.5" marker-end="url(#arrow)"/>
+<text x="404" y="180" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="15" font-weight="400" fill="#42546a">HTTPS</text>
+<rect x="90" y="380" width="300" height="150" rx="14" fill="#ffffff" stroke="#304d73" stroke-width="2"/>
+<text x="109" y="412" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="21" font-weight="700" fill="#304d73">브라우저 저장소</text>
+<text x="109" y="442" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">localStorage: 사용자별 편집 큐</text>
+<text x="109" y="468" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">localStorage: 준비물/방문 상태</text>
+<text x="109" y="494" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">충돌 시 전송 중지·초안 유지</text>
+<path d="M240 250 V380" fill="none" stroke="#53657c" stroke-width="2.5" marker-end="url(#arrow)"/>
+<rect x="470" y="350" width="300" height="210" rx="14" fill="#ffffff" stroke="#304d73" stroke-width="2"/>
+<text x="489" y="382" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="21" font-weight="700" fill="#304d73">Kotlin / Spring Boot API</text>
+<text x="489" y="412" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">auth · trip · weather</text>
+<text x="489" y="438" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">Spring Modulith</text>
+<text x="489" y="464" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">권한 · 버전 · 작업 ID 검증</text>
+<text x="489" y="490" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">bounded readiness: DB + Redis</text>
+<text x="489" y="516" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">메일 이벤트 → 전송 인터페이스</text>
+<path d="M620 250 V350" fill="none" stroke="#53657c" stroke-width="2.5" marker-end="url(#arrow)"/>
+<text x="650" y="295" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="16" font-weight="400" fill="#42546a">/api · /oauth2</text>
+<text x="650" y="321" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="16" font-weight="400" fill="#42546a">/login/oauth2</text>
+<rect x="860" y="350" width="260" height="210" rx="14" fill="#ffffff" stroke="#304d73" stroke-width="2"/>
+<text x="879" y="382" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="21" font-weight="700" fill="#304d73">외부 연동</text>
+<text x="879" y="412" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">Open-Meteo: 날씨</text>
+<text x="879" y="438" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">Pwned Passwords: 범위 조회</text>
+<text x="879" y="464" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">Google OIDC: 설정 필요</text>
+<path d="M770 435 H860" fill="none" stroke="#53657c" stroke-width="2.5" marker-end="url(#arrow)"/>
+<rect x="860" y="140" width="260" height="110" rx="14" fill="#ffffff" stroke="#304d73" stroke-width="2"/>
+<text x="879" y="172" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="21" font-weight="700" fill="#304d73">지도 타일</text>
+<text x="879" y="202" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">OpenFreeMap</text>
+<text x="879" y="228" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">브라우저에서 직접 조회</text>
+<path d="M300 140 V115 H990 V140" fill="none" stroke="#53657c" stroke-width="2.5" marker-end="url(#arrow)"/>
+<rect x="90" y="690" width="300" height="130" rx="14" fill="#ffffff" stroke="#304d73" stroke-width="2"/>
+<text x="109" y="722" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="21" font-weight="700" fill="#304d73">Valkey / Redis</text>
+<text x="109" y="752" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">HTTP 세션 · 요청 제한</text>
+<text x="109" y="778" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">날씨 캐시 · indexed 세션 취소</text>
+<rect x="470" y="690" width="300" height="130" rx="14" fill="#ffffff" stroke="#304d73" stroke-width="2"/>
+<text x="489" y="722" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="21" font-weight="700" fill="#304d73">PostgreSQL + PostGIS</text>
+<text x="489" y="752" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">사용자 · 여행 · 공유 토큰 해시</text>
+<text x="489" y="778" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">트랜잭션 · 미완료 메일 이벤트</text>
+<path d="M520 560 V610 H240 V690" fill="none" stroke="#53657c" stroke-width="2.5" marker-end="url(#arrow)"/>
+<text x="120" y="594" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">세션 상태</text>
+<path d="M620 560 V690" fill="none" stroke="#53657c" stroke-width="2.5" marker-end="url(#arrow)"/>
+<text x="642" y="637" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">SQL / TX</text>
+<rect x="860" y="690" width="260" height="130" rx="14" fill="#fff8e7" stroke="#b27715" stroke-width="2" stroke-dasharray="8 5"/>
+<text x="879" y="722" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="21" font-weight="700" fill="#b27715">메일 전송</text>
+<text x="879" y="752" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">로컬: SMTP / Mailpit</text>
+<text x="879" y="778" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">HTTPS: 제공자 미선정</text>
+<path d="M770 510 H810 V755 H860" fill="none" stroke="#53657c" stroke-width="2.5" marker-end="url(#arrow)"/>
+<text x="54" y="878" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">실선: 구현된 코드 경로  |  점선: 승인·연결 대기  |  현재 공개 API 운영 구성도가 아님</text>
+</svg>

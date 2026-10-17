@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="930" viewBox="0 0 1200 930" role="img" aria-labelledby="title desc"><title id="title">Tripnote · implemented system architecture</title><desc id="desc">Arrows reflect source code; local implementation is distinct from deployed infrastructure.</desc><defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10Z" fill="#53657c"/></marker></defs><rect width="1200" height="930" fill="#f8fafc"/>
+<text x="54" y="52" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="29" font-weight="700" fill="#152b46">Tripnote · implemented system architecture</text>
+<text x="54" y="86" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="18" font-weight="400" fill="#42546a">Implemented local flows · provider setup and production validation are separate</text>
+<rect x="90" y="140" width="300" height="110" rx="14" fill="#ffffff" stroke="#304d73" stroke-width="2"/>
+<text x="109" y="172" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="21" font-weight="700" fill="#304d73">Browser</text>
+<text x="109" y="202" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">Read, edit and share trips</text>
+<text x="109" y="228" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">Session cookie + CSRF</text>
+<rect x="470" y="140" width="300" height="110" rx="14" fill="#ffffff" stroke="#304d73" stroke-width="2"/>
+<text x="489" y="172" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="21" font-weight="700" fill="#304d73">Next.js web</text>
+<text x="489" y="202" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">Server rendering + API client</text>
+<text x="489" y="228" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">Same-origin rewrites</text>
+<path d="M390 195 H470" fill="none" stroke="#53657c" stroke-width="2.5" marker-end="url(#arrow)"/>
+<text x="404" y="180" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="15" font-weight="400" fill="#42546a">HTTPS</text>
+<rect x="90" y="380" width="300" height="150" rx="14" fill="#ffffff" stroke="#304d73" stroke-width="2"/>
+<text x="109" y="412" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="21" font-weight="700" fill="#304d73">Browser storage</text>
+<text x="109" y="442" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">localStorage: per-user edit queue</text>
+<text x="109" y="468" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">localStorage: local checks</text>
+<text x="109" y="494" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">Pause on conflict; retain drafts</text>
+<path d="M240 250 V380" fill="none" stroke="#53657c" stroke-width="2.5" marker-end="url(#arrow)"/>
+<rect x="470" y="350" width="300" height="210" rx="14" fill="#ffffff" stroke="#304d73" stroke-width="2"/>
+<text x="489" y="382" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="21" font-weight="700" fill="#304d73">Kotlin / Spring Boot API</text>
+<text x="489" y="412" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">auth · trip · weather</text>
+<text x="489" y="438" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">Spring Modulith</text>
+<text x="489" y="464" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">Access, versions, mutation IDs</text>
+<text x="489" y="490" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">bounded readiness: DB + Redis</text>
+<text x="489" y="516" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">Mail events → transport</text>
+<path d="M620 250 V350" fill="none" stroke="#53657c" stroke-width="2.5" marker-end="url(#arrow)"/>
+<text x="650" y="295" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="16" font-weight="400" fill="#42546a">/api · /oauth2</text>
+<text x="650" y="321" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="16" font-weight="400" fill="#42546a">/login/oauth2</text>
+<rect x="860" y="350" width="260" height="210" rx="14" fill="#ffffff" stroke="#304d73" stroke-width="2"/>
+<text x="879" y="382" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="21" font-weight="700" fill="#304d73">External integrations</text>
+<text x="879" y="412" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">Open-Meteo: forecasts</text>
+<text x="879" y="438" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">Pwned Passwords: range API</text>
+<text x="879" y="464" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">Google OIDC: setup required</text>
+<path d="M770 435 H860" fill="none" stroke="#53657c" stroke-width="2.5" marker-end="url(#arrow)"/>
+<rect x="860" y="140" width="260" height="110" rx="14" fill="#ffffff" stroke="#304d73" stroke-width="2"/>
+<text x="879" y="172" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="21" font-weight="700" fill="#304d73">Map tiles</text>
+<text x="879" y="202" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">OpenFreeMap</text>
+<text x="879" y="228" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">Fetched by browser</text>
+<path d="M300 140 V115 H990 V140" fill="none" stroke="#53657c" stroke-width="2.5" marker-end="url(#arrow)"/>
+<rect x="90" y="690" width="300" height="130" rx="14" fill="#ffffff" stroke="#304d73" stroke-width="2"/>
+<text x="109" y="722" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="21" font-weight="700" fill="#304d73">Valkey / Redis</text>
+<text x="109" y="752" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">HTTP sessions + rate limits</text>
+<text x="109" y="778" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">Weather cache + session indexes</text>
+<rect x="470" y="690" width="300" height="130" rx="14" fill="#ffffff" stroke="#304d73" stroke-width="2"/>
+<text x="489" y="722" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="21" font-weight="700" fill="#304d73">PostgreSQL + PostGIS</text>
+<text x="489" y="752" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">Users, trips, share token hashes</text>
+<text x="489" y="778" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">Transactions + durable events</text>
+<path d="M520 560 V610 H240 V690" fill="none" stroke="#53657c" stroke-width="2.5" marker-end="url(#arrow)"/>
+<text x="120" y="594" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">Session state</text>
+<path d="M620 560 V690" fill="none" stroke="#53657c" stroke-width="2.5" marker-end="url(#arrow)"/>
+<text x="642" y="637" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">SQL / TX</text>
+<rect x="860" y="690" width="260" height="130" rx="14" fill="#fff8e7" stroke="#b27715" stroke-width="2" stroke-dasharray="8 5"/>
+<text x="879" y="722" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="21" font-weight="700" fill="#b27715">Mail delivery</text>
+<text x="879" y="752" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">Local: SMTP / Mailpit</text>
+<text x="879" y="778" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">HTTPS: provider not selected</text>
+<path d="M770 510 H810 V755 H860" fill="none" stroke="#53657c" stroke-width="2.5" marker-end="url(#arrow)"/>
+<text x="54" y="878" font-family="Arial, Noto Sans CJK KR, sans-serif" font-size="17" font-weight="400" fill="#42546a">Solid: implemented code path  |  Dashed: approval/setup pending  |  Not a live production topology</text>
+</svg>

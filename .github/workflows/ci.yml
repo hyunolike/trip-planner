@@ -25,7 +25,7 @@ jobs:
       - run: pnpm test
       - run: pnpm sample:validate
       - name: local sizing harness syntax
-        run: python3 -m py_compile scripts/local-sizing/*.py
+        run: python3 -m py_compile scripts/local-sizing/*.py scripts/free-tier/*.py
       - name: design tokens are built from tokens.json
         run: |
           pnpm --filter @tripnote/design-tokens build

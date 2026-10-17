@@ -37,3 +37,4 @@ playwright-report
 **/*.test.ts
 **/*.test.tsx
 **/*.test.mjs
+/deploy

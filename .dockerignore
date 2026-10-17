@@ -1,0 +1,14 @@
+**
+!apps/
+!apps/api/
+!apps/api/**
+apps/api/build
+apps/api/.gradle
+apps/api/.kotlin
+**/.env*
+**/*.log
+**/*.dump
+**/settings.env
+!deploy/
+!deploy/free/
+!deploy/free/application-free.yml
