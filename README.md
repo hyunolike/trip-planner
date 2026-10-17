@@ -1,33 +1,72 @@
 # 여행노트
 
-예약은 어디서든, 일정은 여기서. 여행 당일 손에 들고 보는 한국어 여행 일정표입니다. 기존 오사카·교토 가족여행 Vite 사이트를 보존하면서 Next.js 웹과 Kotlin API로 확장하고 있습니다.
+**예약은 어디서든, 일정은 여기서.** 여행 당일 휴대폰에서 일정과 장소 안내를 확인하고, 내 여행으로 복제해 고칠 수 있는 한국어 여행 일정표입니다. 기존 오사카·교토 가족여행 사이트를 보존하면서 Next.js 웹과 Kotlin API로 확장하고 있습니다.
 
-## 구조
+**한국어** | [English](README.en.md)
 
-| 경로 | 역할 |
+[주요 기능](#주요-기능) · [시스템 구조](#시스템-구조) · [배포 상태](#배포-상태) · [로컬 실행](#로컬-실행) · [검증](#검증) · [문서](#문서)
+
+## 주요 기능
+
+| 흐름 | 현재 코드의 동작 |
 | --- | --- |
-| `apps/web` | Next.js 웹. 홈, 인증, 일정 조회와 편집, 공유 |
-| `apps/api` | Spring Boot API. 인증, 여행 권한, 편집, 복제, 공유, 완료 체크, 날씨 |
-| `packages/design-tokens` | DTCG 토큰에서 CSS와 지도 색상 생성 |
-| `sample`, `scripts/sample` | 오사카·교토 원본과 다낭·호이안 예시의 검증·이관 |
-| `src`, `public`, `tests` | 기존 Vite 사이트와 테스트. 새 서비스와 별도로 유지 |
-| `docs/adr`, `docs/superpowers` | 아키텍처 결정과 설계·구현 계획 |
+| 내 여행 시작 | 목적지 → 날짜 → 동행의 세 단계로 비공개 여행 생성. 샘플 또는 공유된 여행을 내 비공개 여행으로 복제 |
+| 여행 당일 보기 | 날짜별 일정, 지도와 경로 재생, 날씨, 숙소·맛집·쇼핑·링크·준비물 안내 |
+| 일정 편집 | 일정 추가·자동 저장·수정·삭제, 순서 이동·드래그, 메모·링크·좌표와 여행·날짜 정보 편집 |
+| 연결이 끊긴 동안 | 사용자·여행별 변경 큐와 초안을 브라우저에 보존하고 연결 복구 시 순서대로 전송. 인증 만료·계정 변경·버전 충돌 시 중지 |
+| 방문 기록 | 비로그인 방문 체크를 로그인 뒤 한 번 이관하고 회원별 완료 상태를 서버에 저장. 준비물 체크는 기기에 보관 |
+| 보기 전용 공유 | 로그인 없이 열 수 있는 링크 생성·회수. 토큰은 DB에 해시만 저장하고 공유로 편집 권한을 주지 않음 |
+| 계정 | 이메일 가입·인증·재발송·로그인·비밀번호 재설정·로그아웃·탈퇴. Google 로그인 진입은 구현됐으며 실제 제공자 설정은 별도 |
 
-## 구현된 흐름
+복제는 원본 여행, 멤버, 공유 링크와 완료 체크를 재사용하지 않습니다. 일정이 있는 날짜를 여행 기간에서 제거하면 충돌을 반환해 데이터를 보존합니다. 공개 샘플 목록에는 다낭·호이안 예시를 제공하며, 오사카·교토 원본은 기존 링크로만 보존합니다.
 
-- 이메일 가입·인증·재발송, 로그인, 비밀번호 재설정, Google 로그인 진입, 로그아웃과 탈퇴
-- 목적지 → 날짜 → 동행의 세 단계로 비공개 여행 만들기
-- 날짜별 일정 추가·자동 저장·수정·삭제, 순서 이동과 드래그, 메모·링크·좌표 입력
-- 여행과 날짜 정보 편집. 일정이 들어 있는 날짜를 줄일 때는 충돌을 반환해 데이터 손실 방지
-- 기기 저장소에 사용자별 변경 큐 보관, 연결 복구 시 순서대로 재전송. 계정 변경·인증 만료·버전 충돌 시 전송 중지
-- 비로그인 완료 체크를 로그인 후 한 번 이관하고 방문 완료를 회원별 서버에 저장. 준비물 체크는 기기에 보관
-- 지도 날짜 변경, 한국어 지도와 경로 재생, 날씨, 맛집·쇼핑·링크·준비물 읽기 화면
-- 로그인 없이 열 수 있는 보기 전용 공유 링크 생성·회수. 토큰은 DB에 해시만 저장
-- 샘플과 공유된 여행을 내 비공개 여행으로 복제. 원본·멤버·공유 링크·완료 체크를 변경하거나 재사용하지 않음
+### 저장과 충돌의 범위
+
+편집 큐와 입력 초안은 현재 **localStorage**를 사용합니다. 저장소가 차단되거나 가득 차면 저장 실패를 표시하므로 탭을 닫기 전에 입력을 보관해야 합니다. 작업 ID는 응답을 잃은 일정 추가의 중복 생성을 막고, 버전 검사는 다른 기기의 변경을 덮어쓰지 않게 합니다. 충돌 시 초안을 유지하며 최신 일정 확인·재시도·변경 버리기를 제공합니다.
+
+이미 열린 편집 화면의 변경 보존과 복구가 대상입니다. 완전한 오프라인 최초 접속, 서비스워커, 탭 사이의 단일 전송 잠금과 동시 공동 편집은 아직 구현하지 않았습니다.
+
+## 시스템 구조
+
+![현재 코드의 시스템 구조: 브라우저와 Next.js, API, PostgreSQL, Valkey 및 메일 전송 경계](docs/assets/system-architecture-ko.svg)
+
+브라우저는 Next.js와 같은 출처의 `/api/*`, `/oauth2/*`, `/login/oauth2/*`를 사용합니다. API는 `__Host-SESSION` 쿠키와 CSRF로 요청을 보호하고 권한·버전·작업 ID를 검증합니다. PostgreSQL은 여행과 사용자 데이터, 토큰 해시와 미완료 메일 이벤트를 저장합니다. Valkey는 세션, 사용자별 세션 취소 인덱스, 요청 제한과 날씨 캐시를 맡습니다. 지도 타일은 브라우저가 직접 조회합니다.
+
+메일 이벤트의 트랜잭션과 토큰 발급은 유지한 채 전송 인터페이스를 분리했습니다. 로컬은 SMTP/Mailpit을 사용합니다. HTTPS 제공자 확장점만 준비됐으며 실제 어댑터는 없습니다. Free profile은 HTTPS를 선택하므로 **승인된 제공자 구현 없이는 시작에 실패합니다**. [메일 연결 검토](deploy/free/mail.md)를 참고하세요.
+
+| 영역 | 현재 기술 | 선택의 맥락 |
+| --- | --- | --- |
+| 웹 | Next.js 16.4.2, React 19.3.1, TypeScript 5.9, TanStack Query, OpenAPI 생성 타입 | 서버 렌더링과 같은 출처 API 경로, 계약에 맞춘 클라이언트 |
+| UI·지도 | CSS Modules, DTCG/Style Dictionary, MapLibre GL JS 6.14 | 공통 토큰과 한국어 일정 화면, 좌표 변환을 한곳에서 관리 |
+| API | Java 25, Kotlin 2.3, Spring Boot 4.1.1, Spring Modulith 2.1.1 | 하나의 배포 단위 안에서 auth/trip/weather 경계와 이벤트 처리 |
+| 데이터 | PostgreSQL 18 + PostGIS, JPA, jOOQ 3.21.9, Flyway 12 | 쓰기 규칙과 일정 트리 조회를 나누고 스키마 변경을 버전 관리 |
+| 인증 상태 | Spring Security, Spring Session indexed repository, Valkey 9.1 | 로그아웃·재설정 시 세션 취소와 캐시·요청 제한 |
+| 검증 | Vitest, Testing Library, Playwright/axe, JUnit, Testcontainers, GitHub Actions | 단위 테스트부터 실제 API를 거치는 모바일·데스크톱 흐름까지 검사 |
+
+정확한 버전은 [웹 package.json](apps/web/package.json), [API version catalog](apps/api/gradle/libs.versions.toml), 잠금 파일을 따릅니다. [ADR](docs/adr/README.md)에는 결정의 배경과 후속 제안이 함께 있으므로 현재 구현과 구분해 읽습니다.
+
+## 배포 상태
+
+**2026-10-17 기준으로 새 웹·API 서비스의 운영 배포는 완료되지 않았습니다.**
+
+![현재의 보호된 Vercel 화면 미리보기와 아직 연결되지 않은 무료 배포 제안](docs/assets/deployment-architecture-ko.svg)
+
+| 구분 | 확인된 상태 |
+| --- | --- |
+| 기존 서비스 | [오사카·교토 Sites](https://osaka-kyoto-family-2026.hyunolike.chatgpt.site/). 기존 Vite 사이트이며 저장소와 자동 동기화·배포되지 않음 |
+| 새 웹 미리보기 | [보호된 Vercel Preview](https://trip-planner-adkdt83ne-hyunho-jangs-projects.vercel.app). `TRIPNOTE_UI_PREVIEW=1`, API 미연결 안내만 제공. 로그인·조회·편집이 가능한 서비스 배포가 아님 |
+| 준비된 제안 | Vercel Hobby 웹 + Render Free API + Neon Free DB + Upstash Free 후보. 계정 연결·리소스 생성·실제 호환성 검증·도메인 연결 전 |
+| 메일·Google | HTTPS 메일 제공자 미선정. Google 실제 로그인은 자격증명과 callback 설정 및 검증 필요 |
+
+[무료 배포 준비](deploy/free/README.md)에는 Free 한도, pooled runtime/direct Flyway 연결, TLS, 세션 호환성, 승인 후 확인할 절차가 있습니다. Render Free는 sleep/cold start와 SMTP 포트 제한이 있습니다. DB와 Redis를 포함한 readiness는 공통 3초 검사 예산을 쓰지만 실제 Render 환경의 HTTP 왕복과 외부 서비스 연결은 아직 검증하지 않았습니다.
+
+[512MiB·0.1CPU 로컬 시험](docs/verification/2026-10-17-free-hosting.md)은 제한된 합성 검증입니다. 실제 Render 성능·운영 적합성이나 현재 변경 전체의 재시험 결과로 해석하지 않습니다. 별도의 [2GB 공통 메모리 검증](docs/verification/2026-10-16-local-memory.md)도 실제 OS·Caddy를 포함한 운영 판정을 대신하지 않습니다.
+
+게시 전에는 실제 HTTPS의 쿠키·CSRF·메일·여행 편집·공유 회수, 프록시 신뢰 경로와 사용자별 제한, DB 백업·복원, 관측성과 개인정보처리방침의 운영 정보를 확인해야 합니다. 프록시 CIDR은 실제 소켓 피어만 신뢰하며 광범위한 forwarded header 신뢰를 설정하지 않습니다. 운영 CI/CD와 관측성 연결은 미완료입니다.
 
 ## 로컬 실행
 
-Node.js 22, pnpm 10, JDK 25, 실행 중인 Docker가 필요합니다. 버전은 잠금 파일과 `apps/api/gradle/libs.versions.toml`을 따릅니다.
+Node.js 22, pnpm 10, **JDK 25를 가리키는 JAVA_HOME**, 실행 중인 Docker가 필요합니다. 아래 명령은 저장소 루트에서 시작합니다. 환경 변수 예시는 [웹 설정](apps/web/.env.example)과 [API README](apps/api/README.md)에 있으며 실제 비밀값은 커밋하지 않습니다.
 
 ```bash
 pnpm install --frozen-lockfile
@@ -39,23 +78,24 @@ API 터미널:
 ```bash
 cd apps/api
 docker compose up -d --wait
-export JAVA_HOME=/Users/hyuno/Library/Java/JavaVirtualMachines/openjdk-25.0.2/Contents/Home
 TRIPNOTE_SEED_SAMPLES=true ./gradlew bootRun
 ```
 
-`JAVA_HOME`은 사용하는 Mac의 JDK 25 경로로 바꿉니다. 샘플 시드는 기존 샘플을 다시 적재하므로 개발 DB에서만 사용합니다. 새 빈 개발 DB의 첫 실행 후에는 `TRIPNOTE_SEED_SAMPLES`를 생략해도 됩니다. 개발 메일은 Mailpit의 `http://localhost:8025`에서 확인합니다.
+**샘플 시드는 기존 샘플을 다시 적재하므로 개발 DB에서만 사용합니다.** 빈 개발 DB의 첫 적재 뒤에는 `TRIPNOTE_SEED_SAMPLES`를 생략합니다. 메일은 Mailpit의 `http://localhost:8025`에서 확인합니다. Google의 로컬 기본값은 리다이렉트 흐름 검사 용도입니다.
 
-웹 터미널:
+다른 터미널의 저장소 루트에서:
 
 ```bash
 pnpm --filter @tripnote/web dev
 ```
 
-웹은 `http://localhost:3000`, API는 `http://localhost:8080`입니다. 브라우저의 API 요청은 웹과 같은 출처를 거칩니다. `apps/web/.env.example`과 [API README](apps/api/README.md)에 설정이 있습니다. Google 실제 인증에는 별도 제공자 설정이 필요하며, 로컬 기본값은 리다이렉트 흐름 검사에만 사용합니다.
+웹은 `http://localhost:3000`, API는 `http://localhost:8080`입니다. 기존 Vite 사이트만 실행하려면 루트에서 `pnpm dev`를 사용합니다. 루트의 `pnpm build`는 Vite의 `dist/`를 만들며 새 Next.js 빌드 명령은 아래와 같습니다.
 
-기존 Vite 사이트만 보려면 루트에서 `pnpm dev`를 실행합니다. 기존 [Sites 서비스](https://osaka-kyoto-family-2026.hyunolike.chatgpt.site/)와 이 저장소 사이의 자동 동기화·자동 배포는 구성되어 있지 않습니다.
+API 없는 화면 미리보기는 **빌드와 런타임 모두** `TRIPNOTE_UI_PREVIEW=1`을 지정합니다. 이 모드에서는 API rewrite를 만들지 않고 요청과 서버 액션에 503을 반환합니다. API를 연결할 때는 두 환경 모두에서 플래그를 제거한 새 빌드를 검증해야 합니다.
 
 ## 검증
+
+저장소 루트에서:
 
 ```bash
 pnpm test
@@ -65,43 +105,34 @@ pnpm --filter @tripnote/web lint
 pnpm --filter @tripnote/web typecheck
 pnpm --filter @tripnote/web test
 pnpm --filter @tripnote/web build
-cd apps/api && ./gradlew check
+./apps/api/gradlew -p apps/api check
 ```
 
-실제 API와 DB·Valkey·Mailpit이 준비된 상태에서:
+JDK 25와 Docker가 API 검사에도 필요합니다. Playwright는 실제 API와 개발용 DB·Valkey·Mailpit, 적재된 샘플을 준비한 뒤 실행합니다. 테스트 계정을 생성·변경하므로 운영 자원으로 실행하지 않습니다.
 
 ```bash
+pnpm --filter @tripnote/web exec playwright install chromium
 pnpm --filter @tripnote/web e2e
 ```
 
-Playwright는 프로덕션 빌드를 사용해 모바일 375px와 데스크톱 1280px를 검사합니다. 브라우저를 처음 설치하는 환경에서는 `pnpm --filter @tripnote/web exec playwright install chromium`이 필요합니다.
+프로덕션 빌드를 사용해 375px와 1280px의 샘플·인증·편집·공유·접근성을 검사합니다. [CI](.github/workflows/ci.yml)는 `samples`, `api`, `web`, `e2e`를 검사하며 운영 배포를 수행하지 않습니다. API 변경 후 계약 테스트로 `apps/api/openapi.json`을 갱신하고 `pnpm --filter @tripnote/web gen:api`로 타입을 생성합니다. 토큰·jOOQ·OpenAPI 생성 결과의 드리프트도 검사합니다.
 
-API를 변경하면 `apps/api/openapi.json`을 기존 계약 테스트로 갱신한 뒤 `pnpm --filter @tripnote/web gen:api`로 타입을 생성합니다. CI는 계약·토큰·jOOQ 생성 결과의 드리프트와 API·웹·E2E를 검사합니다.
+## 저장소 구조
 
-## 저장과 충돌
+| 경로 | 역할 |
+| --- | --- |
+| `apps/web` | Next.js 읽기·편집·인증·공유 화면과 테스트 |
+| `apps/api` | API, Flyway 마이그레이션, OpenAPI와 통합 테스트 |
+| `packages/design-tokens` | DTCG 원본에서 CSS와 지도 색상 생성 |
+| `sample`, `scripts/sample` | 원본·공개 예시와 검증·이관 도구 |
+| `src`, `public`, `tests` | 별도로 보존하는 기존 Vite 사이트 |
+| `deploy/free`, `scripts/free-tier` | 미적용 무료 배포 설정과 로컬 제약 시험 도구 |
+| `docs/adr`, `docs/superpowers`, `docs/verification` | 결정, 설계·계획과 검증 기록 |
 
-편집 큐와 입력 초안은 사용자와 여행별로 브라우저에 저장됩니다. 저장소가 차단되거나 가득 차면 저장 실패를 표시합니다. 이 경우 탭을 닫기 전에 입력을 보관하고 저장을 다시 시도해야 합니다. 새 일정 추가에는 고유 작업 ID를 사용해 응답을 받지 못한 재시도가 중복 일정을 만들지 않게 합니다.
+## 문서
 
-동시에 여러 탭이나 기기에서 편집하면 버전 충돌이 날 수 있습니다. 다른 변경을 덮어쓰지 않고 초안을 유지하며, 최신 일정 확인과 재시도·변경 버리기를 제공합니다. 브라우저 탭 사이의 단일 전송 잠금과 동시 공동 편집은 아직 범위 밖입니다. 완전한 오프라인 최초 접속·서비스워커 설치는 구현하지 않았으며, 이미 연 편집 화면의 변경 보존·복구가 대상입니다.
+- [B2C 설계](docs/superpowers/specs/2026-10-15-b2c-trip-planner-design.md), [구현·검증 기록](docs/superpowers/plans/2026-10-16-codex-mvp-followup.md), [API 안내](apps/api/README.md)
+- [README 작성 근거와 구성도 재생성](docs/verification/2026-10-17-readme.md), [재사용 README 스킬](.agents/skills/evidence-readme/SKILL.md)
+- [디자인 시스템](design-system/README.md), [아키텍처 결정](docs/adr/README.md)
 
-## 배포 전에 할 일
-
-### API가 없는 화면 미리보기
-
-프론트만 배포해 화면을 확인할 때는 빌드와 런타임에 모두 `TRIPNOTE_UI_PREVIEW=1`을 지정합니다. 모든 앱 경로는 백엔드 미연결 안내로 바뀌며 로그인, 샘플 조회, 여행 만들기 버튼을 비활성화합니다. API 요청과 서버 액션은 503 안내를 반환하고 API rewrite를 만들지 않습니다. 개인 일정이나 로컬 API를 대신 공개하지 않습니다. 이 배포는 동작하는 여행 서비스가 아닙니다.
-
-스위치를 생략하면 기존 앱과 인증 경계가 그대로 동작합니다. 실제 API를 연결할 때는 이 스위치를 빌드와 런타임에서 함께 제거한 새 배포를 검증해야 합니다. `.vercelignore`는 웹 배포 입력에서 개인 일정 JSON, API 소스, 테스트 fixture, 환경 파일과 로컬 설정을 제외합니다. Vercel의 Root Directory는 `apps/web`로 지정하고 workspace의 토큰 빌드와 이미지/MapLibre worker 복사가 완료되는지 확인합니다. 루트 `build`는 기존 Vite 앱이므로 새 Next.js 배포 명령으로 사용하지 않습니다.
-
-### 운영 연결
-
-웹과 API는 별도로 배포합니다. 아래 운영 설정과 실제 환경 검증을 마친 뒤 배포합니다.
-
-API·DB·Valkey의 공통 메모리, 부하와 백업·복원은 [로컬 검증 기록](docs/verification/2026-10-16-local-memory.md)과 [재현 도구](scripts/local-sizing/README.md)를 참고합니다. 이 합성 검증은 실제 2GB OS와 Caddy를 포함한 운영 적합 판정을 대신하지 않습니다.
-
-- 실제 웹·API 주소에 맞춰 `API_ORIGIN`, `SITE_ORIGIN`, `TRIPNOTE_WEB_BASE_URL`과 Google 리다이렉트 URI 설정
-- 운영 DB 마이그레이션, SMTP, Valkey, 백업과 복구 절차 검증
-- API ingress에서 전달 헤더를 정리하고 실제 소켓 피어인 프록시 CIDR만 `TRIPNOTE_TRUSTED_PROXY_CIDRS`에 명시. 기본은 아무 프록시도 신뢰하지 않으며 직접 받은 위조 `X-Forwarded-For`는 무시함. Vercel을 경유한다고 모든 주소를 신뢰하도록 설정하면 안 됨
-- HTTPS와 실제 프록시 체인을 통과한 사용자별 요청 제한·세션·공유 회수 검증
-- 타일·이미지 호스팅, 관측성 연결, 운영 배포 파이프라인과 개인정보처리방침의 실제 운영 정보 확정
-
-이미지·폰트·외부 자료의 출처와 이용 조건은 각 데이터와 크레딧을 따릅니다. 원본 오사카·교토 일정은 공개 샘플 목록에 노출하지 않고 기존 링크로만 보존합니다.
+이미지·폰트와 외부 자료의 출처·이용 조건은 각 데이터와 크레딧을 따릅니다. 이 저장소가 외부 자료의 별도 재배포 권리를 부여하지는 않습니다.
