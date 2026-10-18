@@ -1,6 +1,20 @@
 # Render Free 메일 전송 연결 검토
 
-2026-10-17 공식 문서 기준의 후보 검토다. 제공자를 선정하거나 계정·키·DNS를 만들지 않았다.
+2026-10-17 공식 문서 기준의 후보 검토다. 2026-10-19에 **Resend로 확정**하고 어댑터를 구현했다.
+계정·키·DNS는 아직 만들지 않았다.
+
+## Resend 어댑터 (2026-10-19)
+
+- `ResendMailProvider`가 `POST https://api.resend.com/emails`로 `from`, `to`(1명), `subject`, `text`만 보낸다.
+- 선택: `tripnote.mail.https-provider=resend`(Free profile 기본값). 키: `RESEND_API_KEY`. 비어 있으면 시작을 거부한다.
+- 연결 5초, 응답 10초 제한. 메일 리스너가 DB 트랜잭션을 잡고 있어 짧게 둔다. 어댑터 안에서 재시도하지 않는다.
+- `Idempotency-Key`는 from/to/subject/text 전체의 SHA-256이다. Resend는 24시간 동안 같은 키·같은 내용이면
+  원래 결과를 돌려주고 다시 보내지 않는다. 따라서 수락 후 응답을 잃고 이벤트가 재발행돼도 같은 내용은 한 번만 간다.
+  인증·재설정 메일은 재발행 때 토큰을 새로 발급해 내용이 달라지므로 두 번째 메일이 갈 수 있다.
+  이때 첫 링크의 토큰은 롤백돼 쓸 수 없다. 토큰 없는 안내 메일(이미 가입됨 등)은 24시간 안에 같은 수신자에게 한 번만 간다.
+- 실패하면 `ResendRejectedException`에 HTTP 상태와 Resend 오류 이름만 담는다. Resend의 오류 message는
+  수신 주소를 포함할 수 있어 버린다.
+- 검증 범위: `MockRestServiceServer` 단위 테스트만. 실제 키·발신 도메인으로 보낸 적은 없다.
 
 ## 구현된 경계
 
@@ -24,17 +38,17 @@ HTTPS 확장점은 성공적으로 수락된 경우 반환하고 timeout/거절�
 | [Resend](https://resend.com/pricing) | 월 3,000통, 일 100통, 도메인 3개 | [소유 도메인 검증](https://resend.com/docs/add-a-domain)과 생성된 DKIM/SPF 레코드 필요. 트랜잭션 메일용 하위 도메인 권장. DMARC도 검토. |
 | [MailerSend](https://www.mailersend.com/pricing) | Free 월 500통, 일 API 요청 100회, 발신 도메인 1개 | [발신 도메인 인증](https://www.mailersend.com/help/how-to-verify-and-authenticate-a-sending-domain)에 DNS 접근과 SPF/DKIM/Return-Path 설정 필요. Free와 14일 Professional trial을 구분. |
 
-현재 소규모 인증 메일에는 무료량이 더 큰 Resend를 우선 검토할 수 있지만 선택은 미확정이다.
+무료량이 더 큰 Resend로 확정했다(2026-10-19).
 위량은 메일/요청/도메인 기준을 구분한 문서 수치이며 실제 계정의 승인·잔여량·이용약관을 대신하지 않는다.
 자동 유료 전환, overage, 추가 상품 또는 카드를 활성화하지 않는다.
 메일 발신 하위 도메인 후보도 기존 웹 wildcard/apex/MX를 바꾸지 않고 별도로 검토해야 한다.
 
 ## 다음 승인 후 검증
 
-제공자 확정 → 한정된 HTTPS 어댑터 구현 → 안전한 자격증명 입력 → 발신 도메인 DNS 변경 검토 →
+~~제공자 확정 → 한정된 HTTPS 어댑터 구현~~(완료) → 안전한 자격증명 입력 → 발신 도메인 DNS 변경 검토 →
 승인된 테스트 주소의 가입/재발송/재설정 수신과 만료·단회성·세션 취소 확인 순서다.
 추적 기능은 인증 링크와 개인정보에 미치는 영향을 검토한 뒤 선택한다.
-현재 실제 메일, 가입, 키 발급, DNS 변경은 수행하지 않았다.
+실제 메일, 가입, 키 발급, DNS 변경은 아직 수행하지 않았다.
 
 [Render Free SMTP 제한](https://render.com/docs/free)에 따라 25/465/587을 사용하지 않는다.
 제공자가 대체 SMTP 포트를 제공한다고 실제 Free 환경에서 검증된 것으로 간주하지 않는다.

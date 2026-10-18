@@ -32,4 +32,8 @@ tripnote:
     bounded: true
   mail:
     transport: ${TRIPNOTE_MAIL_TRANSPORT:https}
+    https-provider: ${TRIPNOTE_MAIL_HTTPS_PROVIDER:resend}
     render-free: true
+    resend:
+      # Enter in Render's Environment screen only. Startup fails if it is blank.
+      api-key: ${RESEND_API_KEY:}

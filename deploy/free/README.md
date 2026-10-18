@@ -37,10 +37,10 @@ Neon의 유료 snapshot/추가 제품과 Upstash의 PAYG/Prod Pack/auto-upgrade�
 4. 비밀값은 채팅/PR/.env 커밋/터미널 인자로 보내지 않는다. Render Environment 화면에 직접 입력한다.
    로컬 검증에 필요하면 사용자 전용 안전 입력 경로를 먼저 정한다. DB/캐시 초기화와 테스트 쓰기도 해당 신규 자원 범위로 승인받는다.
 5. 메일: Render Free의 outbound SMTP 25/465/587은 차단된다. Free profile은 HTTPS 전송을 선택한다.
-   `MailTransport` / `HttpsMailProvider` 경계만 구현했으며 실제 제공자 어댑터는 없다.
-   따라서 현재 Blueprint는 그대로 시작하면 승인된 HTTPS provider bean이 없어 **시작에 실패한다**.
+   제공자는 Resend로 정했고 `ResendMailProvider`를 구현했다(`TRIPNOTE_MAIL_HTTPS_PROVIDER=resend`).
+   `RESEND_API_KEY`를 Render Environment에 입력하지 않으면 **시작에 실패한다**.
    임시 no-op, 로컬 SMTP 우회나 발송 성공으로 가장하는 fallback은 없다.
-   제공자 선택과 어댑터 구현, 발신 도메인 검증 및 실제 발송 승인이 선행되어야 한다.
+   발신 도메인 검증과 실제 발송 확인이 남아 있다.
    무료 후보와 요구 사항은 [메일 연결 검토](mail.md)를 참고한다.
    Google OAuth도 callback 등록과 실제 자격증명 입력 전에는 완료로 보지 않는다.
 
@@ -120,8 +120,7 @@ Pwned Passwords range API는 무료이며 별도 API key가 필요 없다(유료
 현재 DNS 쓰기나 Vercel domain 추가는 실행하지 않았다.
 
 `render.yaml`은 plan=free, autoDeployTrigger=off, custom domains 미설정인 검토용 Blueprint다.
-첫 staging 소스는 이 PR 브랜치(`codex/free-hosting-prep-20261017`)로 고정했다.
-merge 승인 전 develop에는 이 Dockerfile이 없다. 운영 전환 시 별도로 승인된 commit/ref를 선택한다.
+첫 staging 소스는 `develop` 브랜치다(준비 PR #6이 머지돼 Dockerfile이 있다). autoDeploy는 꺼 두고 수동으로 배포한다.
 계정/자격증명 및 실제 API 검증 승인 전에는 apply하지 않는다. Initial apply 자체는 deploy를 시작할 수 있다.
 검증은 staging 주소에서 수행하고, 기존 Vercel Preview는 계속 API 분리 상태로 둔다.
 실제 HTTPS와 __Host-SESSION, CSRF, Vercel rewrite → Render의 IP 신뢰 경로,
