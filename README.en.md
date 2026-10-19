@@ -34,7 +34,7 @@ Recovery covers changes in an already-open editor. Offline first visits, a servi
 
 The browser uses same-origin `/api/*`, `/oauth2/*` and `/login/oauth2/*` paths through Next.js. The API protects requests with `__Host-SESSION` cookies and CSRF, and validates access, versions and mutation IDs. PostgreSQL stores users, trips, token hashes and durable incomplete mail events. Valkey stores sessions, indexes for user-wide session revocation, rate limits and weather cache. Map tiles are fetched directly by the browser.
 
-Mail transport is separated while preserving event transactions and token issuance. Local development uses SMTP/Mailpit. An HTTPS provider extension exists, but no real adapter is implemented. The Free profile selects HTTPS and **fails startup without an approved provider implementation**. See the [mail integration review](deploy/free/mail.md) in Korean.
+Mail transport is separated while preserving event transactions and token issuance. Local development uses SMTP/Mailpit. Production uses a Resend HTTPS adapter that sends a content hash as the Idempotency-Key, so a replay after a lost response does not send identical mail twice. It is covered by mock-server tests only; no real key or sending domain has been verified. The Free profile selects Resend and **fails startup without `RESEND_API_KEY`**. See the [mail integration review](deploy/free/mail.md) in Korean.
 
 | Area | Current technology | Rationale |
 | --- | --- | --- |
@@ -62,11 +62,11 @@ Exact versions come from [web package.json](apps/web/package.json), the [API ver
 | Vercel Production | **Not deployed: no active Ready Production record for this project.** Of the two records returned, the single Production record is Canceled |
 | Render API | **Deployment unverified.** No account tool or local credentials were available to read deployment records or confirm an API endpoint |
 | Neon DB / Upstash state store | **Deployment unverified.** Resource existence and connections cannot be inferred without account access |
-| Mail / Google | The repository has no real HTTPS mail provider adapter. Current credentials, callbacks and live behavior were not verified in this check |
+| Mail / Google | A Resend adapter exists (mock-server tests only). Real keys, sending domain, Google callbacks and live behavior were not verified |
 
 Earlier records of `TRIPNOTE_UI_PREVIEW=1` and the disconnected-API notice are historical evidence, not a fresh runtime verification. Establishing a connected API/DB/cache deployment requires read-only provider records and access to the protected Preview.
 
-[Free deployment preparation](deploy/free/README.md) and `deploy/free/render.yaml` are review configuration, not proof of a current connection. The repository's Free profile selects HTTPS mail and **cannot start without an approved provider implementation**. Readiness has a shared three-second budget covering DB and Redis; actual external connections still require verification.
+[Free deployment preparation](deploy/free/README.md) and `deploy/free/render.yaml` are review configuration, not proof of a current connection. The repository's Free profile selects Resend mail and **cannot start without `RESEND_API_KEY`**. Readiness has a shared three-second budget covering DB and Redis; actual external connections still require verification.
 
 The [512MiB/0.1CPU trial](docs/verification/2026-10-17-free-hosting.md) and [2GB shared-memory trial](docs/verification/2026-10-16-local-memory.md) are local results. Docker configuration and local tests are not production deployments. Live integration, CI/CD and observability validation are tracked in [issue #7](https://github.com/hyunolike/trip-planner/issues/7).
 

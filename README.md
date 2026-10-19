@@ -30,11 +30,11 @@
 
 ![현재 구현의 3D 핵심 구조도: 브라우저와 Next.js, Java·Kotlin API, PostgreSQL의 요청·결과 흐름과 Valkey·메일 경계](docs/assets/system-architecture-3d-ko.png)
 
-*현재 구현을 로컬에서 검증한 핵심 흐름입니다. 민트는 요청, 파랑은 결과이며 메일은 발송 방향만 표시합니다. 초안은 기기에 보관하고 HTTPS 메일은 구현 대기 상태입니다. 지도·날씨·Google 연동의 세부 경로는 본문을 참고하세요. 운영 배포 구성도는 아닙니다.*
+*현재 구현을 로컬에서 검증한 핵심 흐름입니다. 민트는 요청, 파랑은 결과이며 메일은 발송 방향만 표시합니다. 초안은 기기에 보관합니다. 운영 메일은 Resend HTTPS 어댑터를 쓰며 실제 발송은 아직 검증하지 않았습니다. 지도·날씨·Google 연동의 세부 경로는 본문을 참고하세요. 운영 배포 구성도는 아닙니다.*
 
 브라우저는 Next.js와 같은 출처의 `/api/*`, `/oauth2/*`, `/login/oauth2/*`를 사용합니다. API는 `__Host-SESSION` 쿠키와 CSRF로 요청을 보호하고 권한·버전·작업 ID를 검증합니다. PostgreSQL은 여행과 사용자 데이터, 토큰 해시와 미완료 메일 이벤트를 저장합니다. Valkey는 세션, 사용자별 세션 취소 인덱스, 요청 제한과 날씨 캐시를 맡습니다. 지도 타일은 브라우저가 직접 조회합니다.
 
-메일 이벤트의 트랜잭션과 토큰 발급은 유지한 채 전송 인터페이스를 분리했습니다. 로컬은 SMTP/Mailpit을 사용합니다. HTTPS 제공자 확장점만 준비됐으며 실제 어댑터는 없습니다. Free profile은 HTTPS를 선택하므로 **승인된 제공자 구현 없이는 시작에 실패합니다**. [메일 연결 검토](deploy/free/mail.md)를 참고하세요.
+메일 이벤트의 트랜잭션과 토큰 발급은 유지한 채 전송 인터페이스를 분리했습니다. 로컬은 SMTP/Mailpit을 사용합니다. 운영용으로 [Resend](https://resend.com) HTTPS 어댑터를 구현했고, 내용 해시를 Idempotency-Key로 보내 응답을 잃은 재전송의 중복 발송을 줄입니다. Free profile은 Resend를 선택하므로 **`RESEND_API_KEY`가 없으면 시작에 실패합니다**. 실제 키와 발신 도메인으로 보낸 검증은 아직 없습니다. [메일 연결 검토](deploy/free/mail.md)를 참고하세요.
 
 | 영역 | 현재 기술 | 선택의 맥락 |
 | --- | --- | --- |
@@ -62,11 +62,11 @@
 | Vercel Production | **미배포(해당 프로젝트의 활성 Ready Production 기록 없음)**. 조회된 전체 2건 중 Production 1건은 Canceled |
 | Render API | **배포 여부 미확인**. 계정 조회 도구·로컬 자격증명이 없어 배포 기록과 API 주소를 확인하지 못함 |
 | Neon DB / Upstash 상태 저장소 | **배포 여부 미확인**. 계정 접근 없이 생성·연결 상태를 판단하지 않음 |
-| 메일·Google | 저장소에는 실제 HTTPS 메일 어댑터가 없음. 실제 자격증명·callback과 운영 동작은 이번에 확인하지 못함 |
+| 메일·Google | Resend 어댑터는 구현됐으나(모의 서버 테스트만) 실제 키·발신 도메인·Google callback과 운영 동작은 확인하지 못함 |
 
 이전 기록의 `TRIPNOTE_UI_PREVIEW=1`과 API 미연결 안내를 현재 런타임의 재검증 결과로 사용하지 않았습니다. API·DB·캐시가 연결된 완성 배포 구조를 확정하려면 각 서비스의 읽기 전용 배포 기록과 보호된 Preview 접근이 필요합니다.
 
-[무료 배포 준비](deploy/free/README.md)와 `deploy/free/render.yaml`은 검토용 구성입니다. 현재 연결됐다는 근거가 아닙니다. 저장소의 Free profile은 HTTPS 메일을 선택하며 **승인된 제공자 구현 없이는 시작되지 않습니다**. DB와 Redis를 포함한 readiness는 공통 3초 검사 예산을 쓰지만 실제 외부 서비스 연결은 별도 확인이 필요합니다.
+[무료 배포 준비](deploy/free/README.md)와 `deploy/free/render.yaml`은 검토용 구성입니다. 현재 연결됐다는 근거가 아닙니다. 저장소의 Free profile은 Resend 메일을 선택하며 **`RESEND_API_KEY` 없이는 시작되지 않습니다**. DB와 Redis를 포함한 readiness는 공통 3초 검사 예산을 쓰지만 실제 외부 서비스 연결은 별도 확인이 필요합니다.
 
 [512MiB·0.1CPU 로컬 시험](docs/verification/2026-10-17-free-hosting.md)과 [2GB 공통 메모리 검증](docs/verification/2026-10-16-local-memory.md)은 로컬 결과입니다. Docker 구성과 로컬 시험을 운영 배포로 표시하지 않습니다. 실제 운영 연결과 CI/CD·관측성 검증은 [후속 이슈 #7](https://github.com/hyunolike/trip-planner/issues/7)에서 추적합니다.
 

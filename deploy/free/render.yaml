@@ -5,7 +5,7 @@ services:
     runtime: docker
     plan: free
     region: singapore
-    branch: codex/free-hosting-prep-20261017
+    branch: develop
     dockerfilePath: ./deploy/free/Dockerfile
     dockerContext: .
     autoDeployTrigger: 'off'
@@ -37,6 +37,10 @@ services:
         sync: false
       - key: TRIPNOTE_MAIL_TRANSPORT
         value: https
+      - key: TRIPNOTE_MAIL_HTTPS_PROVIDER
+        value: resend
+      - key: RESEND_API_KEY
+        sync: false
       - key: TRIPNOTE_MAIL_FROM
         sync: false
       - key: GOOGLE_CLIENT_ID
